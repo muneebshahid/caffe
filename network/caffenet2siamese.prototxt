@@ -782,7 +782,7 @@ layer {
     decay_mult: 1
   }
   param {
-    name: "fc6_b"
+    name: "fc8_b"
     lr_mult: 2
     decay_mult: 0
   }

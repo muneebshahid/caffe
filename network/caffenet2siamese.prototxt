@@ -1,4 +1,4 @@
-name: "CaffeNet2Siamese"
+name: "caffenet2siamese"
 layer {
   name: "pair_data"
   type: "ImageData"
@@ -28,7 +28,7 @@ layer {
 #  }
 
   image_data_param {
-    source: "data/train/train.txt"
+    source: "/export/home/shahidm/code/domain_adaptation/data/train/train.txt"
     batch_size: 256
 #    new_height: 512
 #    new_width: 256
@@ -64,7 +64,7 @@ layer {
 #    backend: LMDB
 #  }
     image_data_param {
-    source: "data/train/train.txt"
+    source: "/export/home/shahidm/code/domain_adaptation/data/train/train.txt"
     batch_size: 256
  #   new_height: 512
  #   new_width: 512

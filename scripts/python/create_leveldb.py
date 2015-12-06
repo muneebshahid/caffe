@@ -37,7 +37,7 @@ X = np.zeros((N, 3, 160, 60), dtype=np.uint8)
 # deepdish installed, just set this to something comfortably big 
 # (there is little drawback to settings this comfortably big).
 map_size = dd.bytesize(X) * 2.5
-db = plyvel.DB(level_db_path,create_if_missing = True,error_if_exists=True, write_buffer_size=map_size)
+db = plyvel.DB(level_db_path,create_if_missing = True, error_if_exists=True, write_buffer_size=map_size)
 wb=db.write_batch()
 
 count = 0

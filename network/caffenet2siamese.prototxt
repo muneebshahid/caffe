@@ -1,20 +1,17 @@
 name: "CaffeNet2Siamese"
 layer {
   name: "pair_data"
-  type: ImageData
-#  type: "Data"
+  type: "Data"
   top: "pair_data"
   top: "label"
   include {
     phase: TRAIN
   }
-
-#  transform_param {
-#    mirror: true
-#    crop_size: 227
-#    mean_file: "data/mean.binaryproto"
-#  }
-
+  transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "data/mean.binaryproto"
+  }
 # mean pixel / channel-wise mean instead of mean image
 #  transform_param {
 #    crop_size: 227
@@ -23,37 +20,25 @@ layer {
 #    mean_value: 123
 #    mirror: true
 #  }
-
-#  data_param {
-#    source: "data/train/train_lmdb"
-#    batch_size: 256
-#    backend: LMDB
-#  }
-
-image_data_param {
-    source: "data/train/train.txt"
+  data_param {
+    source: "data/train/train_lmdb"
     batch_size: 256
-    new_height: 512
-    new_width: 512
+    backend: LMDB
   }
 }
-
 layer {
   name: "pair_data"
-  type: ImageData
-#  type: "Data"
+  type: "Data"
   top: "pair_data"
   top: "label"
   include {
     phase: TEST
   }
-  
-#  transform_param {
-#    mirror: false
-#    crop_size: 227
-#    mean_file: "data/mean.binaryproto"
-#  }
-
+  transform_param {
+    mirror: false
+    crop_size: 227
+    mean_file: "data/mean.binaryproto"
+  }
 # mean pixel / channel-wise mean instead of mean image
 #  transform_param {
 #    crop_size: 227
@@ -62,17 +47,10 @@ layer {
 #    mean_value: 123
 #    mirror: false
 #  }
-#  data_param {
-#    source: "data/test/test_lmdb"
-#    batch_size: 50
-#    backend: LMDB
-#  }
-
-  image_data_param {
-    source: "data/train/train.txt"
-    batch_size: 256
-    new_height: 512
-    new_width: 512
+  data_param {
+    source: "data/test/test_lmdb"
+    batch_size: 50
+    backend: LMDB
   }
 }
 

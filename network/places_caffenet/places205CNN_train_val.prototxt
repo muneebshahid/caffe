@@ -10,7 +10,7 @@ layer {
   transform_param {
     mirror: true
     crop_size: 227
-    mean_file: "/home/shahidm/code/domain_adaptation/network/places_caffenet/places205CNN_mean.binaryproto"
+    mean_file: "places205CNN_mean.binaryproto"
   }
 # mean pixel / channel-wise mean instead of mean image
 #  transform_param {
@@ -20,8 +20,8 @@ layer {
 #    mean_value: 123
 #    mirror: true
 #  }
-  data_param {
-    source: "/home/shahidm/code/domain_adaptation/data/lmdb/ilsvrc12_train_lmdb"
+  data_param {  
+    source: "ilsvrc12_train_lmdb"
     batch_size: 10
     backend: LMDB
   }
@@ -37,7 +37,7 @@ layer {
   transform_param {
     mirror: false
     crop_size: 227
-    mean_file: "/home/shahidm/code/domain_adaptation/network/places_caffenet/places205CNN_mean.binaryproto"
+    mean_file: "places205CNN_mean.binaryproto"
   }
 # mean pixel / channel-wise mean instead of mean image
 #  transform_param {
@@ -48,7 +48,7 @@ layer {
 #    mirror: false
 #  }
   data_param {
-    source: "/home/shahidm/code/domain_adaptation/data/lmdb/ilsvrc12_val_lmdb"
+    source: "ilsvrc12_val_lmdb"
     batch_size: 10
     backend: LMDB
   }
@@ -371,7 +371,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 1000
+    num_output: 205
     weight_filler {
       type: "gaussian"
       std: 0.01

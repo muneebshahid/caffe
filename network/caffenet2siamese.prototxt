@@ -21,16 +21,16 @@ layer {
 #    mean_value: 123
 #    mirror: true
 #  }
-#  data_param {
-#    source: "data/train/train_lmdb"
-#    batch_size: 256
-#    backend: LMDB
-#  }
-
-data_param {
-    source: "/export/home/shahidm/code/domain_adaptation/data/leveldb/train/"
+  data_param {
+    source: "/export/home/shahidm/code/domain_adaptation/data/lmdb/lmdb_train"
     batch_size: 5
+    backend: LMDB
   }
+
+#data_param {
+#    source: "/export/home/shahidm/code/domain_adaptation/data/leveldb/train/"
+#    batch_size: 5
+#  }
 
 #  image_data_param {
 #    source: "/export/home/shahidm/code/domain_adaptation/data/train/train.txt"
@@ -40,6 +40,7 @@ data_param {
 #  }
 
 }
+
 layer {
   name: "pair_data"
 #  type: "ImageData"
@@ -70,9 +71,15 @@ layer {
 #  }
 
 data_param {
-    source: "/export/home/shahidm/code/domain_adaptation/data/leveldb/train/"
+    source: "/export/home/shahidm/code/domain_adaptation/data/lmdb/lmdb_train"
     batch_size: 5
+    backend: LMDB
   }
+
+#data_param {
+#    source: "/export/home/shahidm/code/domain_adaptation/data/leveldb/train/"
+#    batch_size: 5
+#  }
   
 #    image_data_param {
 #    source: "/export/home/shahidm/code/domain_adaptation/data/train/train.txt"

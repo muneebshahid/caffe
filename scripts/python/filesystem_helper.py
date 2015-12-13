@@ -12,11 +12,17 @@ def copy(source_path, target_path):
 def rm_dir(path):
 	shutil.rmtree(path)
 
+def is_dir(path):
+	return os.path.isdir(path)
+
 def make_dir(path):
 	os.makedirs(path)
 
-def get_folder_contents(path, wild_card=''):
+def list_dir(path):
+	return os.listdir(path)
+
+def get_folder_contents(path, wild_card='*'):
 	return glob.glob(path + wild_card)
 
-def get_file_name(path):
+def extract_name_from_path(path):
 	return ntpath.basename(path)	

@@ -10,10 +10,10 @@ layer {
   transform_param {
     mirror: true
     crop_size: 227
-    mean_file: "../../data/models/alexnet_places/places205CNN_mean.binaryproto"
+    mean_file: "/home/shahidm/code/domain_adaptation/data/models/alexnet_places/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "../../data/lmdb/ilsvrc12_train_lmdb_1"
+    source: "/home/shahidm/code/domain_adaptation/data/lmdb/train/train1"
     batch_size: 256
     backend: LMDB
   }
@@ -30,10 +30,10 @@ layer {
   transform_param {
     mirror: true
     crop_size: 227
-    mean_file: "../../data/models/alexnet_places/places205CNN_mean.binaryproto"
+    mean_file: "/home/shahidm/code/domain_adaptation/data/models/alexnet_places/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "../../data/lmdb/ilsvrc12_train_lmdb_2"
+    source: "/home/shahidm/code/domain_adaptation/data/lmdb/train/train2"
     batch_size: 256
     backend: LMDB
   }
@@ -50,11 +50,12 @@ layer {
   transform_param {
     mirror: false
     crop_size: 227
-    mean_file: "../../data/models/alexnet_places/places205CNN_mean.binaryproto"
+    mean_file: "/home/shahidm/code/domain_adaptation/data/models/alexnet_places/places205CNN_mean.binaryproto"
   }
 
   data_param {
-    source: "../../data/lmdb/ilsvrc12_val_lmdb_1"
+    source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/summer"
+   # source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/train1"
     batch_size: 256
     backend: LMDB
   }
@@ -71,11 +72,12 @@ layer {
   transform_param {
     mirror: false
     crop_size: 227
-    mean_file: "../../data/models/alexnet_places/places205CNN_mean.binaryproto"
+    mean_file: "/home/shahidm/code/domain_adaptation/data/models/alexnet_places/places205CNN_mean.binaryproto"
   }
 
   data_param {
-    source: "../../data/lmdb/ilsvrc12_val_lmdb_1"
+    source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/winter"
+   # source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/train2"
     batch_size: 256
     backend: LMDB
   }
@@ -101,7 +103,8 @@ layer {
     kernel_size: 11
     stride: 4
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -158,7 +161,8 @@ layer {
     kernel_size: 5
     group: 2
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -214,7 +218,8 @@ layer {
     pad: 1
     kernel_size: 3
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -249,7 +254,8 @@ layer {
     kernel_size: 3
     group: 2
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -284,7 +290,8 @@ layer {
     kernel_size: 3
     group: 2
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -327,7 +334,8 @@ layer {
   inner_product_param {
     num_output: 4096
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.005
     }
     bias_filler {
       type: "constant"
@@ -368,7 +376,8 @@ layer {
   inner_product_param {
     num_output: 4096
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.005
     }
     bias_filler {
       type: "constant"
@@ -441,7 +450,8 @@ layer {
     kernel_size: 11
     stride: 4
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -498,7 +508,8 @@ layer {
     kernel_size: 5
     group: 2
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -554,7 +565,8 @@ layer {
     pad: 1
     kernel_size: 3
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -589,7 +601,8 @@ layer {
     kernel_size: 3
     group: 2
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -624,7 +637,8 @@ layer {
     kernel_size: 3
     group: 2
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -667,7 +681,8 @@ layer {
   inner_product_param {
     num_output: 4096
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.005
     }
     bias_filler {
       type: "constant"
@@ -708,7 +723,8 @@ layer {
   inner_product_param {
     num_output: 4096
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.005
     }
     bias_filler {
       type: "constant"
@@ -734,7 +750,7 @@ layer {
 layer {
   name: "fc8_n_p"
   type: "InnerProduct"
-  bottom: "fc7_p"
+  bottom: "fc7"
   top: "fc8_n_p"
   param {
     name: "fc8_n_w"

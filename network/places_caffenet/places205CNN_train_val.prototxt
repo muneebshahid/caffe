@@ -14,7 +14,7 @@ layer {
   }
   data_param {  
     source: "/home/shahidm/code/domain_adaptation/data/lmdb/train/train1"
-    batch_size: 256
+    batch_size: 320 
     backend: LMDB
   }
 }
@@ -34,7 +34,7 @@ layer {
   }
   data_param {  
     source: "/home/shahidm/code/domain_adaptation/data/lmdb/train/train2"
-    batch_size: 256
+    batch_size: 320
     backend: LMDB
   }
 }
@@ -56,7 +56,7 @@ layer {
   data_param {
     source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/summer"
    # source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/train1"
-    batch_size: 256
+    batch_size: 320
     backend: LMDB
   }
 }
@@ -78,7 +78,7 @@ layer {
   data_param {
     source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/winter"
    # source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/train2"
-    batch_size: 256
+    batch_size: 320
     backend: LMDB
   }
 }
@@ -750,7 +750,7 @@ layer {
 layer {
   name: "fc8_n_p"
   type: "InnerProduct"
-  bottom: "fc7"
+  bottom: "fc7_p"
   top: "fc8_n_p"
   param {
     name: "fc8_n_w"

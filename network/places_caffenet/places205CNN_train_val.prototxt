@@ -10,10 +10,10 @@ layer {
   transform_param {
     mirror: true
     crop_size: 227
-    mean_file: "../../data/models/alexnet_places/places205CNN_mean.binaryproto"
+    mean_file: "/home/shahidm/code/domain_adaptation/data/models/alexnet_places/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "../../data/lmdb/ilsvrc12_train_lmdb_1"
+    source: "/home/shahidm/code/domain_adaptation/data/lmdb/train/train1"
     batch_size: 256
     backend: LMDB
   }
@@ -30,10 +30,10 @@ layer {
   transform_param {
     mirror: true
     crop_size: 227
-    mean_file: "../../data/models/alexnet_places/places205CNN_mean.binaryproto"
+    mean_file: "/home/shahidm/code/domain_adaptation/data/models/alexnet_places/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "../../data/lmdb/ilsvrc12_train_lmdb_2"
+    source: "/home/shahidm/code/domain_adaptation/data/lmdb/train/train2"
     batch_size: 256
     backend: LMDB
   }
@@ -50,11 +50,11 @@ layer {
   transform_param {
     mirror: false
     crop_size: 227
-    mean_file: "../../data/models/alexnet_places/places205CNN_mean.binaryproto"
+    mean_file: "/home/shahidm/code/domain_adaptation/data/models/alexnet_places/places205CNN_mean.binaryproto"
   }
 
   data_param {
-    source: "../../data/lmdb/ilsvrc12_val_lmdb_1"
+    source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/summer"
     batch_size: 256
     backend: LMDB
   }
@@ -71,11 +71,11 @@ layer {
   transform_param {
     mirror: false
     crop_size: 227
-    mean_file: "../../data/models/alexnet_places/places205CNN_mean.binaryproto"
+    mean_file: "/home/shahidm/code/domain_adaptation/data/models/alexnet_places/places205CNN_mean.binaryproto"
   }
 
   data_param {
-    source: "../../data/lmdb/ilsvrc12_val_lmdb_1"
+    source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/winter"
     batch_size: 256
     backend: LMDB
   }

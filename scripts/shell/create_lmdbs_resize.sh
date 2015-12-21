@@ -10,12 +10,12 @@ then
 elif [ "$1" = "test" ]
 then
 	lmdb_test=$PROJ_HOME"/data/lmdb/test/"
-	summer_lmdb=$lmdb_test"summer"
-	winter_lmdb=$lmdb_test"winter"
-	rm -r $summer_lmdb
-	rm -r $winter_lmdb
-	$CAFFE_ROOT"/build/tools/convert_imageset" -resize_height 256 -resize_width 256 $PROJ_HOME"/data/test/" $PROJ_HOME"/data/test/summer.txt" $summer_lmdb
-	$CAFFE_ROOT"/build/tools/convert_imageset" -resize_height 256 -resize_width 256 $PROJ_HOME"/data/test/" $PROJ_HOME"/data/test/winter.txt" $winter_lmdb
+	test1_lmdb=$lmdb_test"test1"
+	test2_lmdb=$lmdb_test"test2"
+	rm -r $test1_lmdb
+	rm -r $test2_lmdb
+	$CAFFE_ROOT"/build/tools/convert_imageset" -resize_height 256 -resize_width 256 $PROJ_HOME"/data/test/" $PROJ_HOME"/data/test/test1.txt" $test1_lmdb
+	$CAFFE_ROOT"/build/tools/convert_imageset" -resize_height 256 -resize_width 256 $PROJ_HOME"/data/test/" $PROJ_HOME"/data/test/test2.txt" $test2_lmdb
 else
 	echo "Wrong Param"
 fi

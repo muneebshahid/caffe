@@ -6,8 +6,6 @@ import cv2
 
 parser = argparse.ArgumentParser()
 parser.add_argument("source_folder_path", help="Path to the source folder")
-parser.add_argument("target_folder_path",
-                    help="Path to the target folder, where txt file will be created")
 parser.add_argument("process_mich", help="Process michigan dataset", type=int)
 parser.add_argument("process_freiburg", help="Process freiburg dataset", type=int)
 args = parser.parse_args()
@@ -34,8 +32,9 @@ if args.process_mich:
 
     images_gap = 600
     michigan_neg_instances = 0
+    last_index = files_michigan_pos_len - 1
     while michigan_neg_instances < files_michigan_pos_len:
-        im1 = np.random.random_integers(0, files_michigan_pos_len - 1)
+        im1 = np.random.random_integers(0, last_index)
         month_mich = np.random.random_integers(0, 1)
         file_1 = folder_path_mich + months_mich[month_mich] + '/00000' + str(im1) + '.tiff'
         # michigan data set has weird naming convetion
@@ -46,7 +45,7 @@ if args.process_mich:
         if im_diff > 0:
             im2 = np.random.random_integers(0, im_diff)
         else:
-            im2 = np.random.random_integers(im1, im1 + images_gap + 1)
+            im2 = np.random.randint(im1 + images_gap, last_index)
         file_2 = folder_path_mich + months_mich[abs(month_mich - 1)] + '/00000' + str(im2) + '.tiff'
         if not osh.is_file(file_2):
             continue
@@ -59,10 +58,10 @@ if args.process_mich:
     del files_michigan_pos
     random.shuffle(data_set_michigan)
 
-    with open(args.target_folder_path + '/train1.txt', 'w') as t1:
+    with open(args.source_folder_path + '/train1.txt', 'w') as t1:
         t1.writelines([str(instance[0]) + ' ' + str(instance[2]) + '\n' for instance in data_set_michigan])
 
-    with open(args.target_folder_path + '/train2.txt', 'w') as t2:
+    with open(args.source_folder_path + '/train2.txt', 'w') as t2:
         t2.writelines([str(instance[1]) + ' ' + str(instance[3]) + '\n' for instance in data_set_michigan])
 
 elif args.process_freiburg:

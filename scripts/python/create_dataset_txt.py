@@ -6,14 +6,14 @@ import random
 parser = argparse.ArgumentParser()
 parser.add_argument("source_folder_path", help="Path to the source folder")
 parser.add_argument("target_folder_path",
-                    help="Path to the target folder, where txt file will be created (not used for freiburg)")
+                    help="Path to the target folder, where txt file will be created")
 parser.add_argument("process_mich", help="Process michigan dataset", type=int)
 parser.add_argument("process_freiburg", help="Process freiburg dataset", type=int)
 args = parser.parse_args()
 
 folder_path_mich = args.source_folder_path + 'michigan/uncompressed/'
 folder_path_amos = args.source_folder_path + 'amos/uncompressed/'
-folder_path_frei = args.source_folder_path + 'freiburg/dataset/'
+folder_path_frei = args.source_folder_path + 'freiburg/'
 
 if args.process_mich:
     # Process Michigan data
@@ -68,7 +68,6 @@ elif args.process_freiburg:
     summer = []
     winter = []
     data_set_freiburg = []
-    folder_path_frei = 'D:/Uni/Study/Project/freiburg/annotator/'
     processed_season_match = open(folder_path_frei + 'processed_season_match.txt', "r")
     # sorry i realize it might be quite cryptic but i could'nt help myself
     # read lines and set labels to 1 1 (similarity and domain label)
@@ -108,11 +107,12 @@ elif args.process_freiburg:
             print "{0} / {1}".format(neg_examples, pos_examples)
     random.shuffle(instances_in_line)
     print 'writing txt files'
-    with open(folder_path_frei + '/train1.txt', 'w') as t1:
-        t1.writelines([str(instance[0]) + ' ' + str(instance[2]) + '\n' for instance in instances_in_line])
+    freiburg = 'freiburg/'
+    with open(args.source_folder_path + '/test1.txt', 'w') as t1:
+        t1.writelines([freiburg + str(instance[0]) + ' ' + str(instance[2]) + '\n' for instance in instances_in_line])
 
-    with open(folder_path_frei + '/train2.txt', 'w') as t2:
-        t2.writelines([str(instance[1]) + ' ' + str(instance[3]) + '\n' for instance in instances_in_line])
+    with open(args.source_folder_path + '/test2.txt', 'w') as t2:
+        t2.writelines([freiburg + str(instance[1]) + ' ' + str(instance[3]) + '\n' for instance in instances_in_line])
     print "done"
 '''
 pos_examples = 0

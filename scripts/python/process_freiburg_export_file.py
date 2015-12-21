@@ -1,7 +1,9 @@
+import os_helper as osh
 summer = []
 winter = []
 
-source_folder = 'D:/Uni/Study/Project/freiburg/annotator/'
+proj_home = osh.get_env_var('PROJ_HOME')
+source_folder = proj_home + '/data/test/freiburg/'
 with open(source_folder + 'exported_season_match.txt', "r") as lines:
     processed_exported_season_match = []
     for line_num, line in enumerate(lines):

@@ -66,7 +66,7 @@ if args.process_mich:
         t2.writelines([str(instance[1]) + ' ' + str(instance[3]) + '\n' for instance in data_set_michigan])
 
 elif args.process_freiburg:
-    save_neg_im = True
+    save_neg_im = False 
     summer = []
     winter = []
     data_set_freiburg = []
@@ -101,10 +101,11 @@ elif args.process_freiburg:
         else:
             im2 = np.random.randint(im1 + image_gap, last_index)
         if save_neg_im:
-            im_1 = cv2.imread(args.source_folder_path + instances_in_line[im1][0])
-            im_2 = cv2.imread(args.source_folder_path + instances_in_line[im2][1])
+            im_1 = cv2.imread(folder_path_frei + instances_in_line[im1][0])
+            im_2 = cv2.imread(folder_path_frei + instances_in_line[im2][1])
             cv2.imwrite(folder_path_frei + 'neg_im/' + str(neg_examples) + '.png', np.concatenate((im_1, im_2), axis=1));
             print 'saving neg example {0} / {1}'.format(neg_examples, pos_examples)
+	    print folder_path_frei + 'neg_im/' + str(neg_examples) + '.png'
         seasons = [instances_in_line[im1][0], instances_in_line[im2][1]]
         random.shuffle(seasons)
         seasons.extend([0, 1])
@@ -115,10 +116,10 @@ elif args.process_freiburg:
     random.shuffle(instances_in_line)
     print 'writing txt files'
     with open(args.source_folder_path + '/test1.txt', 'w') as t1:
-        t1.writelines([str(instance[0]) + ' ' + str(instance[2]) + '\n' for instance in instances_in_line])
+        t1.writelines(['freiburg/' + str(instance[0]) + ' ' + str(instance[2]) + '\n' for instance in instances_in_line])
 
     with open(args.source_folder_path + '/test2.txt', 'w') as t2:
-        t2.writelines([str(instance[1]) + ' ' + str(instance[3]) + '\n' for instance in instances_in_line])
+        t2.writelines(['freiburg/' + str(instance[1]) + ' ' + str(instance[3]) + '\n' for instance in instances_in_line])
     print "done"
 '''
 pos_examples = 0

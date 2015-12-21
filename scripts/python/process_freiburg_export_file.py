@@ -10,10 +10,10 @@ with open(source_folder + 'exported_season_match.txt', "r") as lines:
         line_arr = line.split(' ')
         len_arr = len(line_arr)
         if len_arr > 3:
-            instance = 'freiburg/' + line_arr[1].replace('\\','/')
+            instance = line_arr[1].replace('\\','/')
             i = 2
             while i + 1 < len_arr:
-                instance += " freiburg/" + line_arr[i + 1].replace('\\','/')
+                instance += ' ' + line_arr[i + 1].replace('\\','/')
                 i += 2
             if line_num % 100 == 0:
                 print str(line_num)

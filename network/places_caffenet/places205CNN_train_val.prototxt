@@ -54,7 +54,7 @@ layer {
   }
 
   data_param {
-    source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/summer"
+    source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/test1"
    # source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/train1"
     batch_size: 320
     backend: LMDB
@@ -76,7 +76,7 @@ layer {
   }
 
   data_param {
-    source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/winter"
+    source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/test2"
    # source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/train2"
     batch_size: 320
     backend: LMDB

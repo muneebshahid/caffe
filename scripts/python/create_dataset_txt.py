@@ -17,6 +17,10 @@ source_folder_path = args.source_folder_path
 process_mich = args.process_mich
 process_freiburg = args.process_freiburg
 '''
+mich_ignore = range(1264, 1272)
+mich_ignore.extend(range(1473, 1524))
+mich_ignore.extend(range(1553, 1565))
+mich_ignore.extend(range(1623, 1628))
 
 
 def get_train_test_split_len(examples_len, split):
@@ -82,8 +86,12 @@ def main(source_folder_path, process_mich, process_freiburg, train_test_split):
         files_michigan_pos_len = len(files_michigan_pos)
         print 'Creating positive examples'
         for jan_file in files_michigan_pos:
-            jan_file = jan_file.replace(source_folder_path, '')
+            file_n = osh.extract_name_from_path(jan_file)
 
+            if int(file_n[5:-5]) in mich_ignore:
+                print "ignoring {0}".format(file_n[5:-5])
+                continue
+            jan_file = jan_file.replace(source_folder_path, '')
             month_mich = np.random.random_integers(0, 1)
             path_1 = jan_file.replace('jan', months_mich[month_mich])
             path_2 = jan_file.replace('jan', months_mich[abs(month_mich - 1)])
@@ -117,7 +125,7 @@ def main(source_folder_path, process_mich, process_freiburg, train_test_split):
             label_1, label_2 = 0, 1
             data_set_michigan_neg.append([file_1, file_2, label_1, label_2])
             michigan_neg_instances += 1
-            if michigan_neg_instances % 100 == 0:
+            if michigan_neg_instances % 2000 == 0:
                 print 'negative examples: ', progress(michigan_neg_instances, files_michigan_pos_len)
 
         # split in train and test

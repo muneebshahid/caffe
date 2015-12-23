@@ -53,21 +53,36 @@ def progress(current, total):
     return '{0} / {1}'.format(current, total)
 
 
-def write(data_set, file_path):
-    file_num = int(file_path[-1])
-    with open(file_path + '.txt', 'w') as w:
-        # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
-        w.writelines(
-                [str(instance[file_num - 1]).replace('\\', '/') + ' ' + str(instance[file_num + 1]) + '\n' for instance
-                 in data_set])
+def write(data_set, file_path, file_num = None):
+    if file_num is not None:
+        with open(file_path + '.txt', 'w') as w:
+            # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
+            w.writelines(
+                    [str(instance[file_num - 1]).replace('\\', '/') + ' ' + str(instance[file_num + 1]) + '\n' for instance
+                     in data_set])
+    else:
+        with open(file_path + '.txt', 'w') as w:
+            # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
+            w.writelines(
+                    [instance.replace('\\', '/') + '\n' for instance in data_set])
 
 
 def write_files(data_set_train, data_set_test, path):
-    write(data_set_train, path + 'train1')
-    write(data_set_train, path + 'train2')
-    write(data_set_test, path + 'test1')
-    write(data_set_test, path + 'test2')
+    write(data_set_train, path + 'train1', 1)
+    write(data_set_train, path + 'train2', 2)
+    write(data_set_test, path + 'test1', 1)
+    write(data_set_test, path + 'test2', 2)
 
+    data_set = []
+    #Also write the full dataset for creating lmdb used for mean image
+    for train, test in izip_longest(data_set_train, data_set_test):
+        if train is not None:
+            for train_im in train[:-2]:
+                data_set.append(train_im)
+        if test is not None:
+            for test_im in test[:-2]:
+                data_set.append(test_im)
+    write(data_set, path + 'complete')
 
 def main(source_folder_path, process_mich, process_freiburg, train_test_split):
     folder_path_amos = source_folder_path + 'amos/'

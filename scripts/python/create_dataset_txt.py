@@ -24,7 +24,8 @@ mich_ignore.extend(range(1623, 1628))
 
 
 def get_train_test_split_len(examples_len, split):
-    return int(split * examples_len), -int((1 - split) * examples_len)
+    # put first split% of the data for training and the rest for testing
+    return int(np.ceil(split * examples_len)), -int(np.floor((1 - split) * examples_len))
 
 
 def split_data(train, test, pos, neg, split):
@@ -83,7 +84,7 @@ def main(source_folder_path, process_mich, process_freiburg, train_test_split):
         # Process Michigan data
         months_mich = ['aug', 'jan']
         files_michigan_pos = sorted(osh.get_folder_contents(folder_path_mich + 'jan/', '*.tiff'))
-        files_michigan_pos_len = len(files_michigan_pos)
+
         print 'Creating positive examples'
         for jan_file in files_michigan_pos:
             file_n = osh.extract_name_from_path(jan_file)
@@ -102,9 +103,11 @@ def main(source_folder_path, process_mich, process_freiburg, train_test_split):
         del files_michigan_pos
         images_gap = 600
         michigan_neg_instances = 0
-        last_index = files_michigan_pos_len - 1
+        michigan_pos_len = len(data_set_michigan_pos)
+        last_index = michigan_pos_len - 1
+        print "found {0} positive examples".format(michigan_pos_len)
         print 'Creating negative examples'
-        while michigan_neg_instances < files_michigan_pos_len:
+        while michigan_neg_instances < michigan_pos_len:
             im1 = np.random.random_integers(0, last_index)
             month_mich = np.random.random_integers(0, 1)
             file_1 = folder_path_mich + months_mich[month_mich] + '/00000' + str(im1) + '.tiff'
@@ -126,8 +129,9 @@ def main(source_folder_path, process_mich, process_freiburg, train_test_split):
             data_set_michigan_neg.append([file_1, file_2, label_1, label_2])
             michigan_neg_instances += 1
             if michigan_neg_instances % 2000 == 0:
-                print 'negative examples: ', progress(michigan_neg_instances, files_michigan_pos_len)
+                print 'negative examples: ', progress(michigan_neg_instances, michigan_pos_len)
 
+        print "found {0} negative examples".format(len(data_set_michigan_neg))
         # split in train and test
         print "Splitting data in to training and testing data"
         split_data(data_set_train, data_set_test, data_set_michigan_pos, data_set_michigan_neg, train_test_split)

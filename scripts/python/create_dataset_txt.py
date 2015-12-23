@@ -188,7 +188,7 @@ def main(source_folder_path, process_mich, process_freiburg, train_test_split):
 
 
 if __name__ == "__main__":
-    source_folder_path = osh.path_rel_to_abs('../../../data/images/') + '/'
+    source_folder_path = osh.path_rel_to_abs('../../data/images/') + '/'
     if not osh.is_dir(source_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()

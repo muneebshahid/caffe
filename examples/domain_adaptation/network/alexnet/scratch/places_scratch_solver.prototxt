@@ -1,4 +1,4 @@
-net: "/home/shahidm/code/domain_adaptation/network/places_caffenet/places_scratch_train_val.prototxt"
+net: "${PROJ_HOME}/network/alexnet/places_scratch_train_val.prototxt"
 test_iter: 24 # test_iter specifies how many forward passes the test should carry out batchsize 320 x 24 > 7498 total test images.
 test_interval: 100 # Carry out testing every 100 training iterations.
 

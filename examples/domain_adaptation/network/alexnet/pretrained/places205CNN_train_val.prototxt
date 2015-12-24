@@ -1,4 +1,4 @@
-name: "Places2Siames-CNN"
+name: "AlexNet2Siames"
 layer {
   name: "data_a"
   type: "Data"
@@ -10,10 +10,10 @@ layer {
   transform_param {
     mirror: true
     crop_size: 227
-    mean_file: "/home/shahidm/code/domain_adaptation/data/models/scratch/mean.binaryproto"
+    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "/home/shahidm/code/domain_adaptation/data/lmdb/train/train1"
+    source: "data/domain_adaptation_data/lmdb/train/train1"
     batch_size: 320 
     backend: LMDB
   }
@@ -30,10 +30,10 @@ layer {
   transform_param {
     mirror: true
     crop_size: 227
-    mean_file: "/home/shahidm/code/domain_adaptation/data/models/scratch/mean.binaryproto"
+    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "/home/shahidm/code/domain_adaptation/data/lmdb/train/train2"
+    source: "data/domain_adaptation_data/lmdb/train/train2"
     batch_size: 320
     backend: LMDB
   }
@@ -50,11 +50,10 @@ layer {
   transform_param {
     mirror: false
     crop_size: 227
-    mean_file: "/home/shahidm/code/domain_adaptation/data/models/scratch/mean.binaryproto"
+    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
-
   data_param {
-    source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/test1"
+    source: "data/domain_adaptation_data/lmdb/test/test1"
     batch_size: 320
     backend: LMDB
   }
@@ -71,11 +70,11 @@ layer {
   transform_param {
     mirror: false
     crop_size: 227
-    mean_file: "/home/shahidm/code/domain_adaptation/data/models/scratch/mean.binaryproto"
+    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
 
   data_param {
-    source: "/home/shahidm/code/domain_adaptation/data/lmdb/test/test2"
+    source: "data/domain_adaptation_data/lmdb/test/test2"
     batch_size: 320
     backend: LMDB
   }
@@ -405,12 +404,12 @@ layer {
   top: "fc8_n"
   param {
     name: "fc8_n_w"
-    lr_mult: 1
+    lr_mult: 10
     decay_mult: 1
   }
   param {
     name: "fc8_n_b"
-    lr_mult: 2
+    lr_mult: 20
     decay_mult: 0
   }
   inner_product_param {
@@ -752,12 +751,12 @@ layer {
   top: "fc8_n_p"
   param {
     name: "fc8_n_w"
-    lr_mult: 1
+    lr_mult: 10
     decay_mult: 1
   }
   param {
     name: "fc8_n_b"
-    lr_mult: 2
+    lr_mult: 20
     decay_mult: 0
   }
   inner_product_param {

@@ -1,4 +1,4 @@
-name: "AlexNet2Siames"
+name: "AlexNet2Siamese"
 layer {
   name: "data_a"
   type: "Data"

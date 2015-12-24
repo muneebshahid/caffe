@@ -64,7 +64,7 @@ def write(data_set, file_path, file_num = None):
         with open(file_path + '.txt', 'w') as w:
             # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
             w.writelines(
-                    [instance.replace('\\', '/') + '\n' for instance in data_set])
+                    [instance.replace('\\', '/') + ' 1\n' for instance in data_set])
 
 
 def write_files(data_set_train, data_set_test, path):

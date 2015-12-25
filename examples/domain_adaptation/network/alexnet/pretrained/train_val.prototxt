@@ -770,7 +770,10 @@ layer {
     }
   }
 }
-##############
+
+# -----------------------------------------------------------------------------
+# ----------------------------------------------------------- Label Predictor
+# -----------------------------------------------------------------------------
 layer {
   name: "loss"
   type: "ContrastiveLoss"
@@ -782,3 +785,167 @@ layer {
     margin: 1
   }
 }
+
+
+layer {
+  name: "fc9"
+  type: "InnerProduct"
+  bottom: "fc7_n"
+  bottom: "fc8_n_p"
+  top: "fc9"
+  param {
+    name: "fc9_w"
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    name: "fc9_b"
+    lr_mult: 20
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
+layer {
+  name: "loss2"
+  type: "SigmoidCrossEntropyLoss"
+  bottom: "fc9"
+  bottom: "label_2"
+  top: "dc_loss"
+  loss_weight: 0.1
+}
+## -----------------------------------------------------------------------------
+## ----------------------------------------------------------- Gradient reversal
+## -----------------------------------------------------------------------------
+#layer {
+#  name: "grl"
+#  type: "GradientScaler"
+#  bottom: "bottleneck"
+#  top: "grl"
+#  gradient_scaler_param {
+#    lower_bound: 0.0
+#    upper_bound: 1.0
+#    alpha: 10.0
+#    max_iter: 10000
+#  }
+#}
+#
+## -----------------------------------------------------------------------------
+## ----------------------------------------------------------- Domain classifier
+## -----------------------------------------------------------------------------
+#layer {
+#  name: "dc_ip1"
+#  type: "InnerProduct"
+#  bottom: "grl"
+#  top: "dc_ip1"
+#  param {
+#    lr_mult: 10
+#  }
+#  param {
+#    lr_mult: 20
+#  }
+#  inner_product_param {
+#    num_output: 1024
+#    weight_filler {
+#      type: "gaussian"
+#      std: 0.01
+#    }
+#    bias_filler {
+#      type: "constant"
+#    }
+#  }
+#}
+#layer {
+#  name: "dc_relu1"
+#  type: "ReLU"
+#  bottom: "dc_ip1"
+#  top: "dc_ip1"
+#}
+#layer {
+#  name: "dc_drop1"
+#  type: "Dropout"
+#  bottom: "dc_ip1"
+#  top: "dc_ip1"
+#  dropout_param {
+#    dropout_ratio: 0.5
+#  }
+#}
+## ----------------------------------------------------------------------------
+#layer {
+#  name: "dc_ip2"
+#  type: "InnerProduct"
+#  bottom: "dc_ip1"
+#  top: "dc_ip2"
+#  param {
+#    lr_mult: 10
+#  }
+#  param {
+#    lr_mult: 20
+#  }
+#  inner_product_param {
+#    num_output: 1024
+#    weight_filler {
+#      type: "gaussian"
+#      std: 0.01
+#    }
+#    bias_filler {
+#      type: "constant"
+#    }
+#  }
+#}
+#layer {
+#  name: "dc_relu2"
+#  type: "ReLU"
+#  bottom: "dc_ip2"
+#  top: "dc_ip2"
+#}
+#layer {
+#  name: "dc_drop2"
+#  type: "Dropout"
+#  bottom: "dc_ip2"
+#  top: "dc_ip2"
+#  dropout_param {
+#    dropout_ratio: 0.5
+#  }
+#}
+## ----------------------------------------------------------------------------
+#layer {
+#  name: "dc_ip3"
+#  type: "InnerProduct"
+#  bottom: "dc_ip2"
+#  top: "dc_ip3"
+#  param {
+#    lr_mult: 10
+#  }
+#  param {
+#    lr_mult: 20
+#  }
+#  inner_product_param {
+#    num_output: 1
+#    weight_filler {
+#      type: "gaussian"
+#      std: 0.3
+#    }
+#    bias_filler {
+#      type: "constant"
+#    }
+#  }
+#}
+#layer {
+#  name: "dc_loss"
+#  type: "SigmoidCrossEntropyLoss"
+#  bottom: "dc_ip3"
+#  bottom: "dc_labels"
+#  top: "dc_loss"
+#  loss_weight: 0.1
+#}
+#

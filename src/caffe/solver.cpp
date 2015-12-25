@@ -8,6 +8,7 @@
 #include "caffe/util/hdf5.hpp"
 #include "caffe/util/io.hpp"
 #include "caffe/util/upgrade_proto.hpp"
+#include "caffe/messenger.hpp"
 
 namespace caffe {
 
@@ -200,6 +201,10 @@ void Solver<Dtype>::Step(int iters) {
   Dtype smoothed_loss = 0;
 
   while (iter_ < stop_iter) {
+    
+    //Send message for gradient reversal layer
+    Messenger::SendMessage("SOLVER_ITER_CHANGED", &iter_);
+    
     // zero-init the params
     net_->ClearParamDiffs();
     if (param_.test_interval() && iter_ % param_.test_interval() == 0

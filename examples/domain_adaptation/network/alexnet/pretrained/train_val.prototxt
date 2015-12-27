@@ -2,10 +2,196 @@ name: "AlexNet2Siamese"
 # -----------------------------------------------------------------------------
 # ------------------------------------------------------------------ Data Layer
 # -----------------------------------------------------------------------------
+#layer {
+#  name: "source_1"
+#  type: "Data"
+#  top: "source_1"
+#  top: "source_label_im"
+#  include {
+#    phase: TRAIN
+#  }
+#  transform_param {
+#    mirror: true
+#    crop_size: 227
+    #mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+#  }
+#  data_param {  
+#    source: "data/domain_adaptation_data/lmdb/source1"
+#    batch_size: 160
+#    backend: LMDB
+#  }
+#}
+#
+#layer {
+#  name: "target_1"
+#  type: "Data"
+#  top: "target_1"
+#  top: "target_label_im"
+#  include {
+#    phase: TRAIN
+#  }
+#  transform_param {
+#    mirror: true
+#    crop_size: 227
+    #mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+#  }
+#  data_param {
+#    source: "data/domain_adaptation_data/lmdb/target1"
+#    batch_size: 160
+#    backend: LMDB
+#  }
+#}
+#
+#layer {
+#  name: "source_2"
+#  type: "Data"
+#  top: "source_2"
+#  top: "source_label_dm"
+#  include {
+#    phase: TRAIN
+#  }
+#  transform_param {
+#    mirror: true
+#    crop_size: 227
+    #mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+#  }
+#  data_param {  
+#    source: "data/domain_adaptation_data/lmdb/source2"
+#    batch_size: 160
+#    backend: LMDB
+#  }
+#}
+#
+#layer {
+#  name: "target_2"
+#  type: "Data"
+#  top: "target_2"
+#  top: "target_label_dm"
+#  include {
+#    phase: TRAIN
+#  }
+#  transform_param {
+#    mirror: true
+#    crop_size: 227
+    #mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+#  }
+#  data_param {
+#    source: "data/domain_adaptation_data/lmdb/target2"
+#    batch_size: 160
+#    backend: LMDB
+#  }
+#}
+#
+#
+#layer {
+#  name: "source_target_1"
+#  type: "Data"
+#  top: "source_target_1"
+#  top: "source_label_im"
+#  include {
+#    phase: TEST
+#  }
+#  transform_param {
+#    mirror: false
+#    #crop_size: 227
+    #mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+#  }
+#  data_param {
+#    source: "data/domain_adaptation_data/lmdb/test1"
+#    batch_size: 320
+#    backend: LMDB
+#  }
+#}
+#
+#layer {
+#  name: "source_target_2"
+#  type: "Data"
+#  top: "source_target_2"
+#  top: "domain_labels"
+#  include {
+#    phase: TEST
+#  }
+#  transform_param {
+#    mirror: false
+#    #crop_size: 227
+    #mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+#  }
+#  data_param {
+#    source: "data/domain_adaptation_data/lmdb/test2"
+#    batch_size: 320
+#    backend: LMDB
+#  }
+#}
+#
+#
+## -----------------------------------------------------------------------------
+## ------------------------------------------------- Silence Target Image Labels
+## -----------------------------------------------------------------------------
+#layer {
+#  name: "silence_target_labels"
+#  type: "Silence"
+#  bottom: "target_label_im"
+#  include: {
+#   phase: TRAIN 
+# }
+#}
+#
+#
+## -----------------------------------------------------------------------------
+## ---------------------------------------------------- Concat Source And Target
+## -----------------------------------------------------------------------------
+#
+## --------------------------------------------- Concat Source And Target Images
+#layer 
+#{
+#  name: "source_target_1"
+#  type: "Concat"
+#  bottom: "source_1"
+#  bottom: "target_1"
+#  top: "source_target_1"
+#  concat_param {
+#    concat_dim: 0
+#  }
+#  include: { 
+#    phase: TRAIN 
+#  }
+#}
+#
+#layer 
+#{
+#  name: "source_target_2"
+#  type: "Concat"
+#  bottom: "source_2"
+#  bottom: "target_2"
+#  top: "source_target_2"
+#  concat_param {
+#    concat_dim: 0
+#  }
+#  include: { 
+#    phase: TRAIN 
+#  }
+#}
+#
+## --------------------------------------------- Concat Source And Target Labels
+#layer 
+#{
+#  name: "domain_labels"
+#  type: "Concat"
+#  bottom: "source_label_dm"
+#  bottom: "target_label_dm"
+#  top: "domain_labels"
+#  concat_param {
+#    concat_dim: 0
+#  }
+#  include: { 
+#    phase: TRAIN 
+#  }
+#}
+
 layer {
-  name: "source_1"
+  name: "source_target_1"
   type: "Data"
-  top: "source_1"
+  top: "source_target_1"
   top: "source_label_im"
   include {
     phase: TRAIN
@@ -16,37 +202,17 @@ layer {
     mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "data/domain_adaptation_data/lmdb/source1"
-    batch_size: 160
+    source: "data/domain_adaptation_data/lmdb/train/train1"
+    batch_size: 320 
     backend: LMDB
   }
 }
 
 layer {
-  name: "target_1"
+  name: "source_target_2"
   type: "Data"
-  top: "target_1"
-  top: "target_label_im"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
-  }
-  data_param {
-    source: "data/domain_adaptation_data/lmdb/target1"
-    batch_size: 160
-    backend: LMDB
-  }
-}
-
-layer {
-  name: "source_2"
-  type: "Data"
-  top: "source_2"
-  top: "source_label_dm"
+  top: "source_target_2"
+  top: "domain_labels"
   include {
     phase: TRAIN
   }
@@ -56,32 +222,11 @@ layer {
     mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "data/domain_adaptation_data/lmdb/source2"
-    batch_size: 160
+    source: "data/domain_adaptation_data/lmdb/train/train2"
+    batch_size: 320
     backend: LMDB
   }
 }
-
-layer {
-  name: "target_2"
-  type: "Data"
-  top: "target_2"
-  top: "target_label_dm"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
-  }
-  data_param {
-    source: "data/domain_adaptation_data/lmdb/target2"
-    batch_size: 160
-    backend: LMDB
-  }
-}
-
 
 layer {
   name: "source_target_1"
@@ -93,11 +238,11 @@ layer {
   }
   transform_param {
     mirror: false
-    #crop_size: 227
+    crop_size: 227
     mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {
-    source: "data/domain_adaptation_data/lmdb/test1"
+    source: "data/domain_adaptation_data/lmdb/test/test1"
     batch_size: 320
     backend: LMDB
   }
@@ -113,78 +258,14 @@ layer {
   }
   transform_param {
     mirror: false
-    #crop_size: 227
+    crop_size: 227
     mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
+
   data_param {
-    source: "data/domain_adaptation_data/lmdb/test2"
+    source: "data/domain_adaptation_data/lmdb/test/test2"
     batch_size: 320
     backend: LMDB
-  }
-}
-
-
-# -----------------------------------------------------------------------------
-# ------------------------------------------------- Silence Target Image Labels
-# -----------------------------------------------------------------------------
-layer {
-  name: "silence_target_labels"
-  type: "Silence"
-  bottom: "target_label_im"
-  include: {
-   phase: TRAIN 
- }
-}
-
-
-# -----------------------------------------------------------------------------
-# ---------------------------------------------------- Concat Source And Target
-# -----------------------------------------------------------------------------
-
-# --------------------------------------------- Concat Source And Target Images
-layer 
-{
-  name: "source_target_1"
-  type: "Concat"
-  bottom: "source_1"
-  bottom: "target_1"
-  top: "source_target_1"
-  concat_param {
-    concat_dim: 0
-  }
-  include: { 
-    phase: TRAIN 
-  }
-}
-
-layer 
-{
-  name: "source_target_2"
-  type: "Concat"
-  bottom: "source_2"
-  bottom: "target_2"
-  top: "source_target_2"
-  concat_param {
-    concat_dim: 0
-  }
-  include: { 
-    phase: TRAIN 
-  }
-}
-
-# --------------------------------------------- Concat Source And Target Labels
-layer 
-{
-  name: "domain_labels"
-  type: "Concat"
-  bottom: "source_label_dm"
-  bottom: "target_label_dm"
-  top: "domain_labels"
-  concat_param {
-    concat_dim: 0
-  }
-  include: { 
-    phase: TRAIN 
   }
 }
 
@@ -938,44 +1019,44 @@ layer {
 
 # ------------------------------------------------ Split Source Target Features
 
-layer {
-  name: "source_features_1"
-  type: "Slice"
-  bottom: "bottleneck_1"
-  top: "source_features_1"
-  top: "target_features_1"
-  include: { 
-    phase: TRAIN 
-  }
-  slice_param {
-    slice_dim: 0
-  }  
-}
-
-layer {
-  name: "source_features_2"
-  type: "Slice"
-  bottom: "bottleneck_2"
-  top: "source_features_2"
-  top: "target_features_2"
-  include: { 
-    phase: TRAIN 
-  }
-  slice_param {
-    slice_dim: 0
-  }  
-}
-
-# -------------------------------------------------------------- Silence Features
-layer {
-  name: "silence_target_features"
-  type: "Silence"
-  bottom: "target_features_1"
-  bottom: "target_features_2"
-  include: { 
-    phase: TRAIN 
-  }
-}
+#layer {
+#  name: "source_features_1"
+#  type: "Slice"
+#  bottom: "bottleneck_1"
+#  top: "source_features_1"
+#  top: "target_features_1"
+#  include: { 
+#    phase: TRAIN 
+#  }
+#  slice_param {
+#    slice_dim: 0
+#  }  
+#}
+#
+#layer {
+#  name: "source_features_2"
+#  type: "Slice"
+#  bottom: "bottleneck_2"
+#  top: "source_features_2"
+#  top: "target_features_2"
+#  include: { 
+#    phase: TRAIN 
+#  }
+#  slice_param {
+#    slice_dim: 0
+#  }  
+#}
+#
+## -------------------------------------------------------------- Silence Features
+#layer {
+#  name: "silence_target_features"
+#  type: "Silence"
+#  bottom: "target_features_1"
+#  bottom: "target_features_2"
+#  include: { 
+#    phase: TRAIN 
+#  }
+#}
 
 # --------------------------------------------------------------------- Copy Data
 layer {
@@ -983,9 +1064,9 @@ layer {
   type: "Split"
   bottom: "bottleneck_1"
   top: "source_features_1"
-  include: { 
-    phase: TEST 
-  }
+#  include: { 
+#    phase: TEST 
+#  }
 }
 
 layer {
@@ -993,9 +1074,9 @@ layer {
   type: "Split"
   bottom: "bottleneck_2"
   top: "source_features_2"
-  include: { 
-    phase: TEST 
-  }
+#  include: { 
+#    phase: TEST 
+#  }
 }
 
 # ------------------------------------------------------------------------ fc 8
@@ -1074,171 +1155,171 @@ layer {
 # ----------------------------------------------------------- Gradient reversal
 # -----------------------------------------------------------------------------
 
-# ----------------------------------------------------------------- Concat Data
-
-layer 
-{
-  name: "concat_data"
-  type: "Concat"
-  bottom: "bottleneck_1"
-  bottom: "bottleneck_2"
-  top: "concat_data"
-  concat_param {
-    concat_dim: 1 
-  }
-}
-
-# ------------------------------------------------------------------------- GRL
-
-# layer {
-#   name: "grl"
-#   type: "InnerProduct"
-#   bottom: "concat_data"
-#   top: "grl"
-#   param {
-#     name: "bottleneck_w"
-#     lr_mult: 10
-#     decay_mult: 1
-#   }
-#   param {
-#     name: "bottleneck_b"
-#     lr_mult: 20
-#     decay_mult: 0
-#   }
-#   inner_product_param {
-#     num_output: 256
-#     weight_filler {
-#       type: "gaussian"
-#       std: 0.005
-#     }
-#     bias_filler {
-#       type: "constant"
-#       value: 0.1
-#     }
-#   }
-# }
-
-layer {
-  name: "grl"
-  type: "GradientScaler"
-  bottom: "concat_data"
-  top: "grl"
-  gradient_scaler_param {
-    lower_bound: 0.0
-    upper_bound: 1.0
-    alpha: 10.0
-    max_iter: 10000
-  }
-}
-
-# -----------------------------------------------------------------------------
-# ----------------------------------------------------------- Domain classifier
-# -----------------------------------------------------------------------------
-layer {
-  name: "dc_ip1"
-  type: "InnerProduct"
-  bottom: "grl"
-  top: "dc_ip1"
-  param {
-    lr_mult: 10
-  }
-  param {
-    lr_mult: 20
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-    }
-  }
-}
-
-layer {
-  name: "dc_relu1"
-  type: "ReLU"
-  bottom: "dc_ip1"
-  top: "dc_ip1"
-}
-layer {
-  name: "dc_drop1"
-  type: "Dropout"
-  bottom: "dc_ip1"
-  top: "dc_ip1"
-  dropout_param {
-    dropout_ratio: 0.5
-  }
-}
-# ----------------------------------------------------------------------------
-layer {
-  name: "dc_ip2"
-  type: "InnerProduct"
-  bottom: "dc_ip1"
-  top: "dc_ip2"
-  param {
-    lr_mult: 10
-  }
-  param {
-    lr_mult: 20
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-    }
-  }
-}
-layer {
-  name: "dc_relu2"
-  type: "ReLU"
-  bottom: "dc_ip2"
-  top: "dc_ip2"
-}
-layer {
-  name: "dc_drop2"
-  type: "Dropout"
-  bottom: "dc_ip2"
-  top: "dc_ip2"
-  dropout_param {
-    dropout_ratio: 0.5
-  }
-}
-# ----------------------------------------------------------------------------
-layer {
-  name: "dc_ip3"
-  type: "InnerProduct"
-  bottom: "dc_ip2"
-  top: "dc_ip3"
-  param {
-    lr_mult: 10
-  }
-  param {
-    lr_mult: 20
-  }
-  inner_product_param {
-    num_output: 1
-    weight_filler {
-      type: "gaussian"
-      std: 0.3
-    }
-    bias_filler {
-      type: "constant"
-    }
-  }
-}
-layer {
-  name: "dc_loss"
-  type: "SigmoidCrossEntropyLoss"
-  bottom: "dc_ip3"
-  bottom: "domain_labels"
-  top: "dc_loss"
-  loss_weight: 0.1
-}
+## ----------------------------------------------------------------- Concat Data
+#
+#layer 
+#{
+#  name: "concat_data"
+#  type: "Concat"
+#  bottom: "bottleneck_1"
+#  bottom: "bottleneck_2"
+#  top: "concat_data"
+#  concat_param {
+#    concat_dim: 1 
+#  }
+#}
+#
+## ------------------------------------------------------------------------- GRL
+#
+## layer {
+##   name: "grl"
+##   type: "InnerProduct"
+##   bottom: "concat_data"
+##   top: "grl"
+##   param {
+##     name: "bottleneck_w"
+##     lr_mult: 10
+##     decay_mult: 1
+##   }
+##   param {
+##     name: "bottleneck_b"
+##     lr_mult: 20
+##     decay_mult: 0
+##   }
+##   inner_product_param {
+##     num_output: 256
+##     weight_filler {
+##       type: "gaussian"
+##       std: 0.005
+##     }
+##     bias_filler {
+##       type: "constant"
+##       value: 0.1
+##     }
+##   }
+## }
+#
+#layer {
+#  name: "grl"
+#  type: "GradientScaler"
+#  bottom: "concat_data"
+#  top: "grl"
+#  gradient_scaler_param {
+#    lower_bound: 0.0
+#    upper_bound: 1.0
+#    alpha: 10.0
+#    max_iter: 10000
+#  }
+#}
+#
+## -----------------------------------------------------------------------------
+## ----------------------------------------------------------- Domain classifier
+## -----------------------------------------------------------------------------
+#layer {
+#  name: "dc_ip1"
+#  type: "InnerProduct"
+#  bottom: "grl"
+#  top: "dc_ip1"
+#  param {
+#    lr_mult: 10
+#  }
+#  param {
+#    lr_mult: 20
+#  }
+#  inner_product_param {
+#    num_output: 1024
+#    weight_filler {
+#      type: "gaussian"
+#      std: 0.01
+#    }
+#    bias_filler {
+#      type: "constant"
+#    }
+#  }
+#}
+#
+#layer {
+#  name: "dc_relu1"
+#  type: "ReLU"
+#  bottom: "dc_ip1"
+#  top: "dc_ip1"
+#}
+#layer {
+#  name: "dc_drop1"
+#  type: "Dropout"
+#  bottom: "dc_ip1"
+#  top: "dc_ip1"
+#  dropout_param {
+#    dropout_ratio: 0.5
+#  }
+#}
+## ----------------------------------------------------------------------------
+#layer {
+#  name: "dc_ip2"
+#  type: "InnerProduct"
+#  bottom: "dc_ip1"
+#  top: "dc_ip2"
+#  param {
+#    lr_mult: 10
+#  }
+#  param {
+#    lr_mult: 20
+#  }
+#  inner_product_param {
+#    num_output: 1024
+#    weight_filler {
+#      type: "gaussian"
+#      std: 0.01
+#    }
+#    bias_filler {
+#      type: "constant"
+#    }
+#  }
+#}
+#layer {
+#  name: "dc_relu2"
+#  type: "ReLU"
+#  bottom: "dc_ip2"
+#  top: "dc_ip2"
+#}
+#layer {
+#  name: "dc_drop2"
+#  type: "Dropout"
+#  bottom: "dc_ip2"
+#  top: "dc_ip2"
+#  dropout_param {
+#    dropout_ratio: 0.5
+#  }
+#}
+## ----------------------------------------------------------------------------
+#layer {
+#  name: "dc_ip3"
+#  type: "InnerProduct"
+#  bottom: "dc_ip2"
+#  top: "dc_ip3"
+#  param {
+#    lr_mult: 10
+#  }
+#  param {
+#    lr_mult: 20
+#  }
+#  inner_product_param {
+#    num_output: 1
+#    weight_filler {
+#      type: "gaussian"
+#      std: 0.3
+#    }
+#    bias_filler {
+#      type: "constant"
+#    }
+#  }
+#}
+#layer {
+#  name: "dc_loss"
+#  type: "SigmoidCrossEntropyLoss"
+#  bottom: "dc_ip3"
+#  bottom: "domain_labels"
+#  top: "dc_loss"
+#  loss_weight: 0.1
+#}
 

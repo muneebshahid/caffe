@@ -74,6 +74,51 @@ def split_source_target(data_set, sources, targets, label_data_limit):
     return data_set_source, data_set_target, data_set_test
 
 
+def get_batch(index, batch_size, data):
+    len_data = len(data)
+    reached_end = False
+    if index + batch_size < len_data:
+        batch = data[index: index + batch_size]
+        index += batch_size
+    else:
+        batch = data[index:]
+        # randint: len_source - 1
+        rand_indices = np.random.randint(0, len_data, batch_size - len(batch))
+        batch.extend([data[index] for index in rand_indices])
+        reached_end = True
+    return batch, reached_end
+
+
+def pad_source_target(source, target, batch_size=320):
+    half_batch_size = batch_size / 2
+    len_source = len(source)
+    len_target = len(target)
+    print "source len: {0}, target len {1}, batch {2}".format(len_source, len_target, batch_size)
+    # half of the data set in each batch should be test data
+    padded = []
+    end = False
+    s_index = 0
+    t_index = 0
+
+    while not end:
+        s_batch, s_reached_end = get_batch(s_index, half_batch_size, source)
+        assert len(s_batch) == half_batch_size
+        t_batch, t_reached_end = get_batch(t_index, half_batch_size, target)
+        assert len(t_batch) == half_batch_size
+        padded.extend(s_batch)
+        padded.extend(t_batch)
+
+        if t_reached_end:
+            t_index = 0
+            random.shuffle(target)
+        else:
+            t_index += half_batch_size
+        s_index += half_batch_size
+        end = s_reached_end
+    assert len(padded) % batch_size == 0
+    return padded
+
+
 def split_data(train, test, pos, neg, split):
     pos_train_examples, pos_test_examples = get_train_test_split_len(len(pos), split)
     neg_train_examples, neg_test_examples = get_train_test_split_len(len(neg), split)
@@ -219,9 +264,6 @@ def process_michigan(data_set, source, key, folder_path):
 
         print "created {0} negative examples".format(len(data_set_michigan_neg))
         data_set[key] = [data_set_michigan_pos, data_set_michigan_neg]
-        # split in train and test
-        #print "Splitting data in to training and testing data"
-        #split_data(data_set_train, data_set_test, data_set_michigan_pos, data_set_michigan_neg, train_test_split)
 
 
 def main(label_data_limit=0):
@@ -248,12 +290,11 @@ def main(label_data_limit=0):
 
     print "splitting in to target and source"
     source_data, target_data, test_data = split_source_target(data_set, source, target, label_data_limit)
+    padded = pad_source_target(source_data, target_data)
 
     print "writing files"
-    write(source_data, root_folder_path + 'source1', 1)
-    write(source_data, root_folder_path + 'source2', 2)
-    write(target_data, root_folder_path + 'target1', 1)
-    write(target_data, root_folder_path + 'target2', 2)
+    write(padded, root_folder_path + 'train1', 1)
+    write(padded, root_folder_path + 'train2', 2)
     write(test_data, root_folder_path + 'test1', 1)
     write(test_data, root_folder_path + 'test2', 2)
 
@@ -270,7 +311,6 @@ def main(label_data_limit=0):
                         source_target_data_set.append(im + ' 1\n')
     write(data_set, root_folder_path + 'complete')
     print "writing data set for image mean"
-
 
 if __name__ == "__main__":
     root_folder_path = osh.path_rel_to_abs('../../../../data/domain_adaptation_data/images/') + '/'

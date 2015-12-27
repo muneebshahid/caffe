@@ -192,7 +192,7 @@ layer {
   name: "source_target_1"
   type: "Data"
   top: "source_target_1"
-  top: "source_label_im"
+  top: "pre_source_label_im"
   include {
     phase: TRAIN
   }
@@ -232,7 +232,7 @@ layer {
   name: "source_target_1"
   type: "Data"
   top: "source_target_1"
-  top: "source_label_im"
+  top: "pre_source_label_im"
   include {
     phase: TEST
   }
@@ -268,6 +268,24 @@ layer {
     backend: LMDB
   }
 }
+
+###########################################
+layer {
+  name: "source_label_im"
+  type: "Slice"
+  bottom: "pre_source_label_im"
+  top: "source_label_im"
+  top: "source_label_im2"
+#  include: { 
+#    phase: TRAIN 
+#  }
+  slice_param {
+    slice_dim: 0
+  }  
+}
+
+##########################################
+
 
 # ----------------------------------------------------------------------- Net 1
 # -----------------------------------------------------------------------------
@@ -1019,65 +1037,66 @@ layer {
 
 # ------------------------------------------------ Split Source Target Features
 
-#layer {
-#  name: "source_features_1"
-#  type: "Slice"
-#  bottom: "bottleneck_1"
-#  top: "source_features_1"
-#  top: "target_features_1"
-#  include: { 
-#    phase: TRAIN 
-#  }
-#  slice_param {
-#    slice_dim: 0
-#  }  
-#}
-#
-#layer {
-#  name: "source_features_2"
-#  type: "Slice"
-#  bottom: "bottleneck_2"
-#  top: "source_features_2"
-#  top: "target_features_2"
-#  include: { 
-#    phase: TRAIN 
-#  }
-#  slice_param {
-#    slice_dim: 0
-#  }  
-#}
-#
-## -------------------------------------------------------------- Silence Features
-#layer {
-#  name: "silence_target_features"
-#  type: "Silence"
-#  bottom: "target_features_1"
-#  bottom: "target_features_2"
-#  include: { 
-#    phase: TRAIN 
-#  }
-#}
-
-# --------------------------------------------------------------------- Copy Data
 layer {
   name: "source_features_1"
-  type: "Split"
+  type: "Slice"
   bottom: "bottleneck_1"
   top: "source_features_1"
+  top: "target_features_1"
 #  include: { 
-#    phase: TEST 
+#    phase: TRAIN 
 #  }
+  slice_param {
+    slice_dim: 0
+  }  
 }
 
 layer {
   name: "source_features_2"
-  type: "Split"
+  type: "Slice"
   bottom: "bottleneck_2"
   top: "source_features_2"
+  top: "target_features_2"
 #  include: { 
-#    phase: TEST 
+#    phase: TRAIN 
 #  }
+  slice_param {
+    slice_dim: 0
+  }  
 }
+
+## -------------------------------------------------------------- Silence Features
+layer {
+  name: "silence_target_features"
+  type: "Silence"
+  bottom: "target_features_1"
+  bottom: "target_features_2"
+  bottom: "source_label_im2"
+  include: { 
+    phase: TRAIN 
+  }
+}
+
+# --------------------------------------------------------------------- Copy Data
+#layer {
+#  name: "source_features_1"
+#  type: "Split"
+#  bottom: "bottleneck_1"
+#  top: "source_features_1"
+##  include: { 
+##    phase: TEST 
+##  }
+#}
+#
+#layer {
+#  name: "source_features_2"
+#  type: "Split"
+#  bottom: "bottleneck_2"
+#  top: "source_features_2"
+##  include: { 
+##    phase: TEST 
+##  }
+#}
 
 # ------------------------------------------------------------------------ fc 8
 
@@ -1171,44 +1190,44 @@ layer
 
 ## ------------------------------------------------------------------------- GRL
 
-#layer {
-#  name: "grl"
-#  type: "InnerProduct"
-#  bottom: "concat_data"
-#  top: "grl"
-#  param {    
-#    lr_mult: 10
-#    decay_mult: 1
-#  }
-#  param {
-#    lr_mult: 20
-#    decay_mult: 0
-#  }
-#  inner_product_param {
-#    num_output: 256
-#    weight_filler {
-#      type: "gaussian"
-#      std: 0.005
-#    }
-#    bias_filler {
-#      type: "constant"
-#      value: 0.1
-#    }
-#  }
-#}
-
 layer {
   name: "grl"
-  type: "GradientScaler"
+  type: "InnerProduct"
   bottom: "concat_data"
   top: "grl"
-  gradient_scaler_param {
-    lower_bound: 0.0
-    upper_bound: 1.0
-    alpha: 10.0
-    max_iter: 10000
+  param {    
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 256
+    weight_filler {
+      type: "gaussian"
+      std: 0.005
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
   }
 }
+
+#layer {
+#  name: "grl"
+#  type: "GradientScaler"
+#  bottom: "concat_data"
+#  top: "grl"
+#  gradient_scaler_param {
+#    lower_bound: 0.0
+#    upper_bound: 1.0
+#    alpha: 10.0
+#    max_iter: 10000
+#  }
+#}
 
 # -----------------------------------------------------------------------------
 # ----------------------------------------------------------- Domain classifier

@@ -1090,46 +1090,46 @@ layer
 
 # ------------------------------------------------------------------------- GRL
 
+# layer {
+#   name: "grl"
+#   type: "InnerProduct"
+#   bottom: "concat_data"
+#   top: "grl"
+#   param {
+#     name: "bottleneck_w"
+#     lr_mult: 10
+#     decay_mult: 1
+#   }
+#   param {
+#     name: "bottleneck_b"
+#     lr_mult: 20
+#     decay_mult: 0
+#   }
+#   inner_product_param {
+#     num_output: 256
+#     weight_filler {
+#       type: "gaussian"
+#       std: 0.005
+#     }
+#     bias_filler {
+#       type: "constant"
+#       value: 0.1
+#     }
+#   }
+# }
+
 layer {
   name: "grl"
-  type: "InnerProduct"
+  type: "GradientScaler"
   bottom: "concat_data"
   top: "grl"
-  param {
-    name: "bottleneck_w"
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    name: "bottleneck_b"
-    lr_mult: 20
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 256
-    weight_filler {
-      type: "gaussian"
-      std: 0.005
-    }
-    bias_filler {
-      type: "constant"
-      value: 0.1
-    }
+  gradient_scaler_param {
+    lower_bound: 0.0
+    upper_bound: 1.0
+    alpha: 10.0
+    max_iter: 10000
   }
 }
-
-#layer {
-#  name: "grl"
-#  type: "GradientScaler"
-#  bottom: "concat_data"
-#  top: "grl"
-#  gradient_scaler_param {
-#    lower_bound: 0.0
-#    upper_bound: 1.0
-#    alpha: 10.0
-#    max_iter: 10000
-#  }
-#}
 
 # -----------------------------------------------------------------------------
 # ----------------------------------------------------------- Domain classifier

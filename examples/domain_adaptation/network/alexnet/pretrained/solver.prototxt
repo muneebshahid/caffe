@@ -1,5 +1,5 @@
 net: "examples/domain_adaptation/network/alexnet/pretrained/train_val.prototxt"
-test_iter: 24 # test_iter specifies how many forward passes the test should carry out batchsize 320 x 24 > 7498 total test images.
+test_iter: 30 # test_iter specifies how many forward passes the test should carry out batchsize 320 x 24 > 7498 total test images.
 test_interval: 100 # Carry out testing every 100 training iterations.
 
 base_lr: 0.01 # begin training at a learning rate of 0.01 = 1e-2

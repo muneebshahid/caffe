@@ -1,9 +1,12 @@
 name: "AlexNet2Siamese"
+# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------ Data Layer
+# -----------------------------------------------------------------------------
 layer {
-  name: "data_a"
+  name: "source_1"
   type: "Data"
-  top: "data_a"
-  top: "label_1"
+  top: "source_1"
+  top: "source_label_im"
   include {
     phase: TRAIN
   }
@@ -13,17 +16,37 @@ layer {
     mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "data/domain_adaptation_data/lmdb/train/train1"
-    batch_size: 320 
+    source: "data/domain_adaptation_data/lmdb/source1"
+    batch_size: 160
     backend: LMDB
   }
 }
 
 layer {
-  name: "data_b"
+  name: "target_1"
   type: "Data"
-  top: "data_b"
-  top: "label_2"
+  top: "target_1"
+  top: "target_label_im"
+  include {
+    phase: TRAIN
+  }
+  transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+  }
+  data_param {
+    source: "data/domain_adaptation_data/lmdb/target1"
+    batch_size: 160
+    backend: LMDB
+  }
+}
+
+layer {
+  name: "source_2"
+  type: "Data"
+  top: "source_2"
+  top: "source_label_dm"
   include {
     phase: TRAIN
   }
@@ -33,57 +56,148 @@ layer {
     mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "data/domain_adaptation_data/lmdb/train/train2"
+    source: "data/domain_adaptation_data/lmdb/source2"
+    batch_size: 160
+    backend: LMDB
+  }
+}
+
+layer {
+  name: "target_2"
+  type: "Data"
+  top: "target_2"
+  top: "target_label_dm"
+  include {
+    phase: TRAIN
+  }
+  transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+  }
+  data_param {
+    source: "data/domain_adaptation_data/lmdb/target2"
+    batch_size: 160
+    backend: LMDB
+  }
+}
+
+
+layer {
+  name: "source_target_1"
+  type: "Data"
+  top: "source_target_1"
+  top: "source_label_im"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    mirror: false
+    #crop_size: 227
+    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+  }
+  data_param {
+    source: "data/domain_adaptation_data/lmdb/test1"
     batch_size: 320
     backend: LMDB
   }
 }
 
 layer {
-  name: "data_a"
+  name: "source_target_2"
   type: "Data"
-  top: "data_a"
-  top: "label_1"
+  top: "source_target_2"
+  top: "domain_labels"
   include {
     phase: TEST
   }
   transform_param {
     mirror: false
-    crop_size: 227
+    #crop_size: 227
     mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {
-    source: "data/domain_adaptation_data/lmdb/test/test1"
+    source: "data/domain_adaptation_data/lmdb/test2"
     batch_size: 320
     backend: LMDB
   }
 }
 
+
+# -----------------------------------------------------------------------------
+# ------------------------------------------------- Silence Target Image Labels
+# -----------------------------------------------------------------------------
 layer {
-  name: "data_b"
-  type: "Data"
-  top: "data_b"
-  top: "label_2"
-  include {
-    phase: TEST
-  }
-  transform_param {
-    mirror: false
-    crop_size: 227
-    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
-  }
+  name: "silence_target_labels"
+  type: "Silence"
+  bottom: "target_label_im"
+  include: {
+   phase: TRAIN 
+ }
+}
 
-  data_param {
-    source: "data/domain_adaptation_data/lmdb/test/test2"
-    batch_size: 320
-    backend: LMDB
+
+# -----------------------------------------------------------------------------
+# ---------------------------------------------------- Concat Source And Target
+# -----------------------------------------------------------------------------
+
+# --------------------------------------------- Concat Source And Target Images
+layer 
+{
+  name: "source_target_1"
+  type: "Concat"
+  bottom: "source_1"
+  bottom: "target_1"
+  top: "source_target_1"
+  concat_param {
+    concat_dim: 0
+  }
+  include: { 
+    phase: TRAIN 
   }
 }
-#######################
+
+layer 
+{
+  name: "source_target_2"
+  type: "Concat"
+  bottom: "source_2"
+  bottom: "target_2"
+  top: "source_target_2"
+  concat_param {
+    concat_dim: 0
+  }
+  include: { 
+    phase: TRAIN 
+  }
+}
+
+# --------------------------------------------- Concat Source And Target Labels
+layer 
+{
+  name: "domain_labels"
+  type: "Concat"
+  bottom: "source_label_dm"
+  bottom: "target_label_dm"
+  top: "domain_labels"
+  concat_param {
+    concat_dim: 0
+  }
+  include: { 
+    phase: TRAIN 
+  }
+}
+
+# ----------------------------------------------------------------------- Net 1
+# -----------------------------------------------------------------------------
+# --------------------------------------------------------- Convolutioal Layers
+# -----------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------- Conv 1
 layer {
   name: "conv1"
   type: "Convolution"
-  bottom: "data_a"
+  bottom: "source_target_1"
   top: "conv1"
   param {
     name: "conv1_w"
@@ -137,6 +251,9 @@ layer {
     beta: 0.75
   }
 }
+
+# ---------------------------------------------------------------------- Conv 2
+
 layer {
   name: "conv2"
   type: "Convolution"
@@ -195,6 +312,8 @@ layer {
     beta: 0.75
   }
 }
+
+# ---------------------------------------------------------------------- Conv 3
 layer {
   name: "conv3"
   type: "Convolution"
@@ -230,6 +349,8 @@ layer {
   bottom: "conv3"
   top: "conv3"
 }
+
+# ---------------------------------------------------------------------- Conv 4
 layer {
   name: "conv4"
   type: "Convolution"
@@ -266,6 +387,8 @@ layer {
   bottom: "conv4"
   top: "conv4"
 }
+
+# ---------------------------------------------------------------------- Conv 5
 layer {
   name: "conv5"
   type: "Convolution"
@@ -313,6 +436,13 @@ layer {
     stride: 2
   }
 }
+
+# -----------------------------------------------------------------------------
+# -------------------------------------------------------- Inner Product Layers
+# -----------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------ fc 6
+
 layer {
   name: "fc6"
   type: "InnerProduct"
@@ -355,6 +485,8 @@ layer {
     dropout_ratio: 0.5
   }
 }
+
+# ------------------------------------------------------------------------ fc 7
 layer {
   name: "fc7"
   type: "InnerProduct"
@@ -397,40 +529,46 @@ layer {
     dropout_ratio: 0.5
   }
 }
+
+# --------------------------------------------------------------------- bottleneck
 layer {
-  name: "fc8_n"
+  name: "bottleneck_1"
   type: "InnerProduct"
   bottom: "fc7"
-  top: "fc8_n"
+  top: "bottleneck_1"
   param {
-    name: "fc8_n_w"
+    name: "bottleneck_w"
     lr_mult: 10
     decay_mult: 1
   }
   param {
-    name: "fc8_n_b"
+    name: "bottleneck_b"
     lr_mult: 20
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 2
+    num_output: 256
     weight_filler {
-      type: "xavier"
+      type: "gaussian"
+      std: 0.005
     }
     bias_filler {
       type: "constant"
-      value: 0
+      value: 0.1
     }
   }
 }
 
+# ----------------------------------------------------------------------- Net 2
+# -----------------------------------------------------------------------------
+# --------------------------------------------------------- Convolutioal Layers
+# -----------------------------------------------------------------------------
 
-########################
-
+# ---------------------------------------------------------------------- Conv 1
 layer {
   name: "conv1_p"
   type: "Convolution"
-  bottom: "data_b"
+  bottom: "source_target_2"
   top: "conv1_p"
   param {
     name: "conv1_w"
@@ -484,6 +622,9 @@ layer {
     beta: 0.75
   }
 }
+
+
+# ---------------------------------------------------------------------- Conv 2
 layer {
   name: "conv2_p"
   type: "Convolution"
@@ -542,6 +683,8 @@ layer {
     beta: 0.75
   }
 }
+
+# ---------------------------------------------------------------------- Conv 3
 layer {
   name: "conv3_p"
   type: "Convolution"
@@ -577,6 +720,8 @@ layer {
   bottom: "conv3_p"
   top: "conv3_p"
 }
+
+# ---------------------------------------------------------------------- Conv 4
 layer {
   name: "conv4_p"
   type: "Convolution"
@@ -613,6 +758,8 @@ layer {
   bottom: "conv4_p"
   top: "conv4_p"
 }
+
+# ---------------------------------------------------------------------- Conv 5
 layer {
   name: "conv5_p"
   type: "Convolution"
@@ -660,6 +807,13 @@ layer {
     stride: 2
   }
 }
+
+# -----------------------------------------------------------------------------
+# -------------------------------------------------------- Inner Product Layers
+# -----------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------ fc 6
+
 layer {
   name: "fc6_p"
   type: "InnerProduct"
@@ -702,6 +856,8 @@ layer {
     dropout_ratio: 0.5
   }
 }
+
+# ------------------------------------------------------------------------ fc 7
 layer {
   name: "fc7_p"
   type: "InnerProduct"
@@ -744,10 +900,137 @@ layer {
     dropout_ratio: 0.5
   }
 }
+
+# --------------------------------------------------------------------- bottleneck
+layer {
+  name: "bottleneck_2"
+  type: "InnerProduct"
+  bottom: "fc7_p"
+  top: "bottleneck_2"
+  param {
+    name: "bottleneck_w"
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    name: "bottleneck_b"
+    lr_mult: 20
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 256
+    weight_filler {
+      type: "gaussian"
+      std: 0.005
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
+
+
+
+# -----------------------------------------------------------------------------
+# ------------------------------------------------------------- Label Predictor
+# -----------------------------------------------------------------------------
+
+# ------------------------------------------------ Split Source Target Features
+
+layer {
+  name: "source_features_1"
+  type: "Slice"
+  bottom: "bottleneck_1"
+  top: "source_features_1"
+  top: "target_features_1"
+  include: { 
+    phase: TRAIN 
+  }
+  slice_param {
+    slice_dim: 0
+  }  
+}
+
+layer {
+  name: "source_features_2"
+  type: "Slice"
+  bottom: "bottleneck_2"
+  top: "source_features_2"
+  top: "target_features_2"
+  include: { 
+    phase: TRAIN 
+  }
+  slice_param {
+    slice_dim: 0
+  }  
+}
+
+# -------------------------------------------------------------- Silence Features
+layer {
+  name: "silence_target_features"
+  type: "Silence"
+  bottom: "target_features_1"
+  bottom: "target_features_2"
+  include: { 
+    phase: TRAIN 
+  }
+}
+
+# --------------------------------------------------------------------- Copy Data
+layer {
+  name: "source_features_1"
+  type: "Split"
+  bottom: "bottleneck_1"
+  top: "source_features_1"
+  include: { 
+    phase: TEST 
+  }
+}
+
+layer {
+  name: "source_features_2"
+  type: "Split"
+  bottom: "bottleneck_2"
+  top: "source_features_2"
+  include: { 
+    phase: TEST 
+  }
+}
+
+# ------------------------------------------------------------------------ fc 8
+
+layer {
+  name: "fc8_n"
+  type: "InnerProduct"
+  bottom: "source_features_1"
+  top: "fc8_n"
+  param {
+    name: "fc8_n_w"
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    name: "fc8_n_b"
+    lr_mult: 20
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
 layer {
   name: "fc8_n_p"
   type: "InnerProduct"
-  bottom: "fc7_p"
+  bottom: "source_features_2"
   top: "fc8_n_p"
   param {
     name: "fc8_n_w"
@@ -771,49 +1054,82 @@ layer {
   }
 }
 
-# -----------------------------------------------------------------------------
-# ----------------------------------------------------------- Label Predictor
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------- Siamese Loss
 layer {
-  name: "loss"
+  name: "siamese_loss"
   type: "ContrastiveLoss"
   bottom: "fc8_n"
   bottom: "fc8_n_p"
-  bottom: "label_1"
-  top: "loss"
+  bottom: "source_label_im"
+  top: "siamese_loss"
   contrastive_loss_param {
     margin: 1
   }
 }
 
 
+
+
+# -----------------------------------------------------------------------------
+# ----------------------------------------------------------- Gradient reversal
+# -----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------- Concat Data
+
 layer 
 {
   name: "concat_data"
   type: "Concat"
-  bottom: "fc7"
-  bottom: "fc7_p"
+  bottom: "bottleneck_1"
+  bottom: "bottleneck_2"
   top: "concat_data"
   concat_param {
     concat_dim: 1 
   }
 }
 
-# -----------------------------------------------------------------------------
-# ----------------------------------------------------------- Gradient reversal
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------- GRL
+
 layer {
   name: "grl"
-  type: "GradientScaler"
+  type: "InnerProduct"
   bottom: "concat_data"
   top: "grl"
-  gradient_scaler_param {
-    lower_bound: 0.0
-    upper_bound: 1.0
-    alpha: 10.0
-    max_iter: 10000
+  param {
+    name: "bottleneck_w"
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    name: "bottleneck_b"
+    lr_mult: 20
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 256
+    weight_filler {
+      type: "gaussian"
+      std: 0.005
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
   }
 }
+
+#layer {
+#  name: "grl"
+#  type: "GradientScaler"
+#  bottom: "concat_data"
+#  top: "grl"
+#  gradient_scaler_param {
+#    lower_bound: 0.0
+#    upper_bound: 1.0
+#    alpha: 10.0
+#    max_iter: 10000
+#  }
+#}
 
 # -----------------------------------------------------------------------------
 # ----------------------------------------------------------- Domain classifier
@@ -840,6 +1156,7 @@ layer {
     }
   }
 }
+
 layer {
   name: "dc_relu1"
   type: "ReLU"
@@ -920,7 +1237,7 @@ layer {
   name: "dc_loss"
   type: "SigmoidCrossEntropyLoss"
   bottom: "dc_ip3"
-  bottom: "label_2"
+  bottom: "domain_labels"
   top: "dc_loss"
   loss_weight: 0.1
 }

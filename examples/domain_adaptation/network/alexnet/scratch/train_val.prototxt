@@ -17,7 +17,7 @@ layer {
     mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "data/domain_adaptation_data/lmdb/train/train1"
+    source: "data/domain_adaptation_data/lmdb/train1"
     batch_size: 320 
     backend: LMDB
   }
@@ -37,7 +37,7 @@ layer {
     mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {  
-    source: "data/domain_adaptation_data/lmdb/train/train2"
+    source: "data/domain_adaptation_data/lmdb/train2"
     batch_size: 320
     backend: LMDB
   }
@@ -57,7 +57,7 @@ layer {
     mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
   }
   data_param {
-    source: "data/domain_adaptation_data/lmdb/test/test1"
+    source: "data/domain_adaptation_data/lmdb/test1"
     batch_size: 320
     backend: LMDB
   }
@@ -78,7 +78,7 @@ layer {
   }
 
   data_param {
-    source: "data/domain_adaptation_data/lmdb/test/test2"
+    source: "data/domain_adaptation_data/lmdb/test2"
     batch_size: 320
     backend: LMDB
   }

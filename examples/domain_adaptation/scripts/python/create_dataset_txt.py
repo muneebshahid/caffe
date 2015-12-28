@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import random
 import cv2
+import copy
 from itertools import izip_longest
 
 
@@ -37,7 +38,7 @@ def split_source_target(data_set, sources, targets, label_data_limit):
         data_set_test.extend(data_set[target][1])
 
         label_data_indices = []
-        pos_target_data = data_set[target][0]
+        pos_target_data = copy.deepcopy(data_set[target][0])
         # semi supervised
         if label_data_limit > 0:
             while len(label_data_indices) < label_data_limit:
@@ -154,8 +155,7 @@ def write(data_set, file_path, file_num = None):
     else:
         with open(file_path + '.txt', 'w') as w:
             # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
-            w.writelines(
-                    [instance.replace('\\', '/') for instance in data_set])
+            w.writelines([instance for instance in data_set])
 
 
 def process_freiburg(data_set, source, key, folder_path):
@@ -215,7 +215,8 @@ def process_michigan(data_set, source, key, folder_path):
         data_set_michigan_neg = []
         # Process Michigan data
         months_mich = ['aug', 'jan']
-        files_michigan_pos = sorted(osh.get_folder_contents(folder_path + 'jan/', '*.tiff'))
+        files_michigan_pos = [im.replace('\\', '/')
+                              for im in sorted(osh.get_folder_contents(folder_path + 'jan/', '*.tiff'))]
 
         print 'Creating positive examples'
         for jan_file in files_michigan_pos:
@@ -298,22 +299,24 @@ def main(label_data_limit=0):
     write(test_data, root_folder_path + 'test1', 1)
     write(test_data, root_folder_path + 'test2', 2)
 
-
     source_target_data_set = []
     print "creating data set for image mean"
-    for source_instance, target_instance in izip_longest(source_data, target_data):
-        instances = [source_instance, target_instance]
-        for instance in instances:
-            if instance is not None:
-                for ims in instance[:-2]:
-                    for im in ims:
-                        #if im not in source_target_data_set:
-                        source_target_data_set.append(im + ' 1\n')
-    write(data_set, root_folder_path + 'complete')
+    for domain in data_set:
+        instances = data_set[domain]
+        for pos, neg in izip_longest(instances[0], instances[1]):
+            pos_neg = [pos, neg]
+            for instance in pos_neg:
+                if instance is not None:
+                    for im in instance[:-2]:
+                        im += ' 1\n'
+                        if im not in source_target_data_set:
+                            source_target_data_set.append(im)
     print "writing data set for image mean"
+    write(source_target_data_set, root_folder_path + 'complete')
 
 if __name__ == "__main__":
     root_folder_path = osh.path_rel_to_abs('../../../../data/domain_adaptation_data/images/') + '/'
+    root_folder_path = root_folder_path.replace('\\', '/')
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()

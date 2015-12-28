@@ -2,7 +2,8 @@ import os_helper as osh
 summer = []
 winter = []
 
-source_folder = osh.path_rel_to_abs('../../../../data/domain_adaptation_data/images/freiburg') + '/'
+caffe_root = osh.get_env_var('CAFFE_ROOT')
+source_folder = osh.path_rel_to_abs(caffe_root + '/../data/images/freiburg') + '/'
 with open(source_folder + 'exported_season_match.txt', "r") as lines:
     processed_exported_season_match = []
     for line_num, line in enumerate(lines):

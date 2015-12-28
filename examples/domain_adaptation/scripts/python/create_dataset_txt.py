@@ -315,7 +315,7 @@ def main(label_data_limit=0):
     write(source_target_data_set, root_folder_path + 'complete')
 
 if __name__ == "__main__":
-    root_folder_path = osh.path_rel_to_abs('../../../../data/domain_adaptation_data/images/') + '/'
+    root_folder_path = osh.path_rel_to_abs('../../../../../data/images/') + '/'
     root_folder_path = root_folder_path.replace('\\', '/')
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."

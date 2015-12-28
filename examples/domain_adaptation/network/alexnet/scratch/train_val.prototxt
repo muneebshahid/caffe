@@ -14,7 +14,7 @@ layer {
   transform_param {
     mirror: true
     crop_size: 227
-    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+    mean_file: "../data/models/alexnet/scratch/mean.binaryproto"
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/train1"
@@ -34,7 +34,7 @@ layer {
   transform_param {
     mirror: true
     crop_size: 227
-    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+    mean_file: "../data/models/alexnet/scratch/mean.binaryproto"
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/train2"
@@ -54,7 +54,7 @@ layer {
   transform_param {
     mirror: false
     crop_size: 227
-    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+    mean_file: "../data/models/alexnet/scratch/mean.binaryproto"
   }
   data_param {
     source: "data/domain_adaptation_data/lmdb/test1"
@@ -74,7 +74,7 @@ layer {
   transform_param {
     mirror: false
     crop_size: 227
-    mean_file: "data/domain_adaptation_data/models/alexnet/places205CNN_mean.binaryproto"
+    mean_file: "../data/models/alexnet/scratch/mean.binaryproto"
   }
 
   data_param {

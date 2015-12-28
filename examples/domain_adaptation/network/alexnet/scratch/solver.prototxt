@@ -13,7 +13,7 @@ power: 1
 
 stepsize: 3000 # drop the learning rate every 100K iterations
 display: 25 # Display after every x iterations
-max_iter: 10000 # max number of iterations
+max_iter: 5000 # max number of iterations
 momentum: 0.9 # momentum for gradient
 weight_decay: 0.0005 #how much weight is decayed
 solver_mode: GPU # solver mode: GPU

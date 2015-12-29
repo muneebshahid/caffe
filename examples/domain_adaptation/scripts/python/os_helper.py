@@ -40,8 +40,11 @@ def extract_name_from_path(path):
     return ntpath.basename(path)
 
 
-def get_env_var(var):
-    return os.getenv(var)
+def get_env_var(var, exception=True):
+    if exception:
+	return os.environ[var]
+    else:
+    	return os.getenv(var)
 
 
 def path_rel_to_abs(rel_path, curr_dir_file ='.'):

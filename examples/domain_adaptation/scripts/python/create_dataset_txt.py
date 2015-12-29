@@ -291,11 +291,18 @@ def main(label_data_limit=0):
 
     print "splitting in to target and source"
     source_data, target_data, test_data = split_source_target(data_set, source, target, label_data_limit)
-    padded = pad_source_target(source_data, target_data)
 
+    if pad:
+        print "padding source data with target data"
+        padded = pad_source_target(source_data, target_data)
+        write(padded, root_folder_path + 'train1', 1)
+        write(padded, root_folder_path + 'train2', 2)
+    else:
+        write(source_data, root_folder_path + 'source1', 1)
+        write(source_data, root_folder_path + 'source2', 2)
+        write(target_data, root_folder_path + 'target1', 1)
+        write(target_data, root_folder_path + 'target2', 2)
     print "writing files"
-    write(padded, root_folder_path + 'train1', 1)
-    write(padded, root_folder_path + 'train2', 2)
     write(test_data, root_folder_path + 'test1', 1)
     write(test_data, root_folder_path + 'test2', 2)
 
@@ -320,6 +327,7 @@ if __name__ == "__main__":
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()
+    pad = False
     source_mich = True
     source_freiburg = False
     main()

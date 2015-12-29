@@ -1,4 +1,4 @@
-model=$CAFFE_ROOT"/data/domain_adaptation_data/models/alexnet/places205CNN_iter_300000_upgraded.caffemodel"
+model=$CAFFE_ROOT"/../data/models/alexnet/pretrained/places205CNN_iter_300000_upgraded.caffemodel"
 network=$CAFFE_ROOT"/examples/domain_adaptation/network/alexnet/"
 log_dir=$CAFFE_ROOT"/data/domain_adaptation_data/logs"
 if [ "$1" = "finetune" ]

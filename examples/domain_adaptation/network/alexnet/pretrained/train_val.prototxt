@@ -4,134 +4,44 @@ name: "AlexNet2Siamese"
 # -----------------------------------------------------------------------------
 
 layer {
-  name: "source_1"
-  type: "Data"
-  top: "source_1"
-  top: "source_labels_im"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/source1"
-    batch_size: 160 
-    backend: LMDB
-  }
-}
-
-layer {
-  name: "target_1"
-  type: "Data"
-  top: "target_1"
-  top: "target_labels_im"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/target1"
-    batch_size: 160 
-    backend: LMDB
-  }
-}
-
-layer {
-  name: "source_2"
-  type: "Data"
-  top: "source_2"
-  top: "source_labels_dm"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/source2"
-    batch_size: 160
-    backend: LMDB
-  }
-}
-
-layer {
-  name: "target_2"
-  type: "Data"
-  top: "target_2"
-  top: "target_labels_dm"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/target2"
-    batch_size: 160
-    backend: LMDB
-  }
-}
-
-
-layer 
-{
   name: "source_target_1"
-  type: "Concat"
-  bottom: "source_1"
-  bottom: "target_1"
+  type: "Data"
   top: "source_target_1"
-  concat_param {
-    concat_dim: 0
-  }
-    include {
+  top: "im_labels"
+  include {
     phase: TRAIN
+  }
+  transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
+  }
+  data_param {  
+    source: "data/domain_adaptation_data/lmdb/train1"
+    batch_size: 256 
+    backend: LMDB
   }
 }
 
-layer 
-{
+layer {
   name: "source_target_2"
-  type: "Concat"
-  bottom: "source_2"
-  bottom: "target_2"
+  type: "Data"
   top: "source_target_2"
-  concat_param {
-    concat_dim: 0
-  }
-    include {
-    phase: TRAIN
-  }
-}
-
-layer 
-{
-  name: "domain_labels"
-  type: "Concat"
-  bottom: "source_labels_dm"
-  bottom: "target_labels_dm"
   top: "domain_labels"
-  concat_param {
-    concat_dim: 0
-  }
-    include {
+  include {
     phase: TRAIN
   }
+  transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
+  }
+  data_param {  
+    source: "data/domain_adaptation_data/lmdb/train2"
+    batch_size: 256
+    backend: LMDB
+  }
 }
-
-
-
-
 
 layer {
   name: "source_target_1"
@@ -148,7 +58,7 @@ layer {
   }
   data_param {
     source: "data/domain_adaptation_data/lmdb/test1"
-    batch_size: 320
+    batch_size: 256
     backend: LMDB
   }
 }
@@ -169,7 +79,7 @@ layer {
 
   data_param {
     source: "data/domain_adaptation_data/lmdb/test2"
-    batch_size: 320
+    batch_size: 256
     backend: LMDB
   }
 }
@@ -924,19 +834,19 @@ layer {
 
 # -------------------------------------- Split Source Target Features And Labels
 
-#layer {
-#  name: "source_labels_im"
-#  type: "Slice"
-#  bottom: "im_labels"
-#  top: "source_labels_im"
-#  top: "target_label_im"
-#  include: { 
-#    phase: TRAIN 
-#  }
-#  slice_param {
-#    slice_dim: 0
-#  }  
-#}
+layer {
+  name: "source_labels_im"
+  type: "Slice"
+  bottom: "im_labels"
+  top: "source_labels_im"
+  top: "target_label_im"
+  include: { 
+    phase: TRAIN 
+  }
+  slice_param {
+    slice_dim: 0
+  }  
+}
 
 layer {
   name: "source_features_1"
@@ -972,7 +882,7 @@ layer {
   type: "Silence"
   bottom: "target_features_1"
   bottom: "target_features_2"
-  bottom: "target_labels_im"
+  bottom: "target_label_im"
   include: { 
     phase: TRAIN 
   }

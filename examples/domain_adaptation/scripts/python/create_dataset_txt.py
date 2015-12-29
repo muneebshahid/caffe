@@ -293,7 +293,7 @@ def main(label_data_limit=0):
     source_data, target_data, test_data = split_source_target(data_set, source, target, label_data_limit)
 
     print "padding source data with target data"
-    padded = pad_source_target(copy.deepcopy(source_data), copy.deepcopy(target_data))
+    padded = pad_source_target(copy.deepcopy(source_data), copy.deepcopy(target_data), 256)
 
     print "writing data files"
     write(padded, root_folder_path + 'train1', 1)

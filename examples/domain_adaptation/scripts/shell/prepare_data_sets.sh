@@ -10,11 +10,13 @@ then
 	sh "$PROJ_HOME/scripts/shell/create_lmdbs_resize.sh" "source"
 	echo "Creating target lmdbs"
 	sh "$PROJ_HOME/scripts/shell/create_lmdbs_resize.sh" "target"
-elif [ "$1" = "all" ] || [ "$1" = "train" ] || [ "$2" = "train" ]
+fi
+if [ "$1" = "all" ] || [ "$1" = "train" ] || [ "$2" = "train" ]
 then
 	echo "Creating train lmdbs"
 	sh $PROJ_HOME"/scripts/shell/create_lmdbs_resize.sh" "train"
-elif [ "$1" = "all" ] || [ "$1" = "test" ] || [ "$2" = "test" ]
+fi
+if [ "$1" = "all" ] || [ "$1" = "test" ] || [ "$2" = "test" ]
 then
 	echo "Creating test lmdbs"
 	sh "$PROJ_HOME/scripts/shell/create_lmdbs_resize.sh" "test"

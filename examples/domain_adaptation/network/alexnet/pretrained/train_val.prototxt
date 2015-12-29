@@ -4,134 +4,44 @@ name: "AlexNet2Siamese"
 # -----------------------------------------------------------------------------
 
 layer {
-  name: "source_1"
-  type: "Data"
-  top: "source_1"
-  top: "source_labels_im"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/source1"
-    batch_size: 160 
-    backend: LMDB
-  }
-}
-
-layer {
-  name: "target_1"
-  type: "Data"
-  top: "target_1"
-  top: "target_labels_im"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/target1"
-    batch_size: 160 
-    backend: LMDB
-  }
-}
-
-layer {
-  name: "source_2"
-  type: "Data"
-  top: "source_2"
-  top: "source_labels_dm"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/source2"
-    batch_size: 160
-    backend: LMDB
-  }
-}
-
-layer {
-  name: "target_2"
-  type: "Data"
-  top: "target_2"
-  top: "target_labels_dm"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/target2"
-    batch_size: 160
-    backend: LMDB
-  }
-}
-
-
-layer 
-{
   name: "source_target_1"
-  type: "Concat"
-  bottom: "source_1"
-  bottom: "target_1"
+  type: "Data"
   top: "source_target_1"
-  concat_param {
-    concat_dim: 0
-  }
-    include {
+  top: "im_labels"
+  include {
     phase: TRAIN
+  }
+  transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
+  }
+  data_param {  
+    source: "data/domain_adaptation_data/lmdb/train1"
+    batch_size: 320 
+    backend: LMDB
   }
 }
 
-layer 
-{
+layer {
   name: "source_target_2"
-  type: "Concat"
-  bottom: "source_2"
-  bottom: "target_2"
+  type: "Data"
   top: "source_target_2"
-  concat_param {
-    concat_dim: 0
-  }
-    include {
-    phase: TRAIN
-  }
-}
-
-layer 
-{
-  name: "domain_labels"
-  type: "Concat"
-  bottom: "source_labels_dm"
-  bottom: "target_labels_dm"
   top: "domain_labels"
-  concat_param {
-    concat_dim: 0
-  }
-    include {
+  include {
     phase: TRAIN
   }
+  transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
+  }
+  data_param {  
+    source: "data/domain_adaptation_data/lmdb/train2"
+    batch_size: 320
+    backend: LMDB
+  }
 }
-
-
-
-
 
 layer {
   name: "source_target_1"
@@ -924,19 +834,19 @@ layer {
 
 # -------------------------------------- Split Source Target Features And Labels
 
-#layer {
-#  name: "source_labels_im"
-#  type: "Slice"
-#  bottom: "im_labels"
-#  top: "source_labels_im"
-#  top: "target_label_im"
-#  include: { 
-#    phase: TRAIN 
-#  }
-#  slice_param {
-#    slice_dim: 0
-#  }  
-#}
+layer {
+  name: "source_labels_im"
+  type: "Slice"
+  bottom: "im_labels"
+  top: "source_labels_im"
+  top: "target_label_im"
+  include: { 
+    phase: TRAIN 
+  }
+  slice_param {
+    slice_dim: 0
+  }  
+}
 
 layer {
   name: "source_features_1"
@@ -972,7 +882,7 @@ layer {
   type: "Silence"
   bottom: "target_features_1"
   bottom: "target_features_2"
-  bottom: "target_labels_im"
+  bottom: "target_label_im"
   include: { 
     phase: TRAIN 
   }
@@ -999,47 +909,101 @@ layer {
   }
 }
 
-# ------------------------------------------------------------------------ fc 8
+## ------------------------------------------------------------------------ fc 8
+#
+#layer {
+#  name: "fc8_n"
+#  type: "InnerProduct"
+#  bottom: "source_features_1"
+#  top: "fc8_n"
+#  param {
+#    name: "fc8_n_w"
+#    lr_mult: 10
+#    decay_mult: 1
+#  }
+#  param {
+#    name: "fc8_n_b"
+#    lr_mult: 20
+#    decay_mult: 0
+#  }
+#  inner_product_param {
+#    num_output: 2
+#    weight_filler {
+#      type: "xavier"
+#    }
+#    bias_filler {
+#      type: "constant"
+#      value: 0
+#    }
+#  }
+#}
+#
+#layer {
+#  name: "fc8_n_p"
+#  type: "InnerProduct"
+#  bottom: "source_features_2"
+#  top: "fc8_n_p"
+#  param {
+#    name: "fc8_n_w"
+#    lr_mult: 10
+#    decay_mult: 1
+#  }
+#  param {
+#    name: "fc8_n_b"
+#    lr_mult: 20
+#    decay_mult: 0
+#  }
+#  inner_product_param {
+#    num_output: 2
+#    weight_filler {
+#      type: "xavier"
+#    }
+#    bias_filler {
+#      type: "constant"
+#      value: 0
+#    }
+#  }
+#}
+#
+## ------------------------------------------------------------------- Siamese Loss
+#layer {
+#  name: "siamese_loss"
+#  type: "ContrastiveLoss"
+#  bottom: "fc8_n"
+#  bottom: "fc8_n_p"
+#  bottom: "source_labels_im"
+#  top: "siamese_loss"
+#  contrastive_loss_param {
+#    margin: 1
+#  }
+#}
 
-layer {
-  name: "fc8_n"
-  type: "InnerProduct"
+
+# ------------------------------------------------------------------------ fcc 8
+
+layer 
+{
+  name: "concat_branches"
+  type: "Concat"
   bottom: "source_features_1"
-  top: "fc8_n"
-  param {
-    name: "fc8_n_w"
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    name: "fc8_n_b"
-    lr_mult: 20
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 2
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-
-layer {
-  name: "fc8_n_p"
-  type: "InnerProduct"
   bottom: "source_features_2"
-  top: "fc8_n_p"
+  top: "concat_branches"
+  concat_param {
+    concat_dim: 1 
+  }
+}
+layer {
+  name: "fcc8_n"
+  type: "InnerProduct"
+  bottom: "concat_branches"
+  top: "fcc8_n"
   param {
-    name: "fc8_n_w"
+    name: "fcc8_n_w"
     lr_mult: 10
     decay_mult: 1
   }
   param {
-    name: "fc8_n_b"
+    name: "fcc8_n_b"
     lr_mult: 20
     decay_mult: 0
   }
@@ -1055,19 +1019,23 @@ layer {
   }
 }
 
-# ------------------------------------------------------------------- Siamese Loss
 layer {
-  name: "siamese_loss"
-  type: "ContrastiveLoss"
-  bottom: "fc8_n"
-  bottom: "fc8_n_p"
+  name: "pred_accuracy"
+  type: "Accuracy"
+  bottom: "fcc8_n"
   bottom: "source_labels_im"
-  top: "siamese_loss"
-  contrastive_loss_param {
-    margin: 1
+  top: "pred_accuracy"
+  include: { 
+  phase: TEST 
   }
 }
-
+layer {
+  name: "pred_loss"
+  type: "SoftmaxWithLoss"
+  bottom: "fcc8_n"
+  bottom: "source_labels_im"
+  top: "pred_loss"
+}
 
 
 

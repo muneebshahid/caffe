@@ -445,8 +445,9 @@ layer {
   inner_product_param {
     num_output: 256
     weight_filler {
-      type: "gaussian"
-      std: 0.005
+	type: "xavier"
+      #type: "gaussian"
+      #std: 0.005
     }
     bias_filler {
       type: "constant"
@@ -816,8 +817,9 @@ layer {
   inner_product_param {
     num_output: 256
     weight_filler {
-      type: "gaussian"
-      std: 0.005
+	type: "xavier"
+      #type: "gaussian"
+      #std: 0.005
     }
     bias_filler {
       type: "constant"
@@ -1115,8 +1117,9 @@ layer {
   inner_product_param {
     num_output: 1024
     weight_filler {
-      type: "gaussian"
-      std: 0.01
+      type: "xavier"
+      #type: "gaussian"
+      #std: 0.01
     }
     bias_filler {
       type: "constant"
@@ -1154,8 +1157,7 @@ layer {
   inner_product_param {
     num_output: 1024
     weight_filler {
-      type: "gaussian"
-      std: 0.01
+      type: "xavier"
     }
     bias_filler {
       type: "constant"
@@ -1192,8 +1194,7 @@ layer {
   inner_product_param {
     num_output: 1
     weight_filler {
-      type: "gaussian"
-      std: 0.3
+      type: "xavier"
     }
     bias_filler {
       type: "constant"

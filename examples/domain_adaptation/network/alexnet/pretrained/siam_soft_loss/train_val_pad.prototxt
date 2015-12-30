@@ -284,6 +284,15 @@ layer {
   top: "conv4"
 }
 
+layer {
+  name: "conv_drop4"
+  type: "Dropout"
+  bottom: "conv4"
+  top: "conv4"
+  dropout_param {
+    dropout_ratio: 0.4
+  }
+}
 # ---------------------------------------------------------------------- Conv 5
 layer {
   name: "conv5"
@@ -321,6 +330,17 @@ layer {
   bottom: "conv5"
   top: "conv5"
 }
+
+layer {
+  name: "conv_drop5"
+  type: "Dropout"
+  bottom: "conv5"
+  top: "conv5"
+  dropout_param {
+    dropout_ratio: 0.4
+  }
+}
+
 layer {
   name: "pool5"
   type: "Pooling"
@@ -656,6 +676,16 @@ layer {
   top: "conv4_p"
 }
 
+layer {
+  name: "conv_drop4_p"
+  type: "Dropout"
+  bottom: "conv4_p"
+  top: "conv4_p"
+  dropout_param {
+    dropout_ratio: 0.4
+  }
+}
+
 # ---------------------------------------------------------------------- Conv 5
 layer {
   name: "conv5_p"
@@ -693,6 +723,17 @@ layer {
   bottom: "conv5_p"
   top: "conv5_p"
 }
+
+layer {
+  name: "conv_drop5_p"
+  type: "Dropout"
+  bottom: "conv5_p"
+  top: "conv5_p"
+  dropout_param {
+    dropout_ratio: 0.4
+  }
+}
+
 layer {
   name: "pool5_p"
   type: "Pooling"
@@ -1066,44 +1107,44 @@ layer
 
 ## ------------------------------------------------------------------------- GRL
 
-#layer {
-#  name: "grl"
-#  type: "InnerProduct"
-#  bottom: "concat_data"
-#  top: "grl"
-#  param {    
-#    lr_mult: 10
-#    decay_mult: 1
-#  }
-#  param {
-#    lr_mult: 20
-#    decay_mult: 0
-#  }
-#  inner_product_param {
-#    num_output: 256
-#    weight_filler {
-#      type: "gaussian"
-#      std: 0.005
-#    }
-#    bias_filler {
-#      type: "constant"
-#      value: 0.1
-#    }
-#  }
-#}
-
 layer {
   name: "grl"
-  type: "GradientScaler"
+  type: "InnerProduct"
   bottom: "concat_data"
   top: "grl"
-  gradient_scaler_param {
-    lower_bound: 0.0
-    upper_bound: 1.0
-    alpha: 10.0
-    max_iter: 10000
+  param {    
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 256
+    weight_filler {
+      type: "gaussian"
+      std: 0.005
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
   }
 }
+
+#layer {
+#  name: "grl"
+#  type: "GradientScaler"
+#  bottom: "concat_data"
+#  top: "grl"
+#  gradient_scaler_param {
+#    lower_bound: 0.0
+#    upper_bound: 1.0
+#    alpha: 10.0
+#    max_iter: 10000
+#  }
+#}
 
 # -----------------------------------------------------------------------------
 # ----------------------------------------------------------- Domain classifier

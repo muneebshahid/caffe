@@ -18,7 +18,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/train1"
-    batch_size: 320 
+    batch_size: 128 
     backend: LMDB
   }
 }
@@ -38,7 +38,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/train2"
-    batch_size: 320
+    batch_size: 128
     backend: LMDB
   }
 }
@@ -58,7 +58,7 @@ layer {
   }
   data_param {
     source: "data/domain_adaptation_data/lmdb/test1"
-    batch_size: 320
+    batch_size: 256
     backend: LMDB
   }
 }
@@ -79,7 +79,7 @@ layer {
 
   data_param {
     source: "data/domain_adaptation_data/lmdb/test2"
-    batch_size: 320
+    batch_size: 256
     backend: LMDB
   }
 }
@@ -1058,8 +1058,6 @@ layer {
     num_output: 1024
     weight_filler {
       type: "xavier"
-      #type: "gaussian"
-      #std: 0.01
     }
     bias_filler {
       type: "constant"

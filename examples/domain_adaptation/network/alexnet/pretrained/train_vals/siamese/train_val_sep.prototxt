@@ -18,7 +18,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/source1"
-    batch_size: 160 
+    batch_size: 64 
     backend: LMDB
   }
 }
@@ -38,7 +38,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/target1"
-    batch_size: 160 
+    batch_size: 64
     backend: LMDB
   }
 }
@@ -58,7 +58,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/source2"
-    batch_size: 160
+    batch_size: 64
     backend: LMDB
   }
 }
@@ -78,7 +78,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/target2"
-    batch_size: 160
+    batch_size: 64
     backend: LMDB
   }
 }
@@ -148,7 +148,7 @@ layer {
   }
   data_param {
     source: "data/domain_adaptation_data/lmdb/test1"
-    batch_size: 320
+    batch_size: 128
     backend: LMDB
   }
 }
@@ -166,10 +166,9 @@ layer {
     crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
-
   data_param {
     source: "data/domain_adaptation_data/lmdb/test2"
-    batch_size: 320
+    batch_size: 128
     backend: LMDB
   }
 }
@@ -929,7 +928,7 @@ layer {
 #  type: "Slice"
 #  bottom: "im_labels"
 #  top: "source_labels_im"
-#  top: "target_label_im"
+#  top: "target_labels_im"
 #  include: { 
 #    phase: TRAIN 
 #  }

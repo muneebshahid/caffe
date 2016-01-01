@@ -90,7 +90,7 @@ def get_batch(index, batch_size, data):
     return batch, reached_end
 
 
-def pad_source_target(source, target, batch_size=320):
+def pad_train_data(source, target, batch_size=320):
     half_batch_size = batch_size / 2
     len_source = len(source)
     len_target = len(target)
@@ -158,7 +158,35 @@ def write(data_set, file_path, file_num = None):
             w.writelines([instance for instance in data_set])
 
 
-def process_freiburg(data_set, source, key, folder_path):
+def get_random_batch(data, size):
+    random_batch = []
+    indices = []
+    while len(random_batch) < size:
+        index = np.random.randint(0, len(data))
+        if index not in indices:
+            indices.append(index)
+            random_batch.append(data[index])
+    return random_batch
+
+
+def pad_data_multiple(data, batch_size):
+    remainder = len(data) % batch_size
+    temp_data = []
+    if remainder > 0:
+        pad_size = batch_size - remainder
+        rnd_batch = get_random_batch(data, pad_size)
+        temp_data.extend(rnd_batch)
+    return temp_data
+
+
+def extend_data(data):
+    temp_data = copy.deepcopy(data)
+    random.shuffle(temp_data)
+    return temp_data
+
+
+def process_freiburg(data_set, source, key, root_folder_path, sub_folder):
+    folder_path = root_folder_path + sub_folder
     print "processing freiburg data....."
     save_neg_im = False
     data_set_freiburg_pos = []
@@ -176,7 +204,8 @@ def process_freiburg(data_set, source, key, folder_path):
         i = 1
         while len(instance) - 2 > i:
             seasons = [instance[0], instance[i]]
-            random.shuffle(seasons)
+            if source:
+                random.shuffle(seasons)
             seasons.extend(instance[-2:])
             data_set_freiburg_pos.append(seasons)
             i += 1
@@ -187,11 +216,11 @@ def process_freiburg(data_set, source, key, folder_path):
     last_index = len(data_set_freiburg_pos) - 1
     while neg_examples < pos_examples:
         im1 = np.random.randint(0, last_index)
-        image_diff = im1 - image_gap - 1
-        if image_diff > 0:
-            im2 = np.random.randint(0, image_diff)
-        else:
-            im2 = np.random.randint(im1 + image_gap, last_index)
+        im_diff = im1 - image_gap - 1
+        while True:
+            im2 = np.random.random_integers(0, last_index)
+            if abs(im1 - im2) > im_diff:
+                break
         if save_neg_im:
             im_1 = cv2.imread(folder_path + data_set_freiburg_pos[im1][0])
             im_2 = cv2.imread(folder_path + data_set_freiburg_pos[im2][1])
@@ -199,8 +228,9 @@ def process_freiburg(data_set, source, key, folder_path):
                         np.concatenate((im_1, im_2), axis=1))
             print 'saving neg example {0} / {1}'.format(neg_examples, pos_examples)
         seasons = [data_set_freiburg_pos[im1][0], data_set_freiburg_pos[im2][1]]
-        random.shuffle(seasons)
-        seasons.extend([0, int(source)])
+        if source:
+            random.shuffle(seasons)
+        seasons.extend([0, source])
         data_set_freiburg_neg.append(seasons)
         if neg_examples % 100 == 0:
             print "{0} / {1}".format(neg_examples, pos_examples)
@@ -208,68 +238,98 @@ def process_freiburg(data_set, source, key, folder_path):
     data_set[key] = [data_set_freiburg_pos, data_set_freiburg_neg]
 
 
-def process_michigan(data_set, source, key, folder_path):
-        print 'Processing michigan....'
-        data_set_michigan = []
-        data_set_michigan_pos = []
-        data_set_michigan_neg = []
-        # Process Michigan data
-        months_mich = ['aug', 'jan']
-        files_michigan_pos = [im.replace('\\', '/')
-                              for im in sorted(osh.get_folder_contents(folder_path + 'jan/', '*.tiff'))]
+def process_michigan(data_set, source, key, root_folder_path, sub_folder):
+    folder_path = root_folder_path + sub_folder
+    print 'Processing michigan data.....'
+    data_set_michigan_pos = []
+    data_set_michigan_neg = []
+    # Process Michigan data
+    months_mich = ['aug', 'jan']
+    files_michigan_pos = [im.replace('\\', '/')
+                          for im in sorted(osh.get_folder_contents(folder_path + 'jan/', '*.tiff'))]
 
-        print 'Creating positive examples'
-        for jan_file in files_michigan_pos:
-            file_n = osh.extract_name_from_path(jan_file)
+    print 'Creating positive examples'
+    for jan_file in files_michigan_pos:
+        file_n = osh.extract_name_from_path(jan_file)
 
-            if int(file_n[5:-5]) in mich_ignore:
-                print "ignoring {0}".format(file_n[5:-5])
-                continue
-            jan_file = jan_file.replace(root_folder_path, '')
+        if int(file_n[5:-5]) in mich_ignore:
+            print "ignoring {0}".format(file_n[5:-5])
+            continue
+        jan_file = jan_file.replace(root_folder_path, '')
+        if source:
             month_mich = np.random.random_integers(0, 1)
-            path_1 = jan_file.replace('jan', months_mich[month_mich])
-            path_2 = jan_file.replace('jan', months_mich[abs(month_mich - 1)])
-            # label_1 is similarity label, while label_2 is the domain_label
+        else:
+            month_mich = 0
+        path_1 = jan_file.replace('jan', months_mich[month_mich])
+        path_2 = jan_file.replace('jan', months_mich[abs(month_mich - 1)])
+        # label_1 is similarity label, while label_2 is the domain_label
+        data_set_michigan_pos.append([path_1, path_2, 1, source])
 
-            data_set_michigan_pos.append([path_1, path_2, 1, int(source)])
-
-        del files_michigan_pos
-        images_gap = 600
-        michigan_neg_instances = 0
-        michigan_pos_len = len(data_set_michigan_pos)
-        last_index = michigan_pos_len - 1
-        print "found {0} positive examples".format(michigan_pos_len)
-        print 'Creating negative examples'
-        while michigan_neg_instances < michigan_pos_len:
-            im1 = np.random.random_integers(0, last_index)
+    del files_michigan_pos
+    images_gap = 600
+    michigan_neg_instances = 0
+    michigan_pos_len = len(data_set_michigan_pos)
+    last_index = michigan_pos_len - 1
+    print "found {0} positive examples".format(michigan_pos_len)
+    print 'Creating negative examples'
+    while michigan_neg_instances < michigan_pos_len:
+        im1 = np.random.random_integers(0, last_index)
+        if source:
             month_mich = np.random.random_integers(0, 1)
-            file_1 = folder_path + months_mich[month_mich] + '/00000' + str(im1) + '.tiff'
-            # michigan data set has a weird naming convention, so checking if the file actually exists
-            if not osh.is_file(file_1):
-                continue
-            # ensure image gap between negative examples
-            im_diff = im1 - images_gap
-            if im_diff > 0:
-                im2 = np.random.random_integers(0, im_diff)
-            else:
-                im2 = np.random.randint(im1 + images_gap, last_index)
-            file_2 = folder_path + months_mich[abs(month_mich - 1)] + '/00000' + str(im2) + '.tiff'
-            if not osh.is_file(file_2):
-                continue
-            file_1 = file_1.replace(folder_path, 'michigan/uncompressed/')
-            file_2 = file_2.replace(folder_path, 'michigan/uncompressed/')
-            data_set_michigan_neg.append([file_1, file_2, 0, int(source_mich)])
-            michigan_neg_instances += 1
-            if michigan_neg_instances % 2000 == 0:
-                print 'negative examples: ', progress(michigan_neg_instances, michigan_pos_len)
+        else:
+            month_mich = 0
+        file_1 = folder_path + months_mich[month_mich] + '/00000' + str(im1) + '.tiff'
+        # michigan data set has a weird naming convention, so checking if the file actually exists
+        if not osh.is_file(file_1):
+            continue
+        # ensure image gap between negative examples
+        im_diff = im1 - images_gap
+        while True:
+            im2 = np.random.random_integers(0, last_index)
+            if abs(im1 - im2) > im_diff:
+                break
+        file_2 = folder_path + months_mich[abs(month_mich - 1)] + '/00000' + str(im2) + '.tiff'
+        if not osh.is_file(file_2):
+            continue
+        file_1 = file_1.replace(folder_path, 'michigan/uncompressed/')
+        file_2 = file_2.replace(folder_path, 'michigan/uncompressed/')
+        data_set_michigan_neg.append([file_1, file_2, 0, int(source)])
+        michigan_neg_instances += 1
+        if michigan_neg_instances % 2000 == 0:
+            print 'negative examples: ', progress(michigan_neg_instances, michigan_pos_len)
 
-        print "created {0} negative examples".format(len(data_set_michigan_neg))
-        data_set[key] = [data_set_michigan_pos, data_set_michigan_neg]
+    print "created {0} negative examples".format(len(data_set_michigan_neg))
+    data_set[key] = [data_set_michigan_pos, data_set_michigan_neg]
 
 
 def main(label_data_limit=0):
+    root_folder_path = osh.get_env_var('CAFFE_ROOT') + '/../data/images/' + '/'
+    root_folder_path = root_folder_path.replace('\\', '/')
+    if not osh.is_dir(root_folder_path):
+        print "source folder does'nt exist, existing....."
+        sys.exit()
+
+    # batch size is used for padding.
+    batch_size = 128
+
+    # flag to pad source and target arrays to make them a multiple of batch size
+    pad_multiple = True
+
+    # flag to pad train data (source) with target
+    pad_train = True
+
+    create_mean_data = False
+    # until a custom shuffling is implementd in the data layer, 
+    # pseudo shuffle the data by extending it with random repititons
+    # of the whole data set
+    pseudo_shuffle = 5
+    source_mich = True
+    source_freiburg = False
+
     source = []
     target = []
+    source_data = []
+    target_data = []
     data_set = {}
     if source_mich is not None:
         key = 'michigan'
@@ -277,27 +337,43 @@ def main(label_data_limit=0):
             source.append(key)
         else:
             target.append(key)
-        folder_path = root_folder_path + 'michigan/uncompressed/'
-        process_michigan(data_set, source_mich, key, folder_path)
-
+        process_michigan(data_set, int(source_mich), key, root_folder_path, 'michigan/uncompressed/')
     if source_freiburg is not None:
         key = 'freiburg'
         if source_freiburg:
             source.append(key)
         else:
             target.append(key)
-        folder_path = root_folder_path + key + '/'
-        process_freiburg(data_set, source_freiburg, key, folder_path)
+        process_freiburg(data_set, int(source_freiburg), key, root_folder_path, 'freiburg/')
 
     print "splitting in to target and source"
-    source_data, target_data, test_data = split_source_target(data_set, source, target, label_data_limit)
+    source_data_orig, target_data_orig, test_data = split_source_target(data_set, source, target, label_data_limit)
+    source_data.extend(source_data_orig)
+    target_data.extend(target_data_orig)
+    print "source size {0} target size {1} test {2}".format(len(source_data), len(target_data), len(test_data))
 
-    print "padding source data with target data"
-    padded = pad_source_target(copy.deepcopy(source_data), copy.deepcopy(target_data), 256)
+    i = 1
+    while i < pseudo_shuffle:
+        print "extending data {0} time".format(i)
+        source_data.extend(extend_data(source_data_orig))
+        target_data.extend(extend_data(target_data_orig))
+        i += 1
+    print "extended len: source {0} target {1} test {2}".format(len(source_data), len(target_data), len(test_data))
+
+    if pad_multiple:
+        print "padding data to nearest multiple of batch size"
+        source_data.extend(pad_data_multiple(source_data_orig, batch_size))
+        target_data.extend(pad_data_multiple(target_data_orig, batch_size))
+        print "padded source size {0} target size {1} test {2}".format(len(source_data), len(target_data), len(test_data))
+
+    print "padded len source {0} target size {1} test {2}".format(len(source_data), len(target_data), len(test_data))
+
+    if pad_train:
+        print "padding source data with target data"
+        padded = pad_train_data(copy.deepcopy(source_data_orig), copy.deepcopy(target_data_orig), batch_size)
 
     print "writing data files"
-    write(padded, root_folder_path + 'train1', 1)
-    write(padded, root_folder_path + 'train2', 2)
+
     write(source_data, root_folder_path + 'source1', 1)
     write(source_data, root_folder_path + 'source2', 2)
     write(target_data, root_folder_path + 'target1', 1)
@@ -305,108 +381,27 @@ def main(label_data_limit=0):
     write(test_data, root_folder_path + 'test1', 1)
     write(test_data, root_folder_path + 'test2', 2)
 
-    source_target_data_set = []
-    print "creating data set for image mean"
-    for domain in data_set:
-        instances = data_set[domain]
-        for pos, neg in izip_longest(instances[0], instances[1]):
-            pos_neg = [pos, neg]
-            for instance in pos_neg:
-                if instance is not None:
-                    for im in instance[:-2]:
-                        im += ' 1\n'
-                        if im not in source_target_data_set:
-                            source_target_data_set.append(im)
-    print "writing data set for image mean"
-    write(source_target_data_set, root_folder_path + 'complete')
+    if pad_train:
+        write(padded, root_folder_path + 'train1', 1)
+        write(padded, root_folder_path + 'train2', 2)
+    if create_mean_data:
+        source_target_data_set = []
+        print "creating data set for image mean"
+        for domain in data_set:
+            instances = data_set[domain]
+            for pos, neg in izip_longest(instances[0], instances[1]):
+                pos_neg = [pos, neg]
+                for instance in pos_neg:
+                    if instance is not None:
+                        for im in instance[:-2]:
+                            im += ' 1\n'
+                            if im not in source_target_data_set:
+                                source_target_data_set.append(im)
+        print "writing data set for image mean"
+        write(source_target_data_set, root_folder_path + 'complete')
 
-if __name__ == "__main__":
-    root_folder_path = osh.get_env_var('CAFFE_ROOT') + '/../data/images/' + '/'
-    root_folder_path = root_folder_path.replace('\\', '/')
-    if not osh.is_dir(root_folder_path):
-        print "source folder does'nt exist, existing....."
-        sys.exit()
-    pad = False
-    source_mich = True
-    source_freiburg = False
+if __name__ == "__main__":    
     main()
-'''
-pos_examples = 0
-l = 0
-for pos_example in data_set_freiburg:
-    # we might have one or two winter examples
-    if len(pos_example) > 4:
-        l += 1
-    pos_examples += len(pos_example) - 3
-print l
-neg_examples = 0
-image_gap = 200
-last_index = len(data_set_freiburg) - 1
-print len(data_set_freiburg)
-print "{0} positive examples".format(pos_examples)
-print 'creating negative examples'
-while neg_examples < pos_examples:
-    im1 = np.random.randint(0, last_index)
-    image_diff = im1 - image_gap - 1
-    if image_diff > 0:
-        im2 = np.random.randint(0, image_diff)
-    else:
-        im2 = np.random.rand(im1 + image_gap, last_index)
-    test_instance = data_set_freiburg[im1]
-    instance = [test_instance[0]]
-    # one winter example
-    if len(test_instance) == 4:
-        instance.append(test_instance[1])
-        neg_examples += 1
-    else:
-        instance.extend(test_instance[1:2])
-        neg_examples += 2
-    instance.extend(['0', '1'])
-    data_set_freiburg.append(instance)
-    if neg_examples % 100 == 0:
-        print "{0} / {1}".format(neg_examples, pos_examples)
-
-instances_in_line = []
-print 'shuffling and creating final one line instances'
-for instance in data_set_freiburg:
-    seasons = []
-    i = 1
-    while len(instance) - 2 > i:
-        seasons = [instance[0], instance[i]]
-        random.shuffle(seasons)
-        seasons.extend(instance[-2:])
-        instances_in_line.append(seasons)
-        i += 1
-print len(data_set_freiburg)
-print len(instances_in_line)
-del data_set_freiburg
-random.shuffle(instances_in_line)
-print 'writing txt files'
-with open(folder_path_frei + '/train1.txt', 'w') as t1:
-    t1.writelines([str(instance[0]) + ' ' + str(instance[2]) + '\n' for instance in instances_in_line])
-
-with open(folder_path_frei + '/train2.txt', 'w') as t2:
-    t2.writelines([str(instance[1]) + ' ' + str(instance[3]) + '\n' for instance in instances_in_line])
-print "done"
-'''
-'''
-    with open(folder_path_frei + 'processed_season_match.txt', "r") as lines:
-        for line_num, line in enumerate(lines):
-            line_arr = line.split(' ')
-            len_arr = len(line_arr)
-            i = 2
-            while i + 1 < len_arr:
-                summer.append('freiburg/' + line_arr[1] + ' 1')
-                winter.append('freiburg/' + line_arr[i + 1] + ' 1')
-                i += 2
-            if line_num % 100 == 0:
-                print str(line_num)
-    target_files = {'winter.txt': winter, 'summer.txt': summer}
-    for t_file in target_files:
-        with open(args.target_folder_path + t_file, 'w') as processed_season_match:
-            for line in target_files[t_file]:
-                processed_season_match.write("%s\n" % line)
-'''
 '''
 #Process Amos data
 valid_camera_nums = np.load('amos/valid_camera_nums.npy')

@@ -10,7 +10,16 @@ then
 		model=$CAFFE_ROOT"/../data/models/alexnet/pretrained/places205CNN_iter_300000_upgraded.caffemodel"		
 	elif [ "$2" = "trained" ]
 	then
-		snapshot="$3"
+		if [ "$3" = "w" ]
+		then
+			model="$4"
+		elif [ "$3" = "s" ]
+		then
+			snapshot="$4"
+		else
+			echo "Wrong 3rd Param"
+			exit
+		fi
 	else
 		echo "wrong 2nd params "
 		exit

@@ -19,6 +19,25 @@ layer {
   }
 }
 layer {
+  name: "source_1"
+  type: "Data"
+  top: "source_1"
+  top: "source_labels_im"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    mirror: true
+    crop_size: 224
+    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
+  }
+  data_param {  
+    source: "data/domain_adaptation_data/lmdb/target1"
+    batch_size: 64 
+    backend: LMDB
+  }
+}
+layer {
   name: "conv1_1"
   type: "Convolution"
   bottom: "source_1"

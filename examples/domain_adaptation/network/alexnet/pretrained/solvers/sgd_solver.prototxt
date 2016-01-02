@@ -1,4 +1,4 @@
-net: "examples/domain_adaptation/network/alexnet/pretrained/train_val.prototxt"
+net: "examples/domain_adaptation/network/train_val.prototxt"
 test_iter: 38 # test_iter specifies how many forward passes the test should carry out batchsize 256 x 38 > 9480 total test images.
 test_interval: 200 # Carry out testing every 196 training iterations appx one epoc
 
@@ -20,7 +20,7 @@ weight_decay: 0.0005 #how much weight is decayed
 solver_mode: GPU # solver mode: GPU
 # snapshot intermediate results
 snapshot: 10000
-snapshot_prefix: "snapshots"
+snapshot_prefix: "examples/domain_adaptation/snapshots/snapshots"
 snapshot_after_train: true
 
 

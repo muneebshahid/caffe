@@ -64,8 +64,13 @@ def split_source_target(data_set, sources, targets, label_data_limit):
             else:
                 index = 0
             pos_ins_2 = pos_target_data.pop(index)
-            pos_ins_3 = [pos_ins_1[0], pos_ins_2[1], pos_ins_1[2], pos_ins_1[3]]
-            pos_ins_4 = [pos_ins_2[0], pos_ins_1[1], pos_ins_1[2], pos_ins_1[3]]
+
+            pos_ins_3 = [pos_ins_1[0], pos_ins_2[1]]
+            random.shuffle(pos_ins_3)
+            pos_ins_3.extend([pos_ins_1[2], pos_ins_1[3]])
+            pos_ins_4 = [pos_ins_2[0], pos_ins_1[1]]
+            random.shuffle(pos_ins_4)
+            pos_ins_4.extend([pos_ins_1[2], pos_ins_1[3]])
             # since we do not
             data_set_target.extend([pos_ins_3, pos_ins_4])
     # shuffling data

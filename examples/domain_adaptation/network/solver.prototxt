@@ -2,13 +2,11 @@ net: "examples/domain_adaptation/network/train_val.prototxt"
 test_iter: 38 		# test_iter specifies how many forward passes the test should carry out batchsize 256 x 38 > 9480 total test images.
 test_interval: 200 	# Carry out testing every 196 training iterations appx one epoc
 
-base_lr: 0.01 		# begin training at a learning rate of 0.01 = 1e-2
+base_lr: 0.001 		# begin training at a learning rate of 0.01 = 1e-2
 lr_policy: "multistep" 	# learning rate policy: drop the learning rate in "steps"
                   	# by a factor of gamma every stepsize iterations
-stepvalue: 500
 stepvalue: 1000 
-stepvalue: 2500
-stepvalue: 8000
+stepvalue: 6000
 
 gamma: 0.1 		# drop the learning rate by a factor of 10
            		# (i.e., multiply it by a factor of gamma = 0.1)

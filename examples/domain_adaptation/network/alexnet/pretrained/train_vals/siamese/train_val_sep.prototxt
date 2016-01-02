@@ -210,7 +210,7 @@ layer {
 }
 layer {
   name: "relu1"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "conv1"
   top: "conv1"
 }
@@ -271,7 +271,7 @@ layer {
 }
 layer {
   name: "relu2"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "conv2"
   top: "conv2"
 }
@@ -330,7 +330,7 @@ layer {
 }
 layer {
   name: "relu3"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "conv3"
   top: "conv3"
 }
@@ -368,7 +368,7 @@ layer {
 }
 layer {
   name: "relu4"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "conv4"
   top: "conv4"
 }
@@ -406,7 +406,7 @@ layer {
 }
 layer {
   name: "relu5"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "conv5"
   top: "conv5"
 }
@@ -457,7 +457,7 @@ layer {
 }
 layer {
   name: "relu6"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "fc6"
   top: "fc6"
 }
@@ -501,7 +501,7 @@ layer {
 }
 layer {
   name: "relu7"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "fc7"
   top: "fc7"
 }
@@ -534,8 +534,8 @@ layer {
   inner_product_param {
     num_output: 256
     weight_filler {
-      type: "gaussian"
-      std: 0.005
+      type: "msra"
+      variance_norm: AVERAGE
     }
     bias_filler {
       type: "constant"
@@ -581,7 +581,7 @@ layer {
 }
 layer {
   name: "relu1_p"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "conv1_p"
   top: "conv1_p"
 }
@@ -642,7 +642,7 @@ layer {
 }
 layer {
   name: "relu2_p"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "conv2_p"
   top: "conv2_p"
 }
@@ -701,7 +701,7 @@ layer {
 }
 layer {
   name: "relu3_p"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "conv3_p"
   top: "conv3_p"
 }
@@ -739,7 +739,7 @@ layer {
 }
 layer {
   name: "relu4_p"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "conv4_p"
   top: "conv4_p"
 }
@@ -777,7 +777,7 @@ layer {
 }
 layer {
   name: "relu5_p"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "conv5_p"
   top: "conv5_p"
 }
@@ -828,7 +828,7 @@ layer {
 }
 layer {
   name: "relu6_p"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "fc6_p"
   top: "fc6_p"
 }
@@ -872,7 +872,7 @@ layer {
 }
 layer {
   name: "relu7_p"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "fc7_p"
   top: "fc7_p"
 }
@@ -905,8 +905,8 @@ layer {
   inner_product_param {
     num_output: 256
     weight_filler {
-      type: "gaussian"
-      std: 0.005
+      type: "msra"
+      variance_norm: AVERAGE
     }
     bias_filler {
       type: "constant"
@@ -922,20 +922,6 @@ layer {
 # -----------------------------------------------------------------------------
 
 # -------------------------------------- Split Source Target Features And Labels
-
-#layer {
-#  name: "source_labels_im"
-#  type: "Slice"
-#  bottom: "im_labels"
-#  top: "source_labels_im"
-#  top: "target_labels_im"
-#  include: { 
-#    phase: TRAIN 
-#  }
-#  slice_param {
-#    slice_dim: 0
-#  }  
-#}
 
 layer {
   name: "source_features_1"
@@ -1018,7 +1004,8 @@ layer {
   inner_product_param {
     num_output: 2
     weight_filler {
-      type: "xavier"
+      type: "msra"
+      variance_norm: AVERAGE
     }
     bias_filler {
       type: "constant"
@@ -1045,7 +1032,8 @@ layer {
   inner_product_param {
     num_output: 2
     weight_filler {
-      type: "xavier"
+      type: "msra"
+      variance_norm: AVERAGE
     }
     bias_filler {
       type: "constant"
@@ -1125,7 +1113,7 @@ layer {
     lower_bound: 0.0
     upper_bound: 1.0
     alpha: 10.0
-    max_iter: 10000
+    max_iter: 3000
   }
 }
 
@@ -1146,8 +1134,8 @@ layer {
   inner_product_param {
     num_output: 1024
     weight_filler {
-      type: "gaussian"
-      std: 0.01
+      type: "msra"
+      variance_norm: AVERAGE
     }
     bias_filler {
       type: "constant"
@@ -1157,7 +1145,7 @@ layer {
 
 layer {
   name: "dc_relu1"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "dc_ip1"
   top: "dc_ip1"
 }
@@ -1185,8 +1173,8 @@ layer {
   inner_product_param {
     num_output: 1024
     weight_filler {
-      type: "gaussian"
-      std: 0.01
+      type: "msra"
+      variance_norm: AVERAGE
     }
     bias_filler {
       type: "constant"
@@ -1195,7 +1183,7 @@ layer {
 }
 layer {
   name: "dc_relu2"
-  type: "ReLU"
+  type: "PReLU"
   bottom: "dc_ip2"
   top: "dc_ip2"
 }
@@ -1223,8 +1211,8 @@ layer {
   inner_product_param {
     num_output: 1
     weight_filler {
-      type: "gaussian"
-      std: 0.3
+      type: "msra"
+      variance_norm: AVERAGE
     }
     bias_filler {
       type: "constant"

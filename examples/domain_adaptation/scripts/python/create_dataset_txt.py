@@ -313,7 +313,7 @@ def main(label_data_limit=0):
         sys.exit()
 
     # batch size is used for padding.
-    batch_size = 128
+    batch_size = 256
 
     # flag to pad source and target arrays to make them a multiple of batch size
     pad_multiple = True
@@ -365,8 +365,8 @@ def main(label_data_limit=0):
 
     if pad_multiple:
         print "padding data to nearest multiple of batch size"
-        source_data.extend(pad_data_multiple(source_data_orig, batch_size))
-        target_data.extend(pad_data_multiple(target_data_orig, batch_size))
+        source_data.extend(pad_data_multiple(source_data, batch_size))
+        target_data.extend(pad_data_multiple(target_data, batch_size))
         print "padded source size {0} target size {1} test {2}".format(len(source_data), len(target_data), len(test_data))
 
     print "padded len source {0} target size {1} test {2}".format(len(source_data), len(target_data), len(test_data))

@@ -313,7 +313,7 @@ def main(label_data_limit=0):
         sys.exit()
 
     # batch size is used for padding.
-    batch_size = 256
+    batch_size = 128 
 
     # flag to pad source and target arrays to make them a multiple of batch size
     pad_multiple = True

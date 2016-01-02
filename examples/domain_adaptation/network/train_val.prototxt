@@ -534,8 +534,7 @@ layer {
   inner_product_param {
     num_output: 256
     weight_filler {
-      type: "msra"
-      variance_norm: AVERAGE
+      type: "xavier"
     }
     bias_filler {
       type: "constant"
@@ -905,8 +904,7 @@ layer {
   inner_product_param {
     num_output: 256
     weight_filler {
-      type: "msra"
-      variance_norm: AVERAGE
+      type: "xavier"
     }
     bias_filler {
       type: "constant"
@@ -1004,8 +1002,7 @@ layer {
   inner_product_param {
     num_output: 2
     weight_filler {
-      type: "msra"
-      variance_norm: AVERAGE
+      type: "xavier"
     }
     bias_filler {
       type: "constant"
@@ -1032,8 +1029,7 @@ layer {
   inner_product_param {
     num_output: 2
     weight_filler {
-      type: "msra"
-      variance_norm: AVERAGE
+      type: "xavier"
     }
     bias_filler {
       type: "constant"
@@ -1134,8 +1130,7 @@ layer {
   inner_product_param {
     num_output: 1024
     weight_filler {
-      type: "msra"
-      variance_norm: AVERAGE
+      type: "xavier"
     }
     bias_filler {
       type: "constant"
@@ -1173,8 +1168,7 @@ layer {
   inner_product_param {
     num_output: 1024
     weight_filler {
-      type: "msra"
-      variance_norm: AVERAGE
+      type: "xavier"
     }
     bias_filler {
       type: "constant"
@@ -1211,8 +1205,7 @@ layer {
   inner_product_param {
     num_output: 1
     weight_filler {
-      type: "msra"
-      variance_norm: AVERAGE
+      type: "xavier"
     }
     bias_filler {
       type: "constant"

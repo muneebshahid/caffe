@@ -233,8 +233,8 @@ def process_freiburg(data_set, source, key, root_folder_path, sub_folder):
                         np.concatenate((im_1, im_2), axis=1))
             print 'saving neg example {0} / {1}'.format(neg_examples, pos_examples)
         seasons = [data_set_freiburg_pos[im1][0], data_set_freiburg_pos[im2][1]]
-        if source:
-            random.shuffle(seasons)
+        # since we do not deal with negative data later on so we can shuffle it here
+        random.shuffle(seasons)
         seasons.extend([0, source])
         data_set_freiburg_neg.append(seasons)
         if neg_examples % 100 == 0:
@@ -279,10 +279,8 @@ def process_michigan(data_set, source, key, root_folder_path, sub_folder):
     print 'Creating negative examples'
     while michigan_neg_instances < michigan_pos_len:
         im1 = np.random.random_integers(0, last_index)
-        if source:
-            month_mich = np.random.random_integers(0, 1)
-        else:
-            month_mich = 0
+        # since we do not deal with negative data later on so we can shuffle it here
+        month_mich = np.random.random_integers(0, 1)
         file_1 = folder_path + months_mich[month_mich] + '/00000' + str(im1) + '.tiff'
         # michigan data set has a weird naming convention, so checking if the file actually exists
         if not osh.is_file(file_1):

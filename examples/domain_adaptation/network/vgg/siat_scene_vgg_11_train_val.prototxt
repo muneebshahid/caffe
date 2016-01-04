@@ -1,4 +1,8 @@
-name: "siat_scene_vgg_11_layers"
+name: "siat_scene_vgg_11_layers_siamese"
+# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------ Data Layer
+# -----------------------------------------------------------------------------
+
 layer {
   name: "source_1"
   type: "Data"
@@ -9,7 +13,7 @@ layer {
   }
   transform_param {
     mirror: true
-    crop_size: 224
+    crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   data_param {  
@@ -18,6 +22,154 @@ layer {
     backend: LMDB
   }
 }
+
+layer {
+  name: "target_1"
+  type: "Data"
+  top: "target_1"
+  top: "target_labels_im"
+  include {
+    phase: TRAIN
+  }
+  transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
+  }
+  data_param {  
+    source: "data/domain_adaptation_data/lmdb/target1"
+    batch_size: 64
+    backend: LMDB
+  }
+}
+
+layer {
+  name: "source_2"
+  type: "Data"
+  top: "source_2"
+  top: "source_labels_dm"
+  include {
+    phase: TRAIN
+  }
+  transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
+  }
+  data_param {  
+    source: "data/domain_adaptation_data/lmdb/source2"
+    batch_size: 64
+    backend: LMDB
+  }
+}
+
+layer {
+  name: "target_2"
+  type: "Data"
+  top: "target_2"
+  top: "target_labels_dm"
+  include {
+    phase: TRAIN
+  }
+  transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
+  }
+  data_param {  
+    source: "data/domain_adaptation_data/lmdb/target2"
+    batch_size: 64
+    backend: LMDB
+  }
+}
+
+
+layer 
+{
+  name: "source_target_1"
+  type: "Concat"
+  bottom: "source_1"
+  bottom: "target_1"
+  top: "source_target_1"
+  concat_param {
+    concat_dim: 0
+  }
+    include {
+    phase: TRAIN
+  }
+}
+
+layer 
+{
+  name: "source_target_2"
+  type: "Concat"
+  bottom: "source_2"
+  bottom: "target_2"
+  top: "source_target_2"
+  concat_param {
+    concat_dim: 0
+  }
+    include {
+    phase: TRAIN
+  }
+}
+
+layer 
+{
+  name: "domain_labels"
+  type: "Concat"
+  bottom: "source_labels_dm"
+  bottom: "target_labels_dm"
+  top: "domain_labels"
+  concat_param {
+    concat_dim: 0
+  }
+    include {
+    phase: TRAIN
+  }
+}
+
+layer {
+  name: "source_target_1"
+  type: "Data"
+  top: "source_target_1"
+  top: "source_labels_im"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    mirror: false
+    crop_size: 227
+    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
+  }
+  data_param {
+    source: "data/domain_adaptation_data/lmdb/test1"
+    batch_size: 256
+    backend: LMDB
+  }
+}
+
+layer {
+  name: "source_target_2"
+  type: "Data"
+  top: "source_target_2"
+  top: "domain_labels"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    mirror: false
+    crop_size: 227
+    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
+  }
+  data_param {
+    source: "data/domain_adaptation_data/lmdb/test2"
+    batch_size: 256 
+    backend: LMDB
+  }
+}
+
+# ------------------------------------------------------------------------ Conv1
 layer {
   name: "conv1_1"
   type: "Convolution"
@@ -27,6 +179,16 @@ layer {
     num_output: 64
     pad: 1
     kernel_size: 3
+  }
+  param {
+    name: "conv1_1_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv1_1_b"
+    lr_mult: 2
+    decay_mult: 0
   }
 }
 layer {
@@ -46,6 +208,8 @@ layer {
     stride: 2
   }
 }
+
+# ------------------------------------------------------------------------ Conv2
 layer {
   name: "conv2_1"
   type: "Convolution"
@@ -55,6 +219,16 @@ layer {
     num_output: 128
     pad: 1
     kernel_size: 3
+  }
+  param {
+    name: "conv2_1_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv2_1_b"
+    lr_mult: 2
+    decay_mult: 0
   }
 }
 layer {
@@ -74,6 +248,8 @@ layer {
     stride: 2
   }
 }
+
+# ------------------------------------------------------------------------ Conv3
 layer {
   name: "conv3_1"
   type: "Convolution"
@@ -83,6 +259,16 @@ layer {
     num_output: 256
     pad: 1
     kernel_size: 3
+  }
+  param {
+    name: "conv3_1_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv3_1_b"
+    lr_mult: 2
+    decay_mult: 0
   }
 }
 layer {
@@ -100,6 +286,16 @@ layer {
     num_output: 256
     pad: 1
     kernel_size: 3
+  }
+  param {
+    name: "conv3_2_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv3_2_b"
+    lr_mult: 2
+    decay_mult: 0
   }
 }
 layer {
@@ -119,6 +315,8 @@ layer {
     stride: 2
   }
 }
+
+# ------------------------------------------------------------------------ Conv4
 layer {
   name: "conv4_1"
   type: "Convolution"
@@ -128,6 +326,16 @@ layer {
     num_output: 512
     pad: 1
     kernel_size: 3
+  }
+  param {
+    name: "conv4_1_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv4_1_b"
+    lr_mult: 2
+    decay_mult: 0
   }
 }
 layer {
@@ -145,6 +353,16 @@ layer {
     num_output: 512
     pad: 1
     kernel_size: 3
+  }
+  param {
+    name: "conv4_2_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv4_2_b"
+    lr_mult: 2
+    decay_mult: 0
   }
 }
 layer {
@@ -164,6 +382,8 @@ layer {
     stride: 2
   }
 }
+
+# ------------------------------------------------------------------------ Conv5
 layer {
   name: "conv5_1"
   type: "Convolution"
@@ -173,6 +393,16 @@ layer {
     num_output: 512
     pad: 1
     kernel_size: 3
+  }
+  param {
+    name: "conv5_1_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv5_1_b"
+    lr_mult: 2
+    decay_mult: 0
   }
 }
 layer {
@@ -190,6 +420,16 @@ layer {
     num_output: 512
     pad: 1
     kernel_size: 3
+  }
+    param {
+    name: "conv5_2_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv5_2_b"
+    lr_mult: 2
+    decay_mult: 0
   }
 }
 layer {
@@ -209,6 +449,9 @@ layer {
     stride: 2
   }
 }
+
+
+# ------------------------------------------------------------------------- fc6
 layer {
   name: "fc6"
   type: "InnerProduct"
@@ -216,6 +459,16 @@ layer {
   top: "fc6"
   inner_product_param {
     num_output: 4096
+  }
+  param {
+    name: "fc6_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "fc6_b"
+    lr_mult: 2
+    decay_mult: 0
   }
 }
 layer {
@@ -233,6 +486,8 @@ layer {
     dropout_ratio: 0.5
   }
 }
+
+# ------------------------------------------------------------------------- fc7
 layer {
   name: "fc7"
   type: "InnerProduct"
@@ -240,6 +495,16 @@ layer {
   top: "fc7"
   inner_product_param {
     num_output: 4096
+  }
+  param {
+    name: "fc7_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "fc7_b"
+    lr_mult: 2
+    decay_mult: 0
   }
 }
 layer {
@@ -257,35 +522,501 @@ layer {
     dropout_ratio: 0.5
   }
 }
+
+
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------- NET2
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------ Conv1
+
 layer {
-  name: "fc8"
+  name: "conv1_1_P"
+  type: "Convolution"
+  bottom: "source_2"
+  top: "conv1_1_P"
+  convolution_param {
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+  }
+  param {
+    name: "conv1_1_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv1_1_b"
+    lr_mult: 2
+    decay_mult: 0
+  }
+}
+layer {
+  name: "relu1_1_P"
+  type: "ReLU"
+  bottom: "conv1_1_P"
+  top: "conv1_1_P"
+}
+layer {
+  name: "pool1_P"
+  type: "Pooling"
+  bottom: "conv1_1_P"
+  top: "pool1_P"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+
+# ------------------------------------------------------------------------ Conv2
+layer {
+  name: "conv2_1_P"
+  type: "Convolution"
+  bottom: "pool1_P"
+  top: "conv2_1_P"
+  convolution_param {
+    num_output: 128
+    pad: 1
+    kernel_size: 3
+  }
+  param {
+    name: "conv2_1_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv2_1_b"
+    lr_mult: 2
+    decay_mult: 0
+  }
+}
+layer {
+  name: "relu2_1_P"
+  type: "ReLU"
+  bottom: "conv2_1_P"
+  top: "conv2_1_P"
+}
+layer {
+  name: "pool2_P"
+  type: "Pooling"
+  bottom: "conv2_1_P"
+  top: "pool2_P"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+
+# ------------------------------------------------------------------------ Conv3
+layer {
+  name: "conv3_1_P"
+  type: "Convolution"
+  bottom: "pool2_P"
+  top: "conv3_1_P"
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+  }
+  param {
+    name: "conv3_1_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv3_1_b"
+    lr_mult: 2
+    decay_mult: 0
+  }
+}
+layer {
+  name: "relu3_1_P"
+  type: "ReLU"
+  bottom: "conv3_1_P"
+  top: "conv3_1_P"
+}
+layer {
+  name: "conv3_2_P"
+  type: "Convolution"
+  bottom: "conv3_1_P"
+  top: "conv3_2_P"
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+  }
+  param {
+    name: "conv3_2_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv3_2_b"
+    lr_mult: 2
+    decay_mult: 0
+  }
+}
+layer {
+  name: "relu3_2_P"
+  type: "ReLU"
+  bottom: "conv3_2_P"
+  top: "conv3_2_P"
+}
+layer {
+  name: "pool3_P"
+  type: "Pooling"
+  bottom: "conv3_2_P"
+  top: "pool3_P"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+
+# ------------------------------------------------------------------------ Conv4
+layer {
+  name: "conv4_1_P"
+  type: "Convolution"
+  bottom: "pool3_P"
+  top: "conv4_1_P"
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+  param {
+    name: "conv4_1_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv4_1_b"
+    lr_mult: 2
+    decay_mult: 0
+  }
+}
+layer {
+  name: "relu4_1_P"
+  type: "ReLU"
+  bottom: "conv4_1_P"
+  top: "conv4_1_P"
+}
+layer {
+  name: "conv4_2_P"
+  type: "Convolution"
+  bottom: "conv4_1_P"
+  top: "conv4_2_P"
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+  param {
+    name: "conv4_2_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv4_2_b"
+    lr_mult: 2
+    decay_mult: 0
+  }
+}
+layer {
+  name: "relu4_2_P"
+  type: "ReLU"
+  bottom: "conv4_2_P"
+  top: "conv4_2_P"
+}
+layer {
+  name: "pool4_P"
+  type: "Pooling"
+  bottom: "conv4_2_P"
+  top: "pool4_P"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+
+# ------------------------------------------------------------------------ Conv5
+layer {
+  name: "conv5_1_P"
+  type: "Convolution"
+  bottom: "pool4_P"
+  top: "conv5_1_P"
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+  param {
+    name: "conv5_1_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv5_1_b"
+    lr_mult: 2
+    decay_mult: 0
+  }
+}
+layer {
+  name: "relu5_1_P"
+  type: "ReLU"
+  bottom: "conv5_1_P"
+  top: "conv5_1_P"
+}
+
+layer {
+  name: "conv5_2_P"
+  type: "Convolution"
+  bottom: "conv5_1_P"
+  top: "conv5_2_P"
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+  param {
+    name: "conv5_2_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "conv5_2_b"
+    lr_mult: 2
+    decay_mult: 0
+  }
+}
+layer {
+  name: "relu5_2_P"
+  type: "ReLU"
+  bottom: "conv5_2_P"
+  top: "conv5_2_P"
+}
+layer {
+  name: "pool5_P"
+  type: "Pooling"
+  bottom: "conv5_2_P"
+  top: "pool5_P"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+
+
+# ------------------------------------------------------------------------- fc6
+layer {
+  name: "fc6_P"
+  type: "InnerProduct"
+  bottom: "pool5_P"
+  top: "fc6_P"
+    param {
+    name: "fc6_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "fc6_b"
+    lr_mult: 2
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 4096
+  }
+}
+layer {
+  name: "relu6_P"
+  type: "ReLU"
+  bottom: "fc6_P"
+  top: "fc6_P"
+}
+layer {
+  name: "drop6_P"
+  type: "Dropout"
+  bottom: "fc6_P"
+  top: "fc6_P"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+
+# ------------------------------------------------------------------------- fc7
+layer {
+  name: "fc7_P"
+  type: "InnerProduct"
+  bottom: "fc6_P"
+  top: "fc7_P"
+  param {
+    name: "fc7_w"
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    name: "fc7_b"
+    lr_mult: 2
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 4096
+  }
+}
+layer {
+  name: "relu7_P"
+  type: "ReLU"
+  bottom: "fc7_P"
+  top: "fc7_P"
+}
+layer {
+  name: "drop7_P"
+  type: "Dropout"
+  bottom: "fc7_P"
+  top: "fc7_P"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+
+
+
+# -----------------------------------------------------------------------------
+# ------------------------------------------------------------- Label Predictor
+# -----------------------------------------------------------------------------
+
+# -------------------------------------- Split Source Target Features And Labels
+
+layer {
+  name: "source_features_1"
+  type: "Slice"
+  bottom: "fc7"
+  top: "source_features_1"
+  top: "target_features_1"
+  include: { 
+    phase: TRAIN 
+  }
+  slice_param {
+    slice_dim: 0
+  }  
+}
+
+layer {
+  name: "source_features_2"
+  type: "Slice"
+  bottom: "fc7_P"
+  top: "source_features_2"
+  top: "target_features_2"
+  include: { 
+    phase: TRAIN 
+  }
+  slice_param {
+    slice_dim: 0
+  }  
+}
+
+# ---------------------------------------------------------------------- Silencer
+layer {
+  name: "silence_target_features"
+  type: "Silence"
+  bottom: "target_features_1"
+  bottom: "target_features_2"
+  bottom: "target_labels_im"
+  include: { 
+    phase: TRAIN 
+  }
+}
+
+# --------------------------------------------------------------------- Copy Data
+layer {
+  name: "source_features_1"
+  type: "Split"
+  bottom: "bottleneck_1"
+  top: "source_features_1"
+  include: { 
+    phase: TEST 
+  }
+}
+
+layer {
+  name: "source_features_2"
+  type: "Split"
+  bottom: "bottleneck_2"
+  top: "source_features_2"
+  include: { 
+    phase: TEST 
+  }
+}
+
+# ------------------------------------------------------------------------- fc8
+
+layer {
+  name: "fc8_n"
   type: "InnerProduct"
   bottom: "fc7"
   top: "fc8"
-  inner_product_param {
-    num_output: 205
+    param {
+      name: "fc8_n_w"
+      lr_mult: 10
+      decay_mult: 1
+    }
+    param {
+      name: "fc8_n_b"
+      lr_mult: 20
+      decay_mult: 0
+    }
+    inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
   }
 }
-#layer {
-#  name: "prob"
-#  type: "Softmax"
-#  bottom: "fc8"
-#  top: "prob"
-#}
+
 layer {
-  name: "pred_accuracy"
-  type: "Accuracy"
-  bottom: "fc8"
-  bottom: "source_labels_im"
-  top: "pred_accuracy"
-  include: { 
-  phase: TEST 
+  name: "fc8_n_P"
+  type: "InnerProduct"
+  bottom: "fc7_P"
+  top: "fc8_P"
+  param {
+    name: "fc8_n_w"
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    name: "fc8_n_b"
+    lr_mult: 20
+    decay_mult: 0
+  }
+    inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
   }
 }
+
+# ------------------------------------------------------------------- Siamese Loss
 layer {
-  name: "pred_loss"
-  type: "SoftmaxWithLoss"
-  bottom: "fc8"
+  name: "siamese_loss"
+  type: "ContrastiveLoss"
+  bottom: "fc8_n_n"
+  bottom: "fc8_n_n_P"
   bottom: "source_labels_im"
-  top: "pred_loss"
+  top: "siamese_loss"
+  contrastive_loss_param {
+    margin: 1
+  }
 }

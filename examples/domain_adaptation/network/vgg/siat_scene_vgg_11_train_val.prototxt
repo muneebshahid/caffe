@@ -173,7 +173,7 @@ layer {
 layer {
   name: "conv1_1"
   type: "Convolution"
-  bottom: "source_1"
+  bottom: "source_target_1"
   top: "conv1_1"
   convolution_param {
     num_output: 64
@@ -532,7 +532,7 @@ layer {
 layer {
   name: "conv1_1_P"
   type: "Convolution"
-  bottom: "source_2"
+  bottom: "source_target_2"
   top: "conv1_1_P"
   convolution_param {
     num_output: 64
@@ -935,7 +935,7 @@ layer {
 layer {
   name: "source_features_1"
   type: "Split"
-  bottom: "bottleneck_1"
+  bottom: "fc7"
   top: "source_features_1"
   include: { 
     phase: TEST 
@@ -945,7 +945,7 @@ layer {
 layer {
   name: "source_features_2"
   type: "Split"
-  bottom: "bottleneck_2"
+  bottom: "fc7_P"
   top: "source_features_2"
   include: { 
     phase: TEST 
@@ -958,7 +958,7 @@ layer {
   name: "fc8_n"
   type: "InnerProduct"
   bottom: "fc7"
-  top: "fc8"
+  top: "fc8_n"
     param {
       name: "fc8_n_w"
       lr_mult: 10
@@ -985,7 +985,7 @@ layer {
   name: "fc8_n_P"
   type: "InnerProduct"
   bottom: "fc7_P"
-  top: "fc8_P"
+  top: "fc8_n_P"
   param {
     name: "fc8_n_w"
     lr_mult: 10
@@ -1012,8 +1012,8 @@ layer {
 layer {
   name: "siamese_loss"
   type: "ContrastiveLoss"
-  bottom: "fc8_n_n"
-  bottom: "fc8_n_n_P"
+  bottom: "fc8_n"
+  bottom: "fc8_n_P"
   bottom: "source_labels_im"
   top: "siamese_loss"
   contrastive_loss_param {

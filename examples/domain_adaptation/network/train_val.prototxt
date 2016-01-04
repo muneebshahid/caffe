@@ -18,7 +18,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/source1"
-    batch_size: 64 
+    batch_size: 16 
     backend: LMDB
   }
 }
@@ -38,7 +38,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/target1"
-    batch_size: 64
+    batch_size: 16
     backend: LMDB
   }
 }
@@ -58,7 +58,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/source2"
-    batch_size: 64
+    batch_size: 16
     backend: LMDB
   }
 }
@@ -78,7 +78,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/target2"
-    batch_size: 64
+    batch_size: 16
     backend: LMDB
   }
 }
@@ -144,7 +144,7 @@ layer {
   }
   data_param {
     source: "data/domain_adaptation_data/lmdb/test1"
-    batch_size: 64 
+    batch_size: 32 
     backend: LMDB
   }
 }
@@ -164,7 +164,7 @@ layer {
   }
   data_param {
     source: "data/domain_adaptation_data/lmdb/test2"
-    batch_size: 64 
+    batch_size: 32 
     backend: LMDB
   }
 }
@@ -930,6 +930,12 @@ layer {
     phase: TRAIN 
   }
 }
+layer {
+  name: "silence_target_featuresT"
+  type: "Silence"
+  bottom: "domain_labels"
+}
+
 
 # --------------------------------------------------------------------- Copy Data
 layer {
@@ -957,7 +963,7 @@ layer {
 layer {
   name: "fc8_n"
   type: "InnerProduct"
-  bottom: "fc7"
+  bottom: "source_features_1"
   top: "fc8_n"
     param {
       name: "fc8_n_w"
@@ -984,7 +990,7 @@ layer {
 layer {
   name: "fc8_n_P"
   type: "InnerProduct"
-  bottom: "fc7_P"
+  bottom: "source_features_2"
   top: "fc8_n_P"
   param {
     name: "fc8_n_w"

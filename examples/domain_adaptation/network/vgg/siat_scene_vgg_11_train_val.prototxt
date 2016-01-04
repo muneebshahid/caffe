@@ -13,7 +13,7 @@ layer {
   }
   transform_param {
     mirror: true
-    crop_size: 224
+    crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   data_param {  
@@ -33,7 +33,7 @@ layer {
   }
   transform_param {
     mirror: true
-    crop_size: 224
+    crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   data_param {  
@@ -53,7 +53,7 @@ layer {
   }
   transform_param {
     mirror: true
-    crop_size: 224
+    crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   data_param {  
@@ -73,7 +73,7 @@ layer {
   }
   transform_param {
     mirror: true
-    crop_size: 224
+    crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   data_param {  
@@ -139,12 +139,12 @@ layer {
   }
   transform_param {
     mirror: false
-    crop_size: 224
+    crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   data_param {
     source: "data/domain_adaptation_data/lmdb/test1"
-    batch_size: 64 
+    batch_size: 256
     backend: LMDB
   }
 }
@@ -159,12 +159,12 @@ layer {
   }
   transform_param {
     mirror: false
-    crop_size: 224
+    crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   data_param {
     source: "data/domain_adaptation_data/lmdb/test2"
-    batch_size: 64 
+    batch_size: 256 
     backend: LMDB
   }
 }
@@ -926,6 +926,7 @@ layer {
   bottom: "target_features_1"
   bottom: "target_features_2"
   bottom: "target_labels_im"
+  bottom: "domain_labels"
   include: { 
     phase: TRAIN 
   }
@@ -957,7 +958,7 @@ layer {
 layer {
   name: "fc8_n"
   type: "InnerProduct"
-  bottom: "fc7"
+  bottom: "source_features_1"
   top: "fc8_n"
     param {
       name: "fc8_n_w"
@@ -984,7 +985,7 @@ layer {
 layer {
   name: "fc8_n_P"
   type: "InnerProduct"
-  bottom: "fc7_P"
+  bottom: "source_features_2"
   top: "fc8_n_P"
   param {
     name: "fc8_n_w"

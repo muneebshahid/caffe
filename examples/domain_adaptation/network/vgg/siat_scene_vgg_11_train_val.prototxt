@@ -18,7 +18,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/source1"
-    batch_size: 32 
+    batch_size: 16 
     backend: LMDB
   }
 }
@@ -38,7 +38,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/target1"
-    batch_size: 32
+    batch_size: 16
     backend: LMDB
   }
 }
@@ -58,7 +58,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/source2"
-    batch_size: 32
+    batch_size: 16
     backend: LMDB
   }
 }
@@ -78,7 +78,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/target2"
-    batch_size: 32
+    batch_size: 16
     backend: LMDB
   }
 }
@@ -523,6 +523,33 @@ layer {
   }
 }
 
+# --------------------------------------------------------------------- bottleneck
+layer {
+  name: "bottleneck_1"
+  type: "InnerProduct"
+  bottom: "fc7"
+  top: "bottleneck_1"
+  param {
+    name: "bottleneck_w"
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    name: "bottleneck_b"
+    lr_mult: 20
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 256
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------- NET2
@@ -883,7 +910,33 @@ layer {
   }
 }
 
-
+# --------------------------------------------------------------------- bottleneck
+layer {
+  name: "bottleneck_2"
+  type: "InnerProduct"
+  bottom: "fc7_P"
+  top: "bottleneck_2"
+  param {
+    name: "bottleneck_w"
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    name: "bottleneck_b"
+    lr_mult: 20
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 256
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
 
 # -----------------------------------------------------------------------------
 # ------------------------------------------------------------- Label Predictor
@@ -894,7 +947,7 @@ layer {
 layer {
   name: "source_features_1"
   type: "Slice"
-  bottom: "fc7"
+  bottom: "bottleneck_1"
   top: "source_features_1"
   top: "target_features_1"
   include: { 
@@ -908,7 +961,7 @@ layer {
 layer {
   name: "source_features_2"
   type: "Slice"
-  bottom: "fc7_P"
+  bottom: "bottleneck_2"
   top: "source_features_2"
   top: "target_features_2"
   include: { 
@@ -926,7 +979,6 @@ layer {
   bottom: "target_features_1"
   bottom: "target_features_2"
   bottom: "target_labels_im"
-  bottom: "domain_labels"
   include: { 
     phase: TRAIN 
   }
@@ -936,7 +988,7 @@ layer {
 layer {
   name: "source_features_1"
   type: "Split"
-  bottom: "fc7"
+  bottom: "bottleneck_1"
   top: "source_features_1"
   include: { 
     phase: TEST 
@@ -946,7 +998,7 @@ layer {
 layer {
   name: "source_features_2"
   type: "Split"
-  bottom: "fc7_P"
+  bottom: "bottleneck_2"
   top: "source_features_2"
   include: { 
     phase: TEST 
@@ -1021,3 +1073,173 @@ layer {
     margin: 1
   }
 }
+
+
+# -----------------------------------------------------------------------------
+# ----------------------------------------------------------- Gradient reversal
+# -----------------------------------------------------------------------------
+
+## ----------------------------------------------------------------- Concat Data
+
+layer 
+{
+  name: "concat_data"
+  type: "Concat"
+  bottom: "bottleneck_1"
+  bottom: "bottleneck_2"
+  top: "concat_data"
+  concat_param {
+    concat_dim: 1 
+  }
+}
+
+## ------------------------------------------------------------------------- GRL
+
+#layer {
+#  name: "grl"
+#  type: "InnerProduct"
+#  bottom: "concat_data"
+#  top: "grl"
+#  param {    
+#    lr_mult: 10
+#    decay_mult: 1
+#  }
+#  param {
+#    lr_mult: 20
+#    decay_mult: 0
+#  }
+#  inner_product_param {
+#    num_output: 256
+#    weight_filler {
+#      type: "gaussian"
+#      std: 0.005
+#    }
+#    bias_filler {
+#      type: "constant"
+#      value: 0.1
+#    }
+#  }
+#}
+
+layer {
+  name: "grl"
+  type: "GradientScaler"
+  bottom: "concat_data"
+  top: "grl"
+  gradient_scaler_param {
+    lower_bound: 0.0
+    upper_bound: 1.0
+    alpha: 10.0
+    max_iter: 3000
+  }
+}
+
+# -----------------------------------------------------------------------------
+# ----------------------------------------------------------- Domain classifier
+# -----------------------------------------------------------------------------
+layer {
+  name: "dc_ip1"
+  type: "InnerProduct"
+  bottom: "grl"
+  top: "dc_ip1"
+  param {
+    lr_mult: 10
+  }
+  param {
+    lr_mult: 20
+  }
+  inner_product_param {
+    num_output: 1024
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+layer {
+  name: "dc_relu1"
+  type: "ReLU"
+  bottom: "dc_ip1"
+  top: "dc_ip1"
+}
+layer {
+  name: "dc_drop1"
+  type: "Dropout"
+  bottom: "dc_ip1"
+  top: "dc_ip1"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+# ----------------------------------------------------------------------------
+layer {
+  name: "dc_ip2"
+  type: "InnerProduct"
+  bottom: "dc_ip1"
+  top: "dc_ip2"
+  param {
+    lr_mult: 10
+  }
+  param {
+    lr_mult: 20
+  }
+  inner_product_param {
+    num_output: 1024
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "dc_relu2"
+  type: "ReLU"
+  bottom: "dc_ip2"
+  top: "dc_ip2"
+}
+layer {
+  name: "dc_drop2"
+  type: "Dropout"
+  bottom: "dc_ip2"
+  top: "dc_ip2"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+# ----------------------------------------------------------------------------
+layer {
+  name: "dc_ip3"
+  type: "InnerProduct"
+  bottom: "dc_ip2"
+  top: "dc_ip3"
+  param {
+    lr_mult: 10
+  }
+  param {
+    lr_mult: 20
+  }
+  inner_product_param {
+    num_output: 1
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "dc_loss"
+  type: "SigmoidCrossEntropyLoss"
+  bottom: "dc_ip3"
+  bottom: "domain_labels"
+  top: "dc_loss"
+  loss_weight: 0.1
+}
+
+

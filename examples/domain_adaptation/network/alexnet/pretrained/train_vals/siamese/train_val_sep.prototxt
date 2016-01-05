@@ -18,7 +18,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/source1"
-    batch_size: 64 
+    batch_size: 16 
     backend: LMDB
   }
 }
@@ -38,7 +38,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/target1"
-    batch_size: 64
+    batch_size: 16
     backend: LMDB
   }
 }
@@ -58,7 +58,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/source2"
-    batch_size: 64
+    batch_size: 16
     backend: LMDB
   }
 }
@@ -78,7 +78,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/target2"
-    batch_size: 64
+    batch_size: 16
     backend: LMDB
   }
 }
@@ -129,10 +129,6 @@ layer
   }
 }
 
-
-
-
-
 layer {
   name: "source_target_1"
   type: "Data"
@@ -148,7 +144,7 @@ layer {
   }
   data_param {
     source: "data/domain_adaptation_data/lmdb/test1"
-    batch_size: 256
+    batch_size: 128
     backend: LMDB
   }
 }
@@ -168,7 +164,7 @@ layer {
   }
   data_param {
     source: "data/domain_adaptation_data/lmdb/test2"
-    batch_size: 256 
+    batch_size: 128 
     backend: LMDB
   }
 }
@@ -186,12 +182,12 @@ layer {
   top: "conv1"
   param {
     name: "conv1_w"
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
     name: "conv1_b"
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -246,12 +242,12 @@ layer {
   top: "conv2"
   param {
     name: "conv2_w"
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
     name: "conv2_b"
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -306,12 +302,12 @@ layer {
   top: "conv3"
   param {
     name: "conv3_w"
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
     name: "conv3_b"
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -373,6 +369,16 @@ layer {
   top: "conv4"
 }
 
+layer {
+  name: "dropconv4"
+  type: "Dropout"
+  bottom: "conv4"
+  top: "conv4"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+
 # ---------------------------------------------------------------------- Conv 5
 layer {
   name: "conv5"
@@ -419,6 +425,16 @@ layer {
     pool: MAX
     kernel_size: 3
     stride: 2
+  }
+}
+
+layer {
+  name: "droppool5"
+  type: "Dropout"
+  bottom: "pool5"
+  top: "pool5"
+  dropout_param {
+    dropout_ratio: 0.5
   }
 }
 
@@ -556,12 +572,12 @@ layer {
   top: "conv1_p"
   param {
     name: "conv1_w"
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
     name: "conv1_b"
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -616,12 +632,12 @@ layer {
   top: "conv2_p"
   param {
     name: "conv2_w"
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
     name: "conv2_b"
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -676,12 +692,12 @@ layer {
   top: "conv3_p"
   param {
     name: "conv3_w"
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
     name: "conv3_b"
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -743,6 +759,15 @@ layer {
   top: "conv4_p"
 }
 
+layer {
+  name: "dropconv4_p"
+  type: "Dropout"
+  bottom: "conv4_p"
+  top: "conv4_p"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
 # ---------------------------------------------------------------------- Conv 5
 layer {
   name: "conv5_p"
@@ -791,7 +816,15 @@ layer {
     stride: 2
   }
 }
-
+layer {
+  name: "droppool5_p"
+  type: "Dropout"
+  bottom: "pool5_p"
+  top: "pool5_p"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
 # -----------------------------------------------------------------------------
 # -------------------------------------------------------- Inner Product Layers
 # -----------------------------------------------------------------------------

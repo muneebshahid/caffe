@@ -26,9 +26,6 @@ def split_source_target(data_set, sources, targets, label_data_limit):
     data_set_target = []
     data_set_test = []
     for source in sources:
-        pos_source_data = data_set[source][0]
-        neg_source_data = data_set[source][1]
-
         data_set_source.extend(data_set[source][0])
         data_set_source.extend(data_set[source][1])
 
@@ -296,13 +293,110 @@ def process_michigan(data_set, source, key, root_folder_path, sub_folder):
             continue
         file_1 = file_1.replace(folder_path, 'michigan/uncompressed/')
         file_2 = file_2.replace(folder_path, 'michigan/uncompressed/')
-        data_set_michigan_neg.append([file_1, file_2, 0, int(source)])
+        data_set_michigan_neg.append([file_1, file_2, 0, source])
         michigan_neg_instances += 1
         if michigan_neg_instances % 2000 == 0:
             print 'negative examples: ', progress(michigan_neg_instances, michigan_pos_len)
 
     print "created {0} negative examples".format(len(data_set_michigan_neg))
     data_set[key] = [data_set_michigan_pos, data_set_michigan_neg]
+
+
+def get_fukui_im_path(image_id, gt_id, root_folder, is_query=False):
+    path = root_folder + ('query/' if is_query else 'db/') + gt_id + image_id
+    return path
+
+
+def return_example(im1, im2, similarity_label, root_folder_path, is_source):
+    example = [im1.replace(root_folder_path, ''), im2.replace(root_folder_path, '')]
+    if is_source:
+        random.shuffle(example)
+    example.extend([similarity_label, is_source])
+    return example
+
+
+def process_fukui(data_set, source, key, root_folder_path, sub_folder):
+    print 'processing fukui data.....'
+    extra_im_range = 3
+    seasons = ['AU', 'SP', 'SU', 'WI']
+    data_set_fukui_pos = []
+    data_set_fukui_neg = []
+    folder_path = root_folder_path + sub_folder
+
+    # we need data set for each season
+    print 'creating examples'
+    for season in seasons:
+        data_set_fukui_season_pos = []
+        data_set_fukui_season_neg = []
+        print 'processing: ', season
+        season_folder = folder_path + season + '/'
+        ground_truth_folder = season_folder + 'gt/'
+        gts = osh.list_dir(ground_truth_folder)
+        print 'creating positive examples'
+        for gt in gts:
+            gt_id = gt[:-4]
+            with open(ground_truth_folder + gt, "r") as ground_truths:
+                for line in ground_truths.readlines():
+                    # skip \n
+                    images = line.replace('\n', '').split(' ')
+                    qu_image = images[0]
+                    db_image = images[1]
+                    qu_image_path = get_fukui_im_path(qu_image + '.jpg', gt_id + '/', season_folder, True)
+                    db_image_path = get_fukui_im_path(db_image + '.jpg', gt_id + '/', season_folder)
+                    gt_example = return_example(qu_image_path, db_image_path, 1, root_folder_path, source)
+
+                    data_set_fukui_season_pos.append(gt_example)
+                    int_db_image = int(db_image)
+                    im_range = range(int(images[2]), int(images[3]) + 1)
+
+                    # append images before if possible
+                    for im in range(int_db_image - extra_im_range, int_db_image):
+                        if im in im_range:
+                            db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt_id + '/', season_folder)
+                            if osh.is_file(db_image_path):
+                                gt_example = return_example(qu_image_path, db_image_path, 1, root_folder_path, source)
+                                data_set_fukui_season_pos.append(gt_example)
+
+                    # append images after if possible
+                    for im in range(int_db_image + 1, int_db_image + extra_im_range + 1):
+                        if im in im_range:
+                            db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt_id + '/', season_folder)
+                            if osh.is_file(db_image_path):
+                                gt_example = return_example(qu_image_path, db_image_path, 1, root_folder_path, source)
+                                data_set_fukui_season_pos.append(gt_example)
+
+        len_season_pos = len(data_set_fukui_season_pos)
+        print 'positive examples created: ', len_season_pos
+        print 'creating negative examples'
+        pos_groups = [[1, 4, 7, 10], [2, 5, 8, 11], [3, 6, 9, 12]]
+
+        while len(data_set_fukui_season_neg) < len_season_pos:
+            f1, f2 = np.random.random_integers(1, 12, 2)
+            repeat = False
+            for group in pos_groups:
+                if f1 in group and f2 in group:
+                    repeat = True
+            if repeat:
+                continue
+            path_1 = season_folder + ('query/' if season == 'WI' else 'db/') + str(f1) + '/'
+            path_2 = season_folder + 'db/' + str(f2) + '/'
+            files_1 = osh.list_dir(path_1)
+            files_2 = osh.list_dir(path_2)
+            im_1 = np.random.randint(0, len(files_1))
+            im_2 = np.random.randint(0, len(files_2))
+            path_1 += files_1[im_1]
+            path_2 += files_2[im_2]
+            if osh.is_file(path_1) and osh.is_file(path_2):
+                gt_example = return_example(path_1, path_2, 0, root_folder_path, source)
+                data_set_fukui_season_neg.append(gt_example)
+        print 'negative examples created: ', len(data_set_fukui_season_neg)
+
+        data_set_fukui_pos.extend(data_set_fukui_season_pos)
+        data_set_fukui_neg.extend(data_set_fukui_season_neg)
+
+    print 'total positive examples: ', len(data_set_fukui_pos)
+    print 'total negative examples: ', len(data_set_fukui_neg)
+    data_set[key] = [data_set_fukui_pos, data_set_fukui_neg]
 
 
 def main(label_data_limit=0):
@@ -328,7 +422,7 @@ def main(label_data_limit=0):
     pseudo_shuffle = 5
     source_mich = True
     source_freiburg = False
-
+    source_fukui = True
     source = []
     target = []
     source_data = []
@@ -348,6 +442,13 @@ def main(label_data_limit=0):
         else:
             target.append(key)
         process_freiburg(data_set, int(source_freiburg), key, root_folder_path, 'freiburg/')
+    if source_fukui:
+        key = 'fukui'
+        if source_fukui:
+            source.append(key)
+        else:
+            target.append(key)
+        process_fukui(data_set, int(source_fukui), key, root_folder_path, 'fukui/')
 
     print "splitting in to target and source"
     source_data_orig, target_data_orig, test_data = split_source_target(data_set, source, target, label_data_limit)
@@ -359,7 +460,7 @@ def main(label_data_limit=0):
     while i < pseudo_shuffle:
         print "extending data {0} time".format(i)
         source_data.extend(extend_data(source_data_orig))
-        target_data.extend(extend_data(target_data_orig))
+        # target_data.extend(extend_data(target_data_orig))
         i += 1
     print "extended len: source {0} target {1} test {2}".format(len(source_data), len(target_data), len(test_data))
 

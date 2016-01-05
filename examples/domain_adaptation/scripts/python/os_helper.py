@@ -42,9 +42,9 @@ def extract_name_from_path(path):
 
 def get_env_var(var, exception=True):
     if exception:
-	return os.environ[var]
+        return os.environ[var]
     else:
-    	return os.getenv(var)
+        return os.getenv(var)
 
 
 def path_rel_to_abs(rel_path, curr_dir_file ='.'):

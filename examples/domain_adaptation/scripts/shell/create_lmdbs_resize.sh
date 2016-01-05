@@ -10,12 +10,20 @@ then
 	$convert_imageset -resize_height 256 -resize_width 256 $images $images$1".txt" $complete_lmdb
 elif [ $1 = "source" ] || [ $1 = "target" ] || [ $1 = "train" ] || [ $1 = "test" ]
 then
-	lmdb1=$lmdb$1"1"
-	lmdb2=$lmdb$1"2"
-	rm -r $lmdb1
-	rm -r $lmdb2
-	$convert_imageset -resize_height 256 -resize_width 256 $images $images$1"1.txt" $lmdb1
-	$convert_imageset -resize_height 256 -resize_width 256 $images $images$1"2.txt" $lmdb2
+	if [ "$2" = "all" ]
+	then
+		lmdb1=$lmdb$1"1"
+		lmdb2=$lmdb$1"2"
+		rm -r $lmdb1
+		rm -r $lmdb2
+		$convert_imageset $images $images$1"1.txt" $lmdb1
+		$convert_imageset $images $images$1"2.txt" $lmdb2
+	elif [ "$2" = "1" ] || [ "$2" = "2" ]
+	then
+		$convert_imageset $images $images$1$2".txt" $lmdb$1$2
+	else
+		echo "wrong 2nd param"
+	fi
 else
-	echo "Wrong Param"
+	echo "wrong 1st param"
 fi

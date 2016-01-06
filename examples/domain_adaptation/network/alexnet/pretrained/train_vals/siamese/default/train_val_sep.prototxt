@@ -53,8 +53,8 @@ layer {
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   data_param {
-    source: "data/domain_adaptation_data/lmdb/target1"
-    batch_size: 16
+    source: "data/domain_adaptation_data/lmdb/test1"
+    batch_size: 256
     backend: LMDB
   }
 }
@@ -74,8 +74,8 @@ layer {
   }
 
   data_param {
-    source: "data/domain_adaptation_data/lmdb/target2"
-    batch_size: 16
+    source: "data/domain_adaptation_data/lmdb/test2"
+    batch_size: 256
     backend: LMDB
   }
 }

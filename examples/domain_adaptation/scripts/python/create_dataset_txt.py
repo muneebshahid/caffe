@@ -343,6 +343,19 @@ def process_fukui(data_set, source, key, root_folder_path, sub_folder):
                     db_image = images[1]
                     qu_image_path = get_fukui_im_path(qu_image + '.jpg', gt_id + '/', season_folder, True)
                     db_image_path = get_fukui_im_path(db_image + '.jpg', gt_id + '/', season_folder)
+                    if not osh.is_file(qu_image_path):
+                        print "query not found", qu_image_path
+                    if not osh.is_file(db_image_path):
+                        print '---------------'
+                        print 'db not found'
+                        print qu_image_path
+                        print db_image_path
+                        print '---------------'
+                    if int(db_image) < int(images[2]):
+                        print 'db less than limit'
+                        print qu_image_path
+                        print db_image_path
+                        print '----------------'
                     gt_example = return_example(qu_image_path, db_image_path, 1, root_folder_path, source)
 
                     data_set_fukui_season_pos.append(gt_example)
@@ -420,8 +433,8 @@ def main(label_data_limit=0):
     # pseudo shuffle the data by extending it with random repititons
     # of the whole data set
     pseudo_shuffle = 5
-    source_mich = True
-    source_freiburg = False
+    source_mich = None
+    source_freiburg = None
     source_fukui = True
     source = []
     target = []
@@ -449,7 +462,7 @@ def main(label_data_limit=0):
         else:
             target.append(key)
         process_fukui(data_set, int(source_fukui), key, root_folder_path, 'fukui/')
-
+    exit
     print "splitting in to target and source"
     source_data_orig, target_data_orig, test_data = split_source_target(data_set, source, target, label_data_limit)
     source_data.extend(source_data_orig)

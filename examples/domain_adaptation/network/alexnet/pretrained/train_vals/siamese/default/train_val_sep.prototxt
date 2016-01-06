@@ -770,6 +770,12 @@ layer {
     }
   }
 }
+
+layer {
+  name: "silence_label_2"
+  type: "Silence"
+  bottom: "label_2"
+}
 ##############
 layer {
   name: "loss"

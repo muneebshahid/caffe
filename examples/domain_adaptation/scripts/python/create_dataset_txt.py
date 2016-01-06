@@ -433,8 +433,8 @@ def main(label_data_limit=0):
     # pseudo shuffle the data by extending it with random repititons
     # of the whole data set
     pseudo_shuffle = 5
-    source_mich = None
-    source_freiburg = None
+    source_mich = True
+    source_freiburg = False
     source_fukui = True
     source = []
     target = []
@@ -462,7 +462,7 @@ def main(label_data_limit=0):
         else:
             target.append(key)
         process_fukui(data_set, int(source_fukui), key, root_folder_path, 'fukui/')
-    exit
+
     print "splitting in to target and source"
     source_data_orig, target_data_orig, test_data = split_source_target(data_set, source, target, label_data_limit)
     source_data.extend(source_data_orig)

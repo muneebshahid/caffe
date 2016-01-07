@@ -18,7 +18,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/source1"
-    batch_size: 16 
+    batch_size: 32 
     backend: LMDB
   }
 }
@@ -38,7 +38,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/target1"
-    batch_size: 16
+    batch_size: 32
     backend: LMDB
   }
 }
@@ -58,7 +58,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/source2"
-    batch_size: 16
+    batch_size: 32
     backend: LMDB
   }
 }
@@ -78,7 +78,7 @@ layer {
   }
   data_param {  
     source: "data/domain_adaptation_data/lmdb/target2"
-    batch_size: 16
+    batch_size: 32
     backend: LMDB
   }
 }
@@ -303,11 +303,11 @@ layer {
   param {
     name: "conv3_w"
     lr_mult: 1
-    decay_mult: 0
+    decay_mult: 1
   }
   param {
     name: "conv3_b"
-    lr_mult: 1
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -693,7 +693,7 @@ layer {
   param {
     name: "conv3_w_p"
     lr_mult: 1
-    decay_mult: 0
+    decay_mult: 1
   }
   param {
     name: "conv3_b_p"
@@ -733,7 +733,7 @@ layer {
     decay_mult: 1
   }
   param {
-    name: "conv4_b"
+    name: "conv4_b_p"
     lr_mult: 2
     decay_mult: 0
   }
@@ -925,12 +925,12 @@ layer {
   bottom: "fc7_p"
   top: "bottleneck_2"
   param {
-    name: "bottleneck_w"
+    name: "bottleneck_w_p"
     lr_mult: 10
     decay_mult: 1
   }
   param {
-    name: "bottleneck_b"
+    name: "bottleneck_b_p"
     lr_mult: 20
     decay_mult: 0
   }
@@ -1050,12 +1050,12 @@ layer {
   bottom: "source_features_2"
   top: "fc8_n_p"
   param {
-    name: "fc8_n_w"
+    name: "fc8_n_w_p"
     lr_mult: 10
     decay_mult: 1
   }
   param {
-    name: "fc8_n_b"
+    name: "fc8_n_b_p"
     lr_mult: 20
     decay_mult: 0
   }

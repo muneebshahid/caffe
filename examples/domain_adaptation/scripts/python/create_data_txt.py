@@ -28,6 +28,21 @@ def get_fukui_im_path(image_id, gt_id, root_folder, is_query=False):
     return path
 
 
+def get_distant_images(data_len, image_gap, fix_dist=False):
+    im_index_1 = np.random.randint(0, data_len)
+    if not fix_dist:
+        im_diff = im_index_1 - image_gap - 1
+        while True:
+            im_index_2 = np.random.randint(0, data_len)
+            if abs(im_index_1 - im_index_2) > im_diff:
+                break
+    else:
+        if im_index_1 + image_gap >= data_len:
+            im_index_2 = im_index_1 - image_gap
+        else:
+            im_index_2 = im_index_1 + image_gap
+    return im_index_1, im_index_2
+
 def evenly_mix_source_target(dataset, batch_size=8):
     i = 0
     while True:
@@ -45,6 +60,50 @@ def evenly_mix_source_target(dataset, batch_size=8):
             dataset[i:] = batch
             break
         i += batch_size
+
+
+def create_negatives(key, dataset):
+    negatives = []
+    if key == 'freiburg':
+        print 'creating freiburg negative examples'
+        pos_examples = len(dataset)
+        neg_examples = 0
+        image_gap = 200
+        while neg_examples < pos_examples:
+            im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap)
+            im1 = dataset[im_index_1]
+            im2 = dataset[im_index_2]
+            negatives.append([im1[0], im2[1], im1[2], im2[3], 0])
+            if neg_examples % 100 == 0:
+                print "{0} / {1}".format(neg_examples, pos_examples)
+            neg_examples += 1
+    elif key == 'michigan':
+        print 'creating michigan negative examples'
+        pos_examples = len(dataset)
+        neg_examples = 0
+        image_gap = 600
+        while neg_examples < pos_examples:
+            im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap)
+            im1 = dataset[im_index_1]
+            im2 = dataset[im_index_2]
+            negatives.append([im1[0], im2[1], im1[2], im2[3], 0])
+            if neg_examples % 100 == 0:
+                print "{0} / {1}".format(neg_examples, pos_examples)
+            neg_examples += 1
+    elif key == 'fukui':
+        print 'creating fukui negative examples'
+        pos_examples = len(dataset)
+        neg_examples = 0
+        image_gap = 170
+        while neg_examples < pos_examples:
+            im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap, True)
+            im1 = dataset[im_index_1]
+            im2 = dataset[im_index_2]
+            negatives.append([im1[0], im2[1], im1[2], im2[3], 0])
+            if neg_examples % 100 == 0:
+                print "{0} / {1}".format(neg_examples, pos_examples)
+            neg_examples += 1
+    return negatives
 
 
 def get_dataset(key, root_folder_path):
@@ -77,14 +136,14 @@ def get_dataset(key, root_folder_path):
         mich_ignore.extend(range(1623, 1628))
         folder_path = root_folder_path + 'michigan/uncompressed/'
         print 'Processing michigan data.....'
-        # Process Michigan data
-        months_mich = ['aug', 'jan']
-        files_michigan = [im.replace(folder_path, 'michigan/uncompressed/').replace('\\', '/')
-                          for im in sorted(osh.get_folder_contents(folder_path + 'aug/', '*.tiff'))]
+        files_michigan = ['michigan/uncompressed/aug/' + im + '.tiff'
+                          for im in
+                          sorted([im[:-5] for im in
+                                  osh.list_dir(folder_path + 'aug/')], key=int)]
 
         for im_file in files_michigan:
             file_n = osh.extract_name_from_path(im_file)
-            if int(file_n[5:-5]) in mich_ignore:
+            if int(file_n[:-5]) in mich_ignore:
                 print "ignoring {0}".format(file_n[5:-5])
                 continue
             data_set.append([im_file, im_file.replace('aug', 'jan'), 1, 0, 1])
@@ -97,19 +156,18 @@ def get_dataset(key, root_folder_path):
             print 'processing: ', season
             season_folder = folder_path + season + '/'
             ground_truth_folder = season_folder + 'gt/'
-            gts = osh.list_dir(ground_truth_folder)
+            gts = sorted([gt[:-4] for gt in osh.list_dir(ground_truth_folder)], key=int)
             print 'creating positive examples'
             for gt in gts:
-                gt_id = gt[:-4]
-                with open(ground_truth_folder + gt, "r") as ground_truths:
+                with open(ground_truth_folder + gt + '.txt', "r") as ground_truths:
                     for line in ground_truths.readlines():
                         # skip \n
                         images = line.replace('\n', '').split(' ')
                         qu_image = images[0]
                         db_image = images[1]
 
-                        qu_image_path = get_fukui_im_path(qu_image + '.jpg', gt_id + '/', season_folder, True)
-                        db_image_path = get_fukui_im_path(db_image + '.jpg', gt_id + '/', season_folder)
+                        qu_image_path = get_fukui_im_path(qu_image + '.jpg', gt + '/', season_folder, True)
+                        db_image_path = get_fukui_im_path(db_image + '.jpg', gt + '/', season_folder)
                         if not osh.is_file(qu_image_path):
                             print "query not found", qu_image_path
                         if not osh.is_file(db_image_path):
@@ -123,8 +181,8 @@ def get_dataset(key, root_folder_path):
                             print qu_image_path
                             print db_image_path
                             print '----------------'
-                        gt_example = [qu_image_path.replace(root_folder_path, ''),
-                                      db_image_path.replace(root_folder_path, ''), 1, 0, 1]
+                        gt_example = [db_image_path.replace(root_folder_path, ''),
+                                      qu_image_path.replace(root_folder_path, ''), 1, 0, 1]
 
                         data_set.append(gt_example)
                         int_db_image = int(db_image)
@@ -133,7 +191,7 @@ def get_dataset(key, root_folder_path):
                         # append images before if possible
                         for im in range(int_db_image - extra_im_range, int_db_image):
                             if im in im_range:
-                                db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt_id + '/', season_folder)
+                                db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt + '/', season_folder)
                                 if osh.is_file(db_image_path):
                                     gt_example = [db_image_path.replace(root_folder_path, ''),
                                                   qu_image_path.replace(root_folder_path, ''), 1, 0, 1]
@@ -142,7 +200,7 @@ def get_dataset(key, root_folder_path):
                         # append images after if possible
                         for im in range(int_db_image + 1, int_db_image + extra_im_range + 1):
                             if im in im_range:
-                                db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt_id + '/', season_folder)
+                                db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt + '/', season_folder)
                                 if osh.is_file(db_image_path):
                                     gt_example = [db_image_path.replace(root_folder_path, ''),
                                                   qu_image_path.replace(root_folder_path, ''), 1, 0, 1]
@@ -169,19 +227,25 @@ def process_datasets(keys, root_folder_path):
     train_data = []
     test_data = []
     for key in keys:
-        data_set = get_dataset(key, root_folder_path)
-        train_data_temp, test_data_temp = split_train_test(data_set)
-        train_data.extend(train_data_temp)
-        test_data.extend(test_data_temp)
+        data_set_pos = get_dataset(key, root_folder_path)
+        data_set_neg = create_negatives(key, data_set_pos)
+        train_data_pos_temp, test_data_pos_temp = split_train_test(data_set_pos)
+        train_data_neg_temp, test_data_neg_temp = split_train_test(data_set_neg)
+        train_data.extend(train_data_pos_temp)
+        train_data.extend(train_data_neg_temp)
+        test_data.extend(test_data_pos_temp)
+        test_data.extend(test_data_neg_temp)
+
     random.shuffle(train_data)
     random.shuffle(test_data)
 
-    evenly_mix_source_target(train_data)
-    evenly_mix_source_target(test_data)
+    #evenly_mix_source_target(train_data)
+    #evenly_mix_source_target(test_data)
 
-    write_data(train_data, root_folder_path + 'sim_labels')
+    write_data(train_data, root_folder_path + 'train')
     write_data(train_data, root_folder_path + 'train1', 1)
     write_data(train_data, root_folder_path + 'train2', 2)
+    write_data(test_data, root_folder_path + 'test')
     write_data(test_data, root_folder_path + 'test1', 1)
     write_data(test_data, root_folder_path + 'test2', 2)
 

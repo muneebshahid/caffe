@@ -43,6 +43,7 @@ def get_distant_images(data_len, image_gap, fix_dist=False):
             im_index_2 = im_index_1 + image_gap
     return im_index_1, im_index_2
 
+
 def evenly_mix_source_target(dataset, batch_size=8):
     i = 0
     while True:
@@ -242,10 +243,10 @@ def process_datasets(keys, root_folder_path):
     #evenly_mix_source_target(train_data)
     #evenly_mix_source_target(test_data)
 
-    write_data(train_data, root_folder_path + 'train')
+    write_data(train_data, root_folder_path + 'labels1')
     write_data(train_data, root_folder_path + 'train1', 1)
     write_data(train_data, root_folder_path + 'train2', 2)
-    write_data(test_data, root_folder_path + 'test')
+    write_data(test_data, root_folder_path + 'labels2')
     write_data(test_data, root_folder_path + 'test1', 1)
     write_data(test_data, root_folder_path + 'test2', 2)
 

@@ -6,7 +6,7 @@
 // ------------------------------------------------------------------
 #include <vector>
 
-#include "caffe/layers/euclidean_loss_layer.hpp"
+#include "caffe/layers/smooth_l1_loss_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {

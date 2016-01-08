@@ -308,7 +308,6 @@ message ParamSpec {
 //
 // LayerParameter next available layer-specific ID: 140 (last added: batch_norm_param)
 // ID: 200 (last added: gradient_scaler_param)
-// ID: 201 (last added: smooth_l1_loss_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -387,7 +386,6 @@ message LayerParameter {
   optional ReLUParameter relu_param = 123;
   optional ReshapeParameter reshape_param = 133;
   optional SigmoidParameter sigmoid_param = 124;
-  optional SmoothL1LossParameter smooth_l1_loss_param = 201;
   optional SoftmaxParameter softmax_param = 125;
   optional SPPParameter spp_param = 132;
   optional SliceParameter slice_param = 126;

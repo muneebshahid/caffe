@@ -53,4 +53,4 @@ class SmoothL1LossLayer : public LossLayer<Dtype> {
 
 }  // namespace caffe
 
-#endif  // CAFFE_FAST_RCNN_LAYERS_HPP_
+#endif  // CAFFE_SMOOTH_L1_LAYER_HPP_

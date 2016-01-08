@@ -4,6 +4,7 @@
 // Licensed under The MIT License [see fast-rcnn/LICENSE for details]
 // Written by Ross Girshick
 // ------------------------------------------------------------------
+#include <vector>
 
 #include "caffe/layers/smooth_l1_loss_layer.hpp"
 #include "caffe/util/math_functions.hpp"

@@ -8,7 +8,7 @@ then
 	complete_lmdb=$lmdb$1
 	rm -r $complete_lmdb
 	$convert_imageset $images $images$1".txt" $complete_lmdb
-elif [ $1 = "source" ] || [ $1 = "target" ] || [ $1 = "train" ] || [ $1 = "test" ]
+elif [ $1 = "source" ] || [ $1 = "target" ] || [ $1 = "train" ] || [ $1 = "test" ] || [ $1 = "labels" ]
 then
 	if [ "$2" = "all" ]
 	then

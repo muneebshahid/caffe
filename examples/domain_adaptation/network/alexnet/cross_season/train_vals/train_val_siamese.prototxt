@@ -82,7 +82,7 @@ layer {
   name: "data_2"
   type: "Data"
   top: "data_2"
-  top: "domain_labels_1"
+  top: "domain_labels_2"
   include {
     phase: TEST
   }

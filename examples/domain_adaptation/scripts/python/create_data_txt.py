@@ -28,6 +28,12 @@ def get_fukui_im_path(image_id, gt_id, root_folder, is_query=False):
     return path
 
 
+def extend_data(data):
+    temp_data = copy.deepcopy(data)
+    random.shuffle(temp_data)
+    return temp_data
+
+
 def get_distant_images(data_len, image_gap, fix_dist=False):
     im_index_1 = np.random.randint(0, data_len)
     if not fix_dist:
@@ -224,7 +230,7 @@ def write_data(data_set, file_path, file_num = None):
                      in data_set])
 
 
-def process_datasets(keys, root_folder_path):
+def process_datasets(keys, root_folder_path, pseudo_shuffle=5):
     train_data = []
     test_data = []
     for key in keys:
@@ -240,6 +246,15 @@ def process_datasets(keys, root_folder_path):
     random.shuffle(train_data)
     random.shuffle(test_data)
 
+    train_data_orig = copy.deepcopy(train_data)
+    i = 1
+    while i < pseudo_shuffle:
+        print "extending train data {0} time".format(i)
+        train_data.extend(extend_data(train_data_orig))
+        # target_data.extend(extend_data(target_data_orig))
+        i += 1
+
+    print "extended len: train {0}".format(len(train_data))
     #evenly_mix_source_target(train_data)
     #evenly_mix_source_target(test_data)
 
@@ -254,28 +269,6 @@ def process_datasets(keys, root_folder_path):
 def main(label_data_limit=0):
     root_folder_path = osh.get_env_var('CAFFE_ROOT') + '/../data/images/' + '/'
     root_folder_path = root_folder_path.replace('\\', '/')
-    # batch size is used for padding.
-    batch_size = 128
-
-    # flag to pad source and target arrays to make them a multiple of batch size
-    pad_multiple = True
-
-    # flag to pad train data (source) with target
-    pad_train = True
-
-    create_mean_data = False
-    # until a custom shuffling is implementd in the data layer,
-    # pseudo shuffle the data by extending it with random repititons
-    # of the whole data set
-    pseudo_shuffle = 5
-    source_mich = True
-    source_freiburg = False
-    source_fukui = True
-    source = []
-    target = []
-    source_data = []
-    target_data = []
-
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()

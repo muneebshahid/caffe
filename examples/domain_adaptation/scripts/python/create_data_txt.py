@@ -151,7 +151,7 @@ def get_dataset(key, root_folder_path):
         for im_file in files_michigan:
             file_n = osh.extract_name_from_path(im_file)
             if int(file_n[:-5]) in mich_ignore:
-                print "ignoring {0}".format(file_n[5:-5])
+                print "ignoring {0}".format(file_n[:-5])
                 continue
             data_set.append([im_file, im_file.replace('aug', 'jan'), 1, 0, 1])
     elif key == 'fukui':

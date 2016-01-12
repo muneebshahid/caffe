@@ -236,7 +236,7 @@ def write_data(data_set, file_path, file_num = None):
                      in data_set])
 
 
-def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
+def process_datasets(keys, root_folder_path, pseudo_shuffle=5):
     train_data = []
     test_data = []
     for key in keys:

@@ -12,8 +12,8 @@ def get_train_test_split_len(examples_len, split):
     return int(np.ceil(split * examples_len)), -int(np.floor((1 - split) * examples_len))
 
 
-def split_train_test(data_set, split=0.8):
-    random.shuffle(data_set)
+def split_train_test(data_set, split=0.7):
+    #random.shuffle(data_set)
     train_examples, test_examples = get_train_test_split_len(len(data_set), split)
     # ensures we do not append the same sequence again
     return data_set[0:train_examples], data_set[train_examples:]
@@ -141,6 +141,12 @@ def get_dataset(key, root_folder_path):
         mich_ignore.extend(range(1473, 1524))
         mich_ignore.extend(range(1553, 1565))
         mich_ignore.extend(range(1623, 1628))
+        # indoor
+        mich_ignore.extend(range(4795, 5521))
+        mich_ignore.extend(range(8324, 9288))
+        mich_ignore.extend(range(10095, 10677))
+        mich_ignore.extend(range(11270, 11776))
+        mich_ignore.extend(range(11985, 12575))
         folder_path = root_folder_path + 'michigan/uncompressed/'
         print 'Processing michigan data.....'
         files_michigan = ['michigan/uncompressed/aug/' + im + '.tiff'
@@ -230,7 +236,7 @@ def write_data(data_set, file_path, file_num = None):
                      in data_set])
 
 
-def process_datasets(keys, root_folder_path, pseudo_shuffle=5):
+def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
     train_data = []
     test_data = []
     for key in keys:
@@ -243,11 +249,12 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=5):
         test_data.extend(test_data_pos_temp)
         test_data.extend(test_data_neg_temp)
 
-    random.shuffle(train_data)
-    random.shuffle(test_data)
+    #random.shuffle(train_data)
+    #random.shuffle(test_data)
 
     train_data_orig = copy.deepcopy(train_data)
     i = 1
+    print "train data {0}, test data {1}".format(len(train_data_orig), len(test_data))
     while i < pseudo_shuffle:
         print "extending train data {0} time".format(i)
         train_data.extend(extend_data(train_data_orig))

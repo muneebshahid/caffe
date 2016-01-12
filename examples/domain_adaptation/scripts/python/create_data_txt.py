@@ -249,8 +249,8 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=5):
         test_data.extend(test_data_pos_temp)
         test_data.extend(test_data_neg_temp)
 
-    #random.shuffle(train_data)
-    #random.shuffle(test_data)
+    random.shuffle(train_data)
+    random.shuffle(test_data)
 
     train_data_orig = copy.deepcopy(train_data)
     i = 1

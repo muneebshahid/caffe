@@ -13,7 +13,6 @@ def get_train_test_split_len(examples_len, split):
 
 
 def split_train_test(data_set, split=0.7):
-    #random.shuffle(data_set)
     train_examples, test_examples = get_train_test_split_len(len(data_set), split)
     # ensures we do not append the same sequence again
     return data_set[0:train_examples], data_set[train_examples:]
@@ -81,7 +80,7 @@ def create_negatives(key, dataset):
             im1 = dataset[im_index_1]
             im2 = dataset[im_index_2]
             negatives.append([im1[0], im2[1], im1[2], im2[3], 0])
-            if neg_examples % 100 == 0:
+            if neg_examples % 1000 == 0:
                 print "{0} / {1}".format(neg_examples, pos_examples)
             neg_examples += 1
     elif key == 'michigan':
@@ -94,7 +93,7 @@ def create_negatives(key, dataset):
             im1 = dataset[im_index_1]
             im2 = dataset[im_index_2]
             negatives.append([im1[0], im2[1], im1[2], im2[3], 0])
-            if neg_examples % 100 == 0:
+            if neg_examples % 1000 == 0:
                 print "{0} / {1}".format(neg_examples, pos_examples)
             neg_examples += 1
     elif key == 'fukui':
@@ -103,11 +102,11 @@ def create_negatives(key, dataset):
         neg_examples = 0
         image_gap = 170
         while neg_examples < pos_examples:
-            im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap, True)
+            im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap, fix_dist=True)
             im1 = dataset[im_index_1]
             im2 = dataset[im_index_2]
             negatives.append([im1[0], im2[1], im1[2], im2[3], 0])
-            if neg_examples % 100 == 0:
+            if neg_examples % 1000 == 0:
                 print "{0} / {1}".format(neg_examples, pos_examples)
             neg_examples += 1
     return negatives
@@ -128,7 +127,7 @@ def get_dataset(key, root_folder_path):
                                  for array in
                                  (line.replace('uncompressed', 'freiburg/uncompressed')
                                       .replace('\n', ' 1 0 1').split(' ')
-                                        for line in data_reader.readlines())]
+                                  for line in data_reader.readlines())]
             for instance in data_set_freiburg:
                 i = 1
                 while len(instance) - 3 > i:
@@ -161,10 +160,15 @@ def get_dataset(key, root_folder_path):
                 continue
             data_set.append([im_file, im_file.replace('aug', 'jan'), 1, 0, 1])
     elif key == 'fukui':
+        # mislabeled examples
+        fukui_ignore = {'SU': ['4', '04000000'],
+                        'SP': ['4', '04000000', '04000001', '04000002'],
+                        'AU': ['1', '01000000', '01000001', '01000002', '01000003'],
+                        'WI': ['None']}
         folder_path = root_folder_path + 'fukui/'
         print 'processing fukui data.....'
         extra_im_range = 3
-        seasons = ['WI']
+        seasons = ['AU', 'SP', 'SU', 'WI']
         for season in seasons:
             print 'processing: ', season
             season_folder = folder_path + season + '/'
@@ -178,7 +182,10 @@ def get_dataset(key, root_folder_path):
                         images = line.replace('\n', '').split(' ')
                         qu_image = images[0]
                         db_image = images[1]
-
+                        # skip mislabeled examples
+                        if gt == fukui_ignore[season][0] and qu_image in fukui_ignore[season]:
+                            print 'ignoring {0}, gt {1}, season {2}'.format(qu_image, gt, season)
+                            continue
                         qu_image_path = get_fukui_im_path(qu_image + '.jpg', gt + '/', season_folder, True)
                         db_image_path = get_fukui_im_path(db_image + '.jpg', gt + '/', season_folder)
                         if not osh.is_file(qu_image_path):
@@ -236,21 +243,26 @@ def write_data(data_set, file_path, file_num = None):
                      in data_set])
 
 
-def process_datasets(keys, root_folder_path, pseudo_shuffle=5):
+def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
     train_data = []
     test_data = []
     for key in keys:
         data_set_pos = get_dataset(key, root_folder_path)
         data_set_neg = create_negatives(key, data_set_pos)
-        train_data_pos_temp, test_data_pos_temp = split_train_test(data_set_pos)
-        train_data_neg_temp, test_data_neg_temp = split_train_test(data_set_neg)
-        train_data.extend(train_data_pos_temp)
-        train_data.extend(train_data_neg_temp)
-        test_data.extend(test_data_pos_temp)
-        test_data.extend(test_data_neg_temp)
+        # Add fukui data only for training.
+        if key != 'fukui':
+            train_data_pos_temp, test_data_pos_temp = split_train_test(data_set_pos)
+            train_data_neg_temp, test_data_neg_temp = split_train_test(data_set_neg)
+            train_data.extend(train_data_pos_temp)
+            train_data.extend(train_data_neg_temp)
+            test_data.extend(test_data_pos_temp)
+            test_data.extend(test_data_neg_temp)
+        else:
+            train_data.extend(data_set_pos)
+            train_data.extend(data_set_neg)
 
     random.shuffle(train_data)
-    random.shuffle(test_data)
+    #random.shuffle(test_data)
 
     train_data_orig = copy.deepcopy(train_data)
     i = 1
@@ -258,12 +270,9 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=5):
     while i < pseudo_shuffle:
         print "extending train data {0} time".format(i)
         train_data.extend(extend_data(train_data_orig))
-        # target_data.extend(extend_data(target_data_orig))
         i += 1
 
     print "extended len: train {0}".format(len(train_data))
-    #evenly_mix_source_target(train_data)
-    #evenly_mix_source_target(test_data)
 
     write_data(train_data, root_folder_path + 'labels1')
     write_data(train_data, root_folder_path + 'train1', 1)
@@ -279,7 +288,7 @@ def main(label_data_limit=0):
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()
-    keys = ['freiburg', 'michigan', 'fukui']
+    keys = ['freiburg', 'michigan', ''' 'fukui' ''']
     process_datasets(keys, root_folder_path)
 
 if __name__ == "__main__":

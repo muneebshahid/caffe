@@ -228,13 +228,13 @@ def get_dataset(key, root_folder_path):
     return data_set
 
 
-def write_data(data_set, file_path, file_num=None):
+def write_data(data_set, file_path, file_num=None, lmdb=True):
     if file_num is not None:
         with open(file_path + '.txt', 'w') as w:
             # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
             w.writelines(
-                    [str(instance[file_num - 1]).replace('\\', '/') + ' ' + str(instance[file_num + 1]) + '\n' for instance
-                     in data_set])
+                    [('' if lmdb else '/../data/images/') + str(instance[file_num - 1]).replace('\\', '/') +
+                     ' ' + str(instance[file_num + 1]) + '\n' for instance in data_set])
     else:
         with open(file_path + '.txt', 'w') as w:
             # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
@@ -274,10 +274,10 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
 
     print "extended len: train {0}".format(len(train_data))
 
-    write_data(train_data, root_folder_path + 'train1', 1)
-    write_data(train_data, root_folder_path + 'train2', 2)
-    write_data(test_data, root_folder_path + 'test1', 1)
-    write_data(test_data, root_folder_path + 'test2', 2)
+    write_data(train_data, root_folder_path + 'train1', file_num=1, lmdb=False)
+    write_data(train_data, root_folder_path + 'train2', file_num=2, lmdb=False)
+    write_data(test_data, root_folder_path + 'test1', file_num=1, lmdb=False)
+    write_data(test_data, root_folder_path + 'test2', file_num=2, lmdb=False)
 
 
 def main(label_data_limit=0):

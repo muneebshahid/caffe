@@ -244,9 +244,47 @@ def write_data(data_set, root_folder_path, file_path, file_num=None, lmdb=True):
                      in data_set])
 
 
+def evenly_mix_pos_neg(data_pos, data_neg, batch_size=8):
+    data = []
+    i = 0
+    j = 0
+    # assumes neg >= pos
+    end_len = len(data_neg)
+    batch_half = batch_size / 2
+    while True:
+        if i <= len(data_neg) - batch_half:
+            batch_neg = data_neg[i:i + batch_half]
+            i += batch_half
+        else:
+            batch_neg = data_neg[i:]
+            break
+        if i <= len(data_pos) - batch_half:
+            batch_pos = data_pos[i:i + batch_half]
+            j += batch_half
+        else:
+            batch_pos = data_pos[i:]
+            j = 0
+        batch = batch_pos
+        batch.extend(batch_neg)
+        random.shuffle(batch)
+        data.extend(batch)
+    return data
+
+
+def pseudo_shuffle_data(data, pseudo_shuffle):
+    data_orig = copy.deepcopy(data)
+    i = 1
+    while i < pseudo_shuffle:
+        print "extending train data {0} time".format(i)
+        data.extend(extend_data(data_orig))
+        i += 1
+
+
 def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
-    train_data = []
-    test_data = []
+    train_data_pos = []
+    train_data_neg = []
+    test_data_pos = []
+    test_data_neg = []
     for key in keys:
         data_set_pos = get_dataset(key, root_folder_path)
         data_set_neg = create_negatives(key, data_set_pos)
@@ -254,26 +292,28 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
         if key != 'fukui':
             train_data_pos_temp, test_data_pos_temp = split_train_test(data_set_pos)
             train_data_neg_temp, test_data_neg_temp = split_train_test(data_set_neg)
-            train_data.extend(train_data_pos_temp)
-            train_data.extend(train_data_neg_temp)
-            test_data.extend(test_data_pos_temp)
-            test_data.extend(test_data_neg_temp)
+            train_data_pos.extend(train_data_pos_temp)
+            train_data_neg.extend(train_data_neg_temp)
+            test_data_pos.extend(test_data_pos_temp)
+            test_data_neg.extend(test_data_neg_temp)
         else:
-            train_data.extend(data_set_pos)
-            train_data.extend(data_set_neg)
+            train_data_pos.extend(data_set_pos)
+            train_data_neg.extend(data_set_neg)
 
-    random.shuffle(train_data)
-    #random.shuffle(test_data)
+    random.shuffle(train_data_pos)
+    random.shuffle(train_data_neg)
 
-    train_data_orig = copy.deepcopy(train_data)
-    i = 1
-    print "train data {0}, test data {1}".format(len(train_data_orig), len(test_data))
-    while i < pseudo_shuffle:
-        print "extending train data {0} time".format(i)
-        train_data.extend(extend_data(train_data_orig))
-        i += 1
+    print "train data pos {0}, train data neg {1}".format(len(train_data_pos), len(train_data_neg))
+    pseudo_shuffle_data(train_data_pos, pseudo_shuffle)
+    pseudo_shuffle_data(train_data_neg, pseudo_shuffle)
+    print "extended train data pos {0}, train data neg {1}".format(len(train_data_pos), len(train_data_neg))
 
-    print "extended len: train {0}".format(len(train_data))
+    train_data = evenly_mix_pos_neg(train_data_pos, train_data_neg, 8)
+    test_data = test_data_pos
+    test_data.extend(test_data_neg)
+
+    print "train data {0}".format(len(train_data))
+    print "test data {0}".format(len(test_data))
 
     write_data(train_data, root_folder_path, 'train1', file_num=1, lmdb=False)
     write_data(train_data, root_folder_path, 'train2', file_num=2, lmdb=False)
@@ -287,9 +327,8 @@ def main():
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()
-    keys = ['freiburg', 'michigan', ''' 'fukui' ''']
+    keys = ['freiburg', 'michigan', 'fukui']
     process_datasets(keys, root_folder_path)
 
 if __name__ == "__main__":
-    caffe_num = '4'
     main()

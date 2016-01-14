@@ -3,11 +3,13 @@ name: "AlexNet2Siamese"
 # ------------------------------------------------------------------ Data Layer
 # -----------------------------------------------------------------------------
 
+
 layer {
   name: "data_1"
-  type: "Data"
+#  type: "Data"
+  type: "ImageData"
   top: "data_1"
-  top: "domain_labels_1"
+  top: "sim_labels"
   include {
     phase: TRAIN
   }
@@ -16,18 +18,22 @@ layer {
     crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/train1"
+
+  image_data_param {
+#  data_param {  
+#    source: "data/domain_adaptation_data/lmdb/train1"
+#    backend: LMDB
+    source: "../data/images/train1.txt"
     batch_size: 32 
-    backend: LMDB
   }
 }
 
 layer {
   name: "data_2"
-  type: "Data"
+#  type: "Data"
+  type: "ImageData"
   top: "data_2"
-  top: "domain_labels_2"
+  top: "dummy_labels"
   include {
     phase: TRAIN
   }
@@ -36,33 +42,21 @@ layer {
     crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/train2"
-    batch_size: 32
-    backend: LMDB
-  }
-}
-
-layer {
-  name: "labels"
-  type: "Data"
-  top: "dummy_data"
-  top: "sim_labels"
-  include {
-    phase: TRAIN
-  }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/labels1"
+  image_data_param {
+#  data_param {  
+#    source: "data/domain_adaptation_data/lmdb/train2"
+#    backend: LMDB
+    source: "../data/images/train2.txt"
     batch_size: 32 
-    backend: LMDB
   }
 }
 
 layer {
   name: "data_1"
-  type: "Data"
+#  type: "Data"
+  type: "ImageData"
   top: "data_1"
-  top: "domain_labels_1"
+  top: "sim_labels"
   include {
     phase: TEST
   }
@@ -71,18 +65,21 @@ layer {
     crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/test1"
-    batch_size: 256
-    backend: LMDB
+  image_data_param {
+#  data_param {  
+#    source: "data/domain_adaptation_data/lmdb/test1"
+#    backend: LMDB
+    source: "../data/images/test1.txt"
+    batch_size: 32 
   }
 }
 
 layer {
   name: "data_2"
-  type: "Data"
+#  type: "Data"
+  type: "ImageData"
   top: "data_2"
-  top: "domain_labels_2"
+  top: "dummy_labels"
   include {
     phase: TEST
   }
@@ -91,25 +88,12 @@ layer {
     crop_size: 227
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/test2"
-    batch_size: 256 
-    backend: LMDB
-  }
-}
-
-layer {
-  name: "labels"
-  type: "Data"
-  top: "dummy_data"
-  top: "sim_labels"
-  include {
-    phase: TEST
-  }
-  data_param {  
-    source: "data/domain_adaptation_data/lmdb/labels2"
-    batch_size: 256 
-    backend: LMDB
+  image_data_param {
+#  data_param {  
+#    source: "data/domain_adaptation_data/lmdb/test2"
+#    backend: LMDB
+    source: "../data/images/test2.txt"
+    batch_size: 32 
   }
 }
 
@@ -867,22 +851,8 @@ layer {
   }
 }
 
-
-layer 
-{
-  name: "concat_labels"
-  type: "Concat"
-  bottom: "domain_labels_1"
-  bottom: "domain_labels_2"
-  top: "concat_labels"
-  concat_param {
-    concat_dim: 0 
-  }
-}
-
 layer {
   name: "silencer"
   type: "Silence"
-  bottom: "concat_labels"
-  bottom: "dummy_data"
+  bottom: "dummy_labels"
 }

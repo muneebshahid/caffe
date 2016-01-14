@@ -243,7 +243,7 @@ def write_data(data_set, file_path, file_num=None, lmdb=True):
                      in data_set])
 
 
-def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
+def process_datasets(keys, root_folder_path, pseudo_shuffle=50):
     train_data = []
     test_data = []
     for key in keys:

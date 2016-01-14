@@ -19,7 +19,7 @@ def split_train_test(data_set, split=0.7):
 
 
 def shuffle_columns(instance):
-    return [instance[1], instance[0], instance[3], instance[2], instance[-1]]
+    return [instance[1], instance[0], instance[3], instance[2]]
 
 
 def get_fukui_im_path(image_id, gt_id, root_folder, is_query=False):
@@ -79,7 +79,7 @@ def create_negatives(key, dataset):
             im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap)
             im1 = dataset[im_index_1]
             im2 = dataset[im_index_2]
-            negatives.append([im1[0], im2[1], im1[2], im2[3], 0])
+            negatives.append([im1[0], im2[1], 0, 0])
             if neg_examples % 1000 == 0:
                 print "{0} / {1}".format(neg_examples, pos_examples)
             neg_examples += 1
@@ -92,7 +92,7 @@ def create_negatives(key, dataset):
             im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap)
             im1 = dataset[im_index_1]
             im2 = dataset[im_index_2]
-            negatives.append([im1[0], im2[1], im1[2], im2[3], 0])
+            negatives.append([im1[0], im2[1], 0, 0])
             if neg_examples % 1000 == 0:
                 print "{0} / {1}".format(neg_examples, pos_examples)
             neg_examples += 1
@@ -105,7 +105,7 @@ def create_negatives(key, dataset):
             im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap, fix_dist=True)
             im1 = dataset[im_index_1]
             im2 = dataset[im_index_2]
-            negatives.append([im1[0], im2[1], im1[2], im2[3], 0])
+            negatives.append([im1[0], im2[1], 0, 0])
             if neg_examples % 1000 == 0:
                 print "{0} / {1}".format(neg_examples, pos_examples)
             neg_examples += 1
@@ -126,13 +126,13 @@ def get_dataset(key, root_folder_path):
             data_set_freiburg = [array
                                  for array in
                                  (line.replace('uncompressed', 'freiburg/uncompressed')
-                                      .replace('\n', ' 1 0 1').split(' ')
+                                      .replace('\n', ' 1 1').split(' ')
                                   for line in data_reader.readlines())]
             for instance in data_set_freiburg:
                 i = 1
-                while len(instance) - 3 > i:
+                while len(instance) - 2 > i:
                     seasons = [instance[0], instance[i]]
-                    seasons.extend(instance[-3:])
+                    seasons.extend(instance[-2:])
                     data_set.append(seasons)
                     i += 1
     elif key == 'michigan':
@@ -158,7 +158,7 @@ def get_dataset(key, root_folder_path):
             if int(file_n[:-5]) in mich_ignore:
                 print "ignoring {0}".format(file_n[:-5])
                 continue
-            data_set.append([im_file, im_file.replace('aug', 'jan'), 1, 0, 1])
+            data_set.append([im_file, im_file.replace('aug', 'jan'), 1, 1])
     elif key == 'fukui':
         # mislabeled examples
         fukui_ignore = {'SU': ['4', '04000000'],
@@ -202,7 +202,7 @@ def get_dataset(key, root_folder_path):
                             print db_image_path
                             print '----------------'
                         gt_example = [db_image_path.replace(root_folder_path, ''),
-                                      qu_image_path.replace(root_folder_path, ''), 1, 0, 1]
+                                      qu_image_path.replace(root_folder_path, ''), 1, 1]
 
                         data_set.append(gt_example)
                         int_db_image = int(db_image)
@@ -214,7 +214,7 @@ def get_dataset(key, root_folder_path):
                                 db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt + '/', season_folder)
                                 if osh.is_file(db_image_path):
                                     gt_example = [db_image_path.replace(root_folder_path, ''),
-                                                  qu_image_path.replace(root_folder_path, ''), 1, 0, 1]
+                                                  qu_image_path.replace(root_folder_path, ''), 1, 1]
                                     data_set.append(gt_example)
 
                         # append images after if possible
@@ -223,12 +223,12 @@ def get_dataset(key, root_folder_path):
                                 db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt + '/', season_folder)
                                 if osh.is_file(db_image_path):
                                     gt_example = [db_image_path.replace(root_folder_path, ''),
-                                                  qu_image_path.replace(root_folder_path, ''), 1, 0, 1]
+                                                  qu_image_path.replace(root_folder_path, ''), 1, 1]
                                     data_set.append(gt_example)
     return data_set
 
 
-def write_data(data_set, file_path, file_num = None):
+def write_data(data_set, file_path, file_num=None):
     if file_num is not None:
         with open(file_path + '.txt', 'w') as w:
             # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
@@ -274,10 +274,8 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
 
     print "extended len: train {0}".format(len(train_data))
 
-    write_data(train_data, root_folder_path + 'labels1')
     write_data(train_data, root_folder_path + 'train1', 1)
     write_data(train_data, root_folder_path + 'train2', 2)
-    write_data(test_data, root_folder_path + 'labels2')
     write_data(test_data, root_folder_path + 'test1', 1)
     write_data(test_data, root_folder_path + 'test2', 2)
 

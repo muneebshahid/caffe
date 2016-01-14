@@ -40,6 +40,6 @@ def print_r(img1, img2):
     print "untrained: ", r1
     print 'distance: ', np.linalg.norm(r1['fc8_n'] - r1['fc8_n_p'])
     print '-----------------------------------'
-    print "untrained: ", r2
+    print "trained: ", r2
     print 'distance: ', np.linalg.norm(r2['fc8_n'] - r2['fc8_n_p'])
 

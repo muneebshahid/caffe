@@ -92,7 +92,7 @@ layer {
 #  data_param {  
 #    source: "data/domain_adaptation_data/lmdb/test2"
 #    backend: LMDB
-    source: "data/domain_adaptation_data/images/test2.txt
+    source: "data/domain_adaptation_data/images/test2.txt"
     batch_size: 256
   }
 }

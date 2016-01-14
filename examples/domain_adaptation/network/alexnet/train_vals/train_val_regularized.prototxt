@@ -22,7 +22,7 @@ layer {
 #  data_param {  
 #    source: "data/domain_adaptation_data/lmdb/train1"
 #    backend: LMDB
-    source: "../data/images/train1.txt"
+    source: "data/domain_adaptation_data/images/train1.txt"
     batch_size: 32 
   }
 }
@@ -45,7 +45,7 @@ layer {
 #  data_param {  
 #    source: "data/domain_adaptation_data/lmdb/train2"
 #    backend: LMDB
-    source: "../data/images/train2.txt"
+    source: "data/domain_adaptation_data/images/train2.txt"
     batch_size: 32 
   }
 }
@@ -68,7 +68,7 @@ layer {
 #  data_param {  
 #    source: "data/domain_adaptation_data/lmdb/test1"
 #    backend: LMDB
-    source: "../data/images/test1.txt"
+    source: "data/domain_adaptation_data/images/test1.txt"
     batch_size: 256 
   }
 }
@@ -91,7 +91,7 @@ layer {
 #  data_param {  
 #    source: "data/domain_adaptation_data/lmdb/test2"
 #    backend: LMDB
-    source: "../data/images/test2.txt"
+    source: "data/domain_adaptation_data/images/test2.txt
     batch_size: 256
   }
 }

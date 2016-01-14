@@ -228,12 +228,13 @@ def get_dataset(key, root_folder_path):
     return data_set
 
 
-def write_data(data_set, file_path, file_num=None, lmdb=True):
+def write_data(data_set, root_folder_path, file_path, file_num=None, lmdb=True):
+    file_path = root_folder_path + '/' + file_path
     if file_num is not None:
         with open(file_path + '.txt', 'w') as w:
             # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
             w.writelines(
-                    [('' if lmdb else '../data/images/') + str(instance[file_num - 1]).replace('\\', '/') +
+                    [('' if lmdb else root_folder_path) + str(instance[file_num - 1]).replace('\\', '/') +
                      ' ' + str(instance[file_num + 1]) + '\n' for instance in data_set])
     else:
         with open(file_path + '.txt', 'w') as w:
@@ -243,7 +244,7 @@ def write_data(data_set, file_path, file_num=None, lmdb=True):
                      in data_set])
 
 
-def process_datasets(keys, root_folder_path, pseudo_shuffle=50):
+def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
     train_data = []
     test_data = []
     for key in keys:
@@ -274,14 +275,14 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=50):
 
     print "extended len: train {0}".format(len(train_data))
 
-    write_data(train_data, root_folder_path + 'train1', file_num=1, lmdb=False)
-    write_data(train_data, root_folder_path + 'train2', file_num=2, lmdb=False)
-    write_data(test_data, root_folder_path + 'test1', file_num=1, lmdb=False)
-    write_data(test_data, root_folder_path + 'test2', file_num=2, lmdb=False)
+    write_data(train_data, root_folder_path, 'train1', file_num=1, lmdb=False)
+    write_data(train_data, root_folder_path, 'train2', file_num=2, lmdb=False)
+    write_data(test_data, root_folder_path, 'test1', file_num=1, lmdb=False)
+    write_data(test_data, root_folder_path, 'test2', file_num=2, lmdb=False)
 
 
-def main(label_data_limit=0):
-    root_folder_path = osh.get_env_var('CAFFE_ROOT') + '/../data/images/' + '/'
+def main():
+    root_folder_path = osh.get_env_var('CAFFE_ROOT') + '/data/domain_adaptation_data/images/'
     root_folder_path = root_folder_path.replace('\\', '/')
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
@@ -290,4 +291,5 @@ def main(label_data_limit=0):
     process_datasets(keys, root_folder_path)
 
 if __name__ == "__main__":
+    caffe_num = '4'
     main()

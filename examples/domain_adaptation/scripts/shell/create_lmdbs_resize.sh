@@ -1,7 +1,7 @@
 convert_imageset="$CAFFE_ROOT/build/tools/convert_imageset"
-data="$CAFFE_ROOT/../data/"
-lmdb="$data/lmdb/"
-images="$data/images/"
+data="$CAFFE_ROOT/data/"
+lmdb="$data/domain_adaptation_data/lmdb/"
+images="$data/domain_adaptation_data/images/"
 
 if [ $1 = "complete" ]
 then

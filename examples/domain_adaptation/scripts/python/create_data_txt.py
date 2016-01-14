@@ -280,7 +280,7 @@ def pseudo_shuffle_data(data, pseudo_shuffle):
         i += 1
 
 
-def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
+def process_datasets(keys, root_folder_path, pseudo_shuffle=20):
     train_data_pos = []
     train_data_neg = []
     test_data_pos = []
@@ -308,6 +308,10 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
     pseudo_shuffle_data(train_data_neg, pseudo_shuffle)
     print "extended train data pos {0}, train data neg {1}".format(len(train_data_pos), len(train_data_neg))
 
+    train_data_test = copy.deepcopy(train_data_pos)
+    train_data_test.extend(copy.deepcopy(train_data_neg))
+    random.shuffle(train_data_test)
+
     train_data = evenly_mix_pos_neg(train_data_pos, train_data_neg, 8)
     test_data = test_data_pos
     test_data.extend(test_data_neg)
@@ -319,7 +323,8 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=1):
     write_data(train_data, root_folder_path, 'train2', file_num=2, lmdb=False)
     write_data(test_data, root_folder_path, 'test1', file_num=1, lmdb=False)
     write_data(test_data, root_folder_path, 'test2', file_num=2, lmdb=False)
-
+    write_data(train_data_test, root_folder_path, 'traint1', file_num=1, lmdb=False)
+    write_data(train_data_test, root_folder_path, 'traint2', file_num=2, lmdb=False)
 
 def main():
     root_folder_path = osh.get_env_var('CAFFE_ROOT') + '/data/domain_adaptation_data/images/'

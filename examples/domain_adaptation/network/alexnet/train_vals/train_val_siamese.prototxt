@@ -70,7 +70,7 @@ layer {
 #    source: "data/domain_adaptation_data/lmdb/test1"
 #    backend: LMDB
     source: "../data/images/test1.txt"
-    batch_size: 32 
+    batch_size: 256 
   }
 }
 
@@ -93,7 +93,7 @@ layer {
 #    source: "data/domain_adaptation_data/lmdb/test2"
 #    backend: LMDB
     source: "../data/images/test2.txt"
-    batch_size: 32 
+    batch_size: 256
   }
 }
 

@@ -233,7 +233,7 @@ def write_data(data_set, file_path, file_num=None, lmdb=True):
         with open(file_path + '.txt', 'w') as w:
             # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
             w.writelines(
-                    [('' if lmdb else '/../data/images/') + str(instance[file_num - 1]).replace('\\', '/') +
+                    [('' if lmdb else '../data/images/') + str(instance[file_num - 1]).replace('\\', '/') +
                      ' ' + str(instance[file_num + 1]) + '\n' for instance in data_set])
     else:
         with open(file_path + '.txt', 'w') as w:

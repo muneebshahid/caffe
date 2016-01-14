@@ -7,16 +7,16 @@ input: "data_1"
 input_shape {
   dim: 1
   dim: 3
-  dim: 256
-  dim: 256
+  dim: 227
+  dim: 227
 }
 
 input: "data_2"
 input_shape {
   dim: 1
   dim: 3
-  dim: 256
-  dim: 256
+  dim: 227
+  dim: 227
 }
 
 

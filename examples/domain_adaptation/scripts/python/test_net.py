@@ -19,10 +19,10 @@ im2 = np.array(Image.open(path2)).transpose(2, 0, 1)
 im_input1 = im1[np.newaxis, np.newaxis, :, :]
 im_input2 = im2[np.newaxis, np.newaxis, :, :]
 
-net.blobs['source_target_1'].reshape(*im_input1.shape)
-net.blobs['source_target_2'].reshape(*im_input2.shape)
+net.blobs['data_1'].reshape(*im_input1.shape)
+net.blobs['data_2'].reshape(*im_input2.shape)
 
-net.blobs['source_target_1'].data[...] = im_input1
-net.blobs['source_target_2'].data[...] = im_input2
+net.blobs['data_1'].data[...] = im_input1
+net.blobs['data_2'].data[...] = im_input2
 
 out = net.forward()

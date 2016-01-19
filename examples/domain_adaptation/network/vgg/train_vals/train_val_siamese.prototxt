@@ -14,7 +14,7 @@ layer {
   }
   transform_param {
     mirror: true
-    crop_size: 227
+    crop_size: 224
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
 
@@ -38,7 +38,7 @@ layer {
   }
   transform_param {
     mirror: true
-    crop_size: 227
+    crop_size: 224
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   image_data_param {
@@ -61,7 +61,7 @@ layer {
   }
   transform_param {
     mirror: false
-    crop_size: 227
+    crop_size: 224
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   image_data_param {
@@ -69,7 +69,7 @@ layer {
 #    source: "data/domain_adaptation_data/lmdb/test1"
 #    backend: LMDB
     source: "data/domain_adaptation_data/images/test1.txt"
-    batch_size: 256 
+    batch_size: 32
   }
 }
 
@@ -84,7 +84,7 @@ layer {
   }
   transform_param {
     mirror: false
-    crop_size: 227
+    crop_size: 224
     mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
   }
   image_data_param {
@@ -92,7 +92,7 @@ layer {
 #    source: "data/domain_adaptation_data/lmdb/test2"
 #    backend: LMDB
     source: "data/domain_adaptation_data/images/test2.txt"
-    batch_size: 256
+    batch_size: 32
   }
 }
 # ------------------------------------------------------------------------ Conv1

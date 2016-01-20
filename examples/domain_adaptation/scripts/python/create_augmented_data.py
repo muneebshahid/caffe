@@ -97,7 +97,7 @@ def create_augmented_data(keys, folders, root_folder_path):
                 osh.rm_dir(augm_path)
             print 'creating folder ', augm_path
             osh.make_dir(augm_path)
-            files = osh.list_dir(orig_path)[0:20]
+            files = osh.list_dir(orig_path)
             len_files = len(files)
             for i, im_file in enumerate(files):
                 if key == 'michigan' and int(im_file[:-5]) in mich_ignore:

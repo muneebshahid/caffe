@@ -92,6 +92,9 @@ def create_augmented_data(keys, root_folder_path):
             files = osh.list_dir(orig_path)[0:20]
             len_files = len(files)
             for i, im_file in enumerate(files):
+                if key == 'michigan' and int(im_file[:-5]) in mich_ignore:
+                    print "ignoring {0}".format(im_file[:-5])
+                    continue
                 augmented_ims = process(cv2.imread(orig_path + im_file))
                 write(augm_path, im_file, augmented_ims)
                 if i % 10 == 0:

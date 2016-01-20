@@ -125,7 +125,8 @@ def get_dataset(key, root_folder_path):
             # read lines and set labels to 1 1 (similarity and domain label)
             data_set_freiburg = [array
                                  for array in
-                                 (line.replace('uncompressed', 'freiburg/uncompressed')
+                                 (line.replace('summer/', 'freiburg/summer')
+                                      .replace('winter/', 'freiburg/winter')
                                       .replace('\n', ' 1 1').split(' ')
                                   for line in data_reader.readlines())]
             for instance in data_set_freiburg:
@@ -146,9 +147,9 @@ def get_dataset(key, root_folder_path):
         mich_ignore.extend(range(10095, 10677))
         mich_ignore.extend(range(11270, 11776))
         mich_ignore.extend(range(11985, 12575))
-        folder_path = root_folder_path + 'michigan/uncompressed/'
+        folder_path = root_folder_path + 'michigan/'
         print 'Processing michigan data.....'
-        files_michigan = ['michigan/uncompressed/aug/' + im + '.tiff'
+        files_michigan = ['michigan/aug/' + im + '.tiff'
                           for im in
                           sorted([im[:-5] for im in
                                   osh.list_dir(folder_path + 'aug/')], key=int)]
@@ -280,7 +281,7 @@ def pseudo_shuffle_data(data, pseudo_shuffle):
         i += 1
 
 
-def process_datasets(keys, root_folder_path, pseudo_shuffle=20):
+def process_datasets(keys, root_folder_path, write_path, pseudo_shuffle=20):
     train_data_pos = []
     train_data_neg = []
     test_data_pos = []
@@ -308,10 +309,6 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=20):
     pseudo_shuffle_data(train_data_neg, pseudo_shuffle)
     print "extended train data pos {0}, train data neg {1}".format(len(train_data_pos), len(train_data_neg))
 
-    train_data_test = copy.deepcopy(train_data_pos)
-    train_data_test.extend(copy.deepcopy(train_data_neg))
-    random.shuffle(train_data_test)
-
     train_data = evenly_mix_pos_neg(train_data_pos, train_data_neg, 8)
     test_data = test_data_pos
     test_data.extend(test_data_neg)
@@ -319,21 +316,23 @@ def process_datasets(keys, root_folder_path, pseudo_shuffle=20):
     print "train data {0}".format(len(train_data))
     print "test data {0}".format(len(test_data))
 
-    write_data(train_data, root_folder_path, 'train1', file_num=1, lmdb=False)
-    write_data(train_data, root_folder_path, 'train2', file_num=2, lmdb=False)
-    write_data(test_data, root_folder_path, 'test1', file_num=1, lmdb=False)
-    write_data(test_data, root_folder_path, 'test2', file_num=2, lmdb=False)
-    write_data(train_data_test, root_folder_path, 'traint1', file_num=1, lmdb=False)
-    write_data(train_data_test, root_folder_path, 'traint2', file_num=2, lmdb=False)
+    print 'writing files....'
+    write_data(train_data, write_path, 'train1', file_num=1, lmdb=False)
+    write_data(train_data, write_path, 'train2', file_num=2, lmdb=False)
+    write_data(test_data, write_path, 'test1', file_num=1, lmdb=False)
+    write_data(test_data, write_path, 'test2', file_num=2, lmdb=False)
+
 
 def main():
-    root_folder_path = osh.get_env_var('CAFFE_ROOT') + '/data/domain_adaptation_data/images/'
+    caffe_root = osh.get_env_var('CAFFE_ROOT')
+    root_folder_path = caffe_root + '/../data/images/orig/'
     root_folder_path = root_folder_path.replace('\\', '/')
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()
     keys = ['freiburg', 'michigan', 'fukui']
-    process_datasets(keys, root_folder_path)
+    write_path = caffe_root + '/data/domain_adaptation_data/images/'
+    process_datasets(keys, root_folder_path, write_path)
 
 if __name__ == "__main__":
     main()

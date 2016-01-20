@@ -66,21 +66,29 @@ def write(path, orig_name, augmented_ims):
             cv2.imwrite(path + name + '-' + key + str(i) + '.' + ext, ims)
 
 
-def create_augmented_data(keys, root_folder_path):
+def create_augmented_data(keys, folders, root_folder_path):
     root_orig_path = root_folder_path + 'orig/'
     root_augmented_path = root_folder_path + 'augmented/'
     if not osh.path_exists(root_augmented_path):
         osh.make_dir(root_augmented_path)
-    folders = []
+
+    total_file_num = 0
+    for key in keys:
+        for folder in folders[key]:
+            orig_path = root_orig_path + key + '/' + folder + '/'
+            total_file_num += len(osh.list_dir(orig_path))
+    print 'total files found: ', total_file_num
+
+    over_all_done = 0
     for key in keys:
         if key == 'freiburg':
             print 'processing freiburg....'
-            folders = ['summer', 'winter']
         elif key == 'michigan':
             print 'processing michigan....'
-            folders = ['aug', 'jan']
+        elif key == 'fukui':
+            print 'processing fukui....'
 
-        for folder in folders:
+        for folder in folders[key]:
             print 'processing ' + key + ' ' + folder
             orig_path = root_orig_path + key + '/' + folder + '/'
             augm_path = root_augmented_path + key + '/' + folder + '/'
@@ -94,11 +102,14 @@ def create_augmented_data(keys, root_folder_path):
             for i, im_file in enumerate(files):
                 if key == 'michigan' and int(im_file[:-5]) in mich_ignore:
                     print "ignoring {0}".format(im_file[:-5])
-                    continue
-                augmented_ims = process(cv2.imread(orig_path + im_file))
-                write(augm_path, im_file, augmented_ims)
-                if i % 10 == 0:
+                else:
+                    augmented_ims = process(cv2.imread(orig_path + im_file))
+                    write(augm_path, im_file, augmented_ims)
+                if i % 100 == 0:
                     print str(i) + '/' + str(len_files)
+                if over_all_done % 100 == 0:
+                    print 'Total progress: ' + str(over_all_done) + '/' + str(total_file_num)
+                over_all_done += 1
 
 
 def main():
@@ -108,7 +119,17 @@ def main():
         print "source folder does'nt exist, existing....."
         sys.exit()
     keys = ['freiburg', 'michigan', 'fukui']
-    create_augmented_data(keys, root_folder_path)
+    fukui_parent_folders = ['AU', 'SU', 'SP', 'WI']
+    fukui_d_q_folders = ['db', 'query']
+    fukui_child_folders = [str(i) for i in range(1, 13)]
+    fukui_folders = [p_folder + '/' + dq + '/' + c_folder + '/'
+                     for p_folder in fukui_parent_folders
+                     for dq in fukui_d_q_folders
+                     for c_folder in fukui_child_folders]
+    folders = {'freiburg': ['summer', 'winter'],
+               'michigan': ['aug', 'jan'],
+               'fukui': fukui_folders}
+    create_augmented_data(keys, folders, root_folder_path)
 
 
 if __name__ == "__main__":

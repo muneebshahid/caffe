@@ -33,6 +33,51 @@ def extend_data(data):
     return temp_data
 
 
+def add_augmented_data(data_set, ext, limit=4):
+    augmented_data = []
+    ext_len = len(ext)
+    for instance in data_set:
+        limit_per_key = limit
+        im_1 = instance[0][:-ext_len]
+        im_2 = instance[1][:-ext_len]
+        keys_list_1 = copy.deepcopy(AUGMENTED_KEYS)
+        keys_list_2 = copy.deepcopy(AUGMENTED_KEYS)
+        keys_dict_1 = {key: [str(val) for val in range(0, 4)] for key in AUGMENTED_KEYS}
+        keys_dict_2 = copy.deepcopy(keys_dict_1)
+        while len(keys_list_1) > 0 and len(keys_list_2) > 0:
+
+            # key indices from keys lists
+            key_1_index, key_2_index = np.random.randint(0, len(keys_list_1)), \
+                                       np.random.randint(0, len(keys_list_2))
+
+            # get actual keys
+            key_1, key_2 = keys_list_1[key_1_index], keys_list_2[key_2_index]
+
+            # get a random index from available indices
+            aug_im_1_index, aug_im_2_index = np.random.randint(0, len(keys_dict_1[key_1])), \
+                                             np.random.randint(0, len(keys_dict_2[key_2]))
+
+            # pop the elements at the corresponding indices
+            aug_im_1, aug_im_2 = keys_dict_1[key_1].pop(aug_im_1_index), keys_dict_2[key_2].pop(aug_im_2_index)
+
+            # create actual image names
+            id_1 = im_1 + '-' + key_1 + aug_im_1 + ext
+            id_2 = im_2 + '-' + key_2 + aug_im_2 + ext
+
+            # append to data
+            augmented_data.append([instance[0], id_2, instance[2], instance[3]])
+            augmented_data.append([instance[1], id_1, instance[2], instance[3]])
+            augmented_data.append([id_1, id_2, instance[2], instance[2]])
+
+            # check if end of dict vars
+            if len(keys_dict_1[key_1]) == 0:
+                keys_list_1.pop(key_1_index)
+            if len(keys_dict_2[key_2]) == 0:
+                keys_list_2.pop(key_2_index)
+
+
+
+
 def get_distant_images(data_len, image_gap, fix_dist=False):
     im_index_1 = np.random.randint(0, data_len)
     if not fix_dist:
@@ -281,13 +326,15 @@ def pseudo_shuffle_data(data, pseudo_shuffle):
         i += 1
 
 
-def process_datasets(keys, root_folder_path, write_path, pseudo_shuffle=20):
+def process_datasets(keys, root_folder_path, write_path, pseudo_shuffle=1):
     train_data_pos = []
     train_data_neg = []
     test_data_pos = []
     test_data_neg = []
     for key in keys:
+        ext = '.jpg' if key != 'michigan' else '.tiff'
         data_set_pos = get_dataset(key, root_folder_path)
+        test = add_augmented_data(data_set_pos, ext)
         data_set_neg = create_negatives(key, data_set_pos)
         # Add fukui data only for training.
         if key != 'fukui':
@@ -335,4 +382,5 @@ def main():
     process_datasets(keys, root_folder_path, write_path)
 
 if __name__ == "__main__":
+    AUGMENTED_KEYS = ['tra' , 'rot', 'aff', 'per']
     main()

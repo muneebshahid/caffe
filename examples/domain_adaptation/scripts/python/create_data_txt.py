@@ -33,32 +33,25 @@ def extend_data(data):
     return temp_data
 
 
-def add_augmented_data(data_set, ext, limit=4):
+def get_augmented_data_pos(data_set, ext, limit=4):
     augmented_data = []
+    augmented_dict = dict()
     ext_len = len(ext)
     for instance in data_set:
-        limit_per_key = limit
+        for im in instance[:2]:
+            if im not in augmented_dict:
+                augmented_dict[im] = []
         im_1 = instance[0][:-ext_len]
         im_2 = instance[1][:-ext_len]
-        keys_list_1 = copy.deepcopy(AUGMENTED_KEYS)
-        keys_list_2 = copy.deepcopy(AUGMENTED_KEYS)
-        keys_dict_1 = {key: [str(val) for val in range(0, 4)] for key in AUGMENTED_KEYS}
-        keys_dict_2 = copy.deepcopy(keys_dict_1)
-        while len(keys_list_1) > 0 and len(keys_list_2) > 0:
+        keys_dict_1 = {key: [str(rnd) for rnd in random.sample(range(0, 4), limit)] for key in AUGMENTED_KEYS}
+        keys_dict_2 = {key: [str(rnd) for rnd in random.sample(range(0, 4), limit)] for key in AUGMENTED_KEYS}
 
-            # key indices from keys lists
-            key_1_index, key_2_index = np.random.randint(0, len(keys_list_1)), \
-                                       np.random.randint(0, len(keys_list_2))
-
+        while len(keys_dict_1) > 0 and len(keys_dict_2) > 0:
             # get actual keys
-            key_1, key_2 = keys_list_1[key_1_index], keys_list_2[key_2_index]
-
-            # get a random index from available indices
-            aug_im_1_index, aug_im_2_index = np.random.randint(0, len(keys_dict_1[key_1])), \
-                                             np.random.randint(0, len(keys_dict_2[key_2]))
+            key_1, key_2 = random.choice(keys_dict_1.keys()), random.choice(keys_dict_2.keys())
 
             # pop the elements at the corresponding indices
-            aug_im_1, aug_im_2 = keys_dict_1[key_1].pop(aug_im_1_index), keys_dict_2[key_2].pop(aug_im_2_index)
+            aug_im_1, aug_im_2 = keys_dict_1[key_1].pop(), keys_dict_2[key_2].pop()
 
             # create actual image names
             id_1 = im_1 + '-' + key_1 + aug_im_1 + ext
@@ -69,13 +62,16 @@ def add_augmented_data(data_set, ext, limit=4):
             augmented_data.append([instance[1], id_1, instance[2], instance[3]])
             augmented_data.append([id_1, id_2, instance[2], instance[2]])
 
+            # add to dict
+            augmented_dict[instance[0]].append(id_1)
+            augmented_dict[instance[1]].append(id_2)
+
             # check if end of dict vars
             if len(keys_dict_1[key_1]) == 0:
-                keys_list_1.pop(key_1_index)
+                keys_dict_1.pop(key_1)
             if len(keys_dict_2[key_2]) == 0:
-                keys_list_2.pop(key_2_index)
-
-
+                keys_dict_2.pop(key_2)
+    return augmented_data, augmented_dict
 
 
 def get_distant_images(data_len, image_gap, fix_dist=False):
@@ -113,47 +109,49 @@ def evenly_mix_source_target(dataset, batch_size=8):
         i += batch_size
 
 
-def create_negatives(key, dataset):
+def create_negatives(key, dataset, augmented_length=None, chosen_aug=None, select_orig=0.7):
     negatives = []
+    pos_examples = len(dataset) if augmented_length is None else augmented_length
+    neg_examples = 0
+    fix_dist = False
+    image_gap = 0
     if key == 'freiburg':
-        print 'creating freiburg negative examples'
-        pos_examples = len(dataset)
-        neg_examples = 0
         image_gap = 200
-        while neg_examples < pos_examples:
-            im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap)
-            im1 = dataset[im_index_1]
-            im2 = dataset[im_index_2]
-            negatives.append([im1[0], im2[1], 0, 0])
-            if neg_examples % 1000 == 0:
-                print "{0} / {1}".format(neg_examples, pos_examples)
-            neg_examples += 1
+        print 'creating freiburg negative examples'
     elif key == 'michigan':
-        print 'creating michigan negative examples'
-        pos_examples = len(dataset)
-        neg_examples = 0
         image_gap = 600
-        while neg_examples < pos_examples:
-            im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap)
-            im1 = dataset[im_index_1]
-            im2 = dataset[im_index_2]
-            negatives.append([im1[0], im2[1], 0, 0])
-            if neg_examples % 1000 == 0:
-                print "{0} / {1}".format(neg_examples, pos_examples)
-            neg_examples += 1
+        print 'creating michigan negative examples'
     elif key == 'fukui':
-        print 'creating fukui negative examples'
-        pos_examples = len(dataset)
-        neg_examples = 0
         image_gap = 170
-        while neg_examples < pos_examples:
-            im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap, fix_dist=True)
-            im1 = dataset[im_index_1]
-            im2 = dataset[im_index_2]
-            negatives.append([im1[0], im2[1], 0, 0])
-            if neg_examples % 1000 == 0:
-                print "{0} / {1}".format(neg_examples, pos_examples)
-            neg_examples += 1
+        print 'creating fukui negative examples'
+    assert image_gap > 0
+    while neg_examples < pos_examples:
+        im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap, fix_dist)
+        ims = dataset[im_index_1], dataset[im_index_2]
+        if augmented_length is None:
+            negatives.append([ims[0][0], ims[1][1], 0, 0])
+        else:
+            instance = []
+            im_file = []
+            im_file.extend(osh.split_file_extension(ims[0][0]))
+            im_file.extend(osh.split_file_extension(ims[1][1]))
+            likelihoods = np.random.rand(2, 1)
+            for i, likelihood in enumerate(likelihoods):
+                if likelihood < select_orig:
+                    instance.append(ims[i][i])
+                elif chosen_aug is not None:
+                        instance.append(random.choice(chosen_aug[ims[i][i]]))
+                else:
+                    f_name, f_ext = im_file[i]
+                    aug_key = random.choice(AUGMENTED_KEYS)
+                    num = random.choice(range(0, 3))
+                    full_im = f_name + '-' + aug_key + str(num) + f_ext
+                    instance.append(full_im)
+            instance.extend([0, 0])
+            negatives.append(instance)
+        if neg_examples % 1000 == 0:
+            print "{0} / {1}".format(neg_examples, pos_examples)
+        neg_examples += 1
     return negatives
 
 
@@ -318,15 +316,16 @@ def evenly_mix_pos_neg(data_pos, data_neg, batch_size=8):
 
 
 def pseudo_shuffle_data(data, pseudo_shuffle):
-    data_orig = copy.deepcopy(data)
-    i = 1
-    while i < pseudo_shuffle:
-        print "extending train data {0} time".format(i)
-        data.extend(extend_data(data_orig))
-        i += 1
+    if pseudo_shuffle > 0:
+        data_orig = copy.deepcopy(data)
+        i = 0
+        while i < pseudo_shuffle:
+            print "extending train data {0} time".format(i + 1)
+            data.extend(extend_data(data_orig))
+            i += 1
 
 
-def process_datasets(keys, root_folder_path, write_path, pseudo_shuffle=1):
+def process_datasets(keys, root_folder_path, write_path, pseudo_shuffle=0, augmented_limit=1):
     train_data_pos = []
     train_data_neg = []
     test_data_pos = []
@@ -334,7 +333,6 @@ def process_datasets(keys, root_folder_path, write_path, pseudo_shuffle=1):
     for key in keys:
         ext = '.jpg' if key != 'michigan' else '.tiff'
         data_set_pos = get_dataset(key, root_folder_path)
-        test = add_augmented_data(data_set_pos, ext)
         data_set_neg = create_negatives(key, data_set_pos)
         # Add fukui data only for training.
         if key != 'fukui':
@@ -345,8 +343,14 @@ def process_datasets(keys, root_folder_path, write_path, pseudo_shuffle=1):
             test_data_pos.extend(test_data_pos_temp)
             test_data_neg.extend(test_data_neg_temp)
         else:
-            train_data_pos.extend(data_set_pos)
-            train_data_neg.extend(data_set_neg)
+            train_data_pos_temp, train_data_neg_temp = data_set_pos, data_set_neg
+            train_data_pos.extend(train_data_pos_temp)
+            train_data_neg.extend(train_data_neg_temp)
+
+        augmented_pos, augmented_dict = get_augmented_data_pos(train_data_pos_temp, ext, augmented_limit)
+        augmented_neg = create_negatives(key, train_data_pos_temp, len(augmented_pos), augmented_dict, 0.7)
+        train_data_pos.extend(augmented_pos)
+        train_data_neg.extend(augmented_neg)
 
     random.shuffle(train_data_pos)
     random.shuffle(train_data_neg)

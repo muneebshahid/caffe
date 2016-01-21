@@ -58,9 +58,9 @@ def get_augmented_data_pos(data_set, ext, limit=4):
             id_2 = im_2 + '-' + key_2 + aug_im_2 + ext
 
             # append to data
-            augmented_data.append([instance[0], id_2, instance[2], instance[3]])
-            augmented_data.append([instance[1], id_1, instance[2], instance[3]])
-            augmented_data.append([id_1, id_2, instance[2], instance[2]])
+            augmented_data.append([instance[0], id_2, instance[2], instance[3], 1, 0])
+            augmented_data.append([instance[1], id_1, instance[2], instance[3], 1, 0])
+            augmented_data.append([id_1, id_2, instance[2], instance[2], 0, 0])
 
             # add to dict
             augmented_dict[instance[0]].append(id_1)
@@ -129,16 +129,18 @@ def create_negatives(key, dataset, augmented_length=None, chosen_aug=None, selec
         im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap, fix_dist)
         ims = dataset[im_index_1], dataset[im_index_2]
         if augmented_length is None:
-            negatives.append([ims[0][0], ims[1][1], 0, 0])
+            negatives.append([ims[0][0], ims[1][1], 0, 0, 1, 1])
         else:
             instance = []
             im_file = []
             im_file.extend(osh.split_file_extension(ims[0][0]))
             im_file.extend(osh.split_file_extension(ims[1][1]))
             likelihoods = np.random.rand(2, 1)
+            orig_augmen = [0, 0]
             for i, likelihood in enumerate(likelihoods):
                 if likelihood < select_orig:
                     instance.append(ims[i][i])
+                    orig_augmen[i] = 1
                 elif chosen_aug is not None:
                         instance.append(random.choice(chosen_aug[ims[i][i]]))
                 else:
@@ -148,6 +150,7 @@ def create_negatives(key, dataset, augmented_length=None, chosen_aug=None, selec
                     full_im = f_name + '-' + aug_key + str(num) + f_ext
                     instance.append(full_im)
             instance.extend([0, 0])
+            instance.extend(orig_augmen)
             negatives.append(instance)
         if neg_examples % 1000 == 0:
             print "{0} / {1}".format(neg_examples, pos_examples)
@@ -170,13 +173,13 @@ def get_dataset(key, root_folder_path):
                                  for array in
                                  (line.replace('summer/', 'freiburg/summer')
                                       .replace('winter/', 'freiburg/winter')
-                                      .replace('\n', ' 1 1').split(' ')
+                                      .replace('\n', ' 1 1 1 1').split(' ')
                                   for line in data_reader.readlines())]
             for instance in data_set_freiburg:
                 i = 1
-                while len(instance) - 2 > i:
+                while len(instance) - 4 > i:
                     seasons = [instance[0], instance[i]]
-                    seasons.extend(instance[-2:])
+                    seasons.extend(instance[-4:])
                     data_set.append(seasons)
                     i += 1
     elif key == 'michigan':
@@ -202,7 +205,7 @@ def get_dataset(key, root_folder_path):
             if int(file_n[:-5]) in mich_ignore:
                 print "ignoring {0}".format(file_n[:-5])
                 continue
-            data_set.append([im_file, im_file.replace('aug', 'jan'), 1, 1])
+            data_set.append([im_file, im_file.replace('aug', 'jan'), 1, 1, 1, 1])
     elif key == 'fukui':
         # mislabeled examples
         fukui_ignore = {'SU': ['4', '04000000'],
@@ -246,7 +249,7 @@ def get_dataset(key, root_folder_path):
                             print db_image_path
                             print '----------------'
                         gt_example = [db_image_path.replace(root_folder_path, ''),
-                                      qu_image_path.replace(root_folder_path, ''), 1, 1]
+                                      qu_image_path.replace(root_folder_path, ''), 1, 1, 1, 1]
 
                         data_set.append(gt_example)
                         int_db_image = int(db_image)
@@ -258,7 +261,7 @@ def get_dataset(key, root_folder_path):
                                 db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt + '/', season_folder)
                                 if osh.is_file(db_image_path):
                                     gt_example = [db_image_path.replace(root_folder_path, ''),
-                                                  qu_image_path.replace(root_folder_path, ''), 1, 1]
+                                                  qu_image_path.replace(root_folder_path, ''), 1, 1, 1, 1]
                                     data_set.append(gt_example)
 
                         # append images after if possible
@@ -267,7 +270,7 @@ def get_dataset(key, root_folder_path):
                                 db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt + '/', season_folder)
                                 if osh.is_file(db_image_path):
                                     gt_example = [db_image_path.replace(root_folder_path, ''),
-                                                  qu_image_path.replace(root_folder_path, ''), 1, 1]
+                                                  qu_image_path.replace(root_folder_path, ''), 1, 1, 1, 1]
                                     data_set.append(gt_example)
     return data_set
 
@@ -278,7 +281,9 @@ def write_data(data_set, root_folder_path, write_path, file_path, file_num=None,
         with open(file_path + '.txt', 'w') as w:
             # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
             w.writelines(
-                    [('' if lmdb else root_folder_path) + str(instance[file_num - 1]).replace('\\', '/') +
+                    [('' if lmdb else (root_folder_path if (instance[file_num + 3] == 1)
+                                       else root_folder_path.replace('orig', 'augmented'))) +
+                     str(instance[file_num - 1]).replace('\\', '/') +
                      ' ' + str(instance[file_num + 1]) + '\n' for instance in data_set])
     else:
         with open(file_path + '.txt', 'w') as w:

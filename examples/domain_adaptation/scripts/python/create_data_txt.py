@@ -171,8 +171,8 @@ def get_dataset(key, root_folder_path):
             # read lines and set labels to 1 1 (similarity and domain label)
             data_set_freiburg = [array
                                  for array in
-                                 (line.replace('summer/', 'freiburg/summer')
-                                      .replace('winter/', 'freiburg/winter')
+                                 (line.replace('summer/', 'freiburg/summer/')
+                                      .replace('winter/', 'freiburg/winter/')
                                       .replace('\n', ' 1 1 1 1').split(' ')
                                   for line in data_reader.readlines())]
             for instance in data_set_freiburg:

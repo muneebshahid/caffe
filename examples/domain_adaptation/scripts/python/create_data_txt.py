@@ -272,8 +272,8 @@ def get_dataset(key, root_folder_path):
     return data_set
 
 
-def write_data(data_set, root_folder_path, file_path, file_num=None, lmdb=True):
-    file_path = root_folder_path + '/' + file_path
+def write_data(data_set, root_folder_path, write_path, file_path, file_num=None, lmdb=True):
+    file_path = write_path + '/' + file_path
     if file_num is not None:
         with open(file_path + '.txt', 'w') as w:
             # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
@@ -368,10 +368,10 @@ def process_datasets(keys, root_folder_path, write_path, pseudo_shuffle=0, augme
     print "test data {0}".format(len(test_data))
 
     print 'writing files....'
-    write_data(train_data, write_path, 'train1', file_num=1, lmdb=False)
-    write_data(train_data, write_path, 'train2', file_num=2, lmdb=False)
-    write_data(test_data, write_path, 'test1', file_num=1, lmdb=False)
-    write_data(test_data, write_path, 'test2', file_num=2, lmdb=False)
+    write_data(train_data, root_folder_path, write_path, 'train1', file_num=1, lmdb=False)
+    write_data(train_data, root_folder_path, write_path, 'train2', file_num=2, lmdb=False)
+    write_data(test_data, root_folder_path, write_path, 'test1', file_num=1, lmdb=False)
+    write_data(test_data, root_folder_path, write_path, 'test2', file_num=2, lmdb=False)
 
 
 def main():

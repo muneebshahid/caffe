@@ -1,5 +1,5 @@
 net: "examples/domain_adaptation/network/pretrained_train_val.prototxt"
-test_iter: 33 		# test_iter specifies how many forward passes the test should carry out batchsize 256 x 38 > 9480 total test images.
+test_iter: 26 		# test_iter specifies how many forward passes the test should carry out batchsize 320 x 26 = 8320 total test images.
 test_interval: 100 	# Carry out testing every 196 training iterations appx one epoc
 
 base_lr: 0.0001 	# begin training at a learning rate of 0.01 = 1e-2

@@ -4,7 +4,7 @@ network=$CAFFE_ROOT"/examples/domain_adaptation/network/"
 log_dir=$CAFFE_ROOT"/data/domain_adaptation_data/logs"
 if [ "$1" = "finetune" ]
 then
-	solver=$network"solver.prototxt"
+	solver=$network"pretrained_solver.prototxt"
 	if [ "$2" = "default" ]
 	then
 		if [ "$3" = "alex" ]
@@ -36,7 +36,7 @@ then
 	$CAFFE_ROOT/build/tools/caffe train --solver=$solver --weights=$model --snapshot=$snapshot --log_dir=$log_dir -gpu 0
 elif [ "$1" = "scratch" ]
 then	
-	solver=$network"scratch/solver.prototxt"
+	solver=$network"scratch_solver.prototxt"
 	$CAFFE_ROOT/build/tools/caffe train --solver=$solver --log_dir=$log_dir -gpu 0
 else
 	echo "wrong first param"

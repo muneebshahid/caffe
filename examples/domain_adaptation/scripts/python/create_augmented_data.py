@@ -129,7 +129,8 @@ def main():
     folders = {'freiburg': ['summer', 'winter'],
                'michigan': ['aug', 'jan'],
                'fukui': fukui_folders}
-    create_augmented_data(keys, folders, root_folder_path)
+    print "Augmented Data Saftey Lock"
+    #create_augmented_data(keys, folders, root_folder_path)
 
 
 if __name__ == "__main__":

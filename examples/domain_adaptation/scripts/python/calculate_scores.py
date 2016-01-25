@@ -5,9 +5,10 @@ import os_helper as osh
 caffe.set_mode_gpu()
 caffe_root = osh.get_env_var('CAFFE_ROOT')
 data = caffe_root + '/../data/'
+results = caffe_root + '/../results/'
 mean_file = data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto'
-im1 = data + 'images/freiburg/uncompressed/summer/imageCompressedCam0_0000002.jpg'
-im2 = data + 'images/freiburg/uncompressed/winter/imageCompressedCam0_0001645.jpg'
+im1 = data + 'images/orig/freiburg/summer/imageCompressedCam0_0000002.jpg'
+im2 = data + 'images/orig/freiburg/winter/imageCompressedCam0_0001645.jpg'
 blob = caffe.proto.caffe_pb2.BlobProto()
 mean_data = open(data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto', 'rb').read()
 blob.ParseFromString(mean_data)
@@ -17,7 +18,7 @@ net1 = caffe.Net(caffe_root +
                  caffe.TEST)
 net2 = caffe.Net(caffe_root +
                  '/examples/domain_adaptation/network/alexnet/train_vals/deploy.prototxt',
-                 caffe_root + '/examples/domain_adaptation/snapshots/snapshots_iter_10000.caffemodel', caffe.TEST)
+                 results + '/alexnet/snapshots_iter_10000.caffemodel', caffe.TEST)
 
 
 def output(net, img1, img2):

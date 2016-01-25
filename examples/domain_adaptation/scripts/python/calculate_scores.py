@@ -9,16 +9,15 @@ results = caffe_root + '/../results/'
 mean_file = data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto'
 im1 = data + 'images/orig/freiburg/summer/imageCompressedCam0_0000002.jpg'
 im2 = data + 'images/orig/freiburg/winter/imageCompressedCam0_0001645.jpg'
+deploy = '/examples/domain_adaptation/network/alexnet/pretrained/train_vals/deploy.prototxt'
 blob = caffe.proto.caffe_pb2.BlobProto()
 mean_data = open(data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto', 'rb').read()
 blob.ParseFromString(mean_data)
 arr = np.array(caffe.io.blobproto_to_array(blob))
-net1 = caffe.Net(caffe_root +
-                 '/examples/domain_adaptation/network/alexnet/train_vals/deploy.prototxt',
+net1 = caffe.Net(caffe_root + deploy,
                  caffe.TEST)
-net2 = caffe.Net(caffe_root +
-                 '/examples/domain_adaptation/network/alexnet/train_vals/deploy.prototxt',
-                 results + '/alexnet/snapshots_iter_10000.caffemodel', caffe.TEST)
+net2 = caffe.Net(caffe_root + deploy,
+                 results + '/alex/1-200k/snapshots_iter_200000.caffemodel', caffe.TEST)
 
 
 def output(net, img1, img2):

@@ -1,7 +1,7 @@
 import caffe
 import numpy as np
 import os_helper as osh
-
+import copy
 
 def forward(net, transformer, img1, img2):
     img1 = transformer.preprocess(transformer_key, caffe.io.load_image(img1))
@@ -9,7 +9,7 @@ def forward(net, transformer, img1, img2):
     net.blobs['data_1'].data[...] = img1
     net.blobs['data_2'].data[...] = img2
     output = net.forward()
-    return output['fc8_n'], output['fc8_n_p']
+    return [output['fc8_n'][0], output['fc8_n_p'][0]]
 
 
 def create_transformer(net, mean_arr):
@@ -42,19 +42,23 @@ def load_test_image_txt():
 
 
 def dump_coordinates(dest_file, coordinates):
-    with open(dest_file) as dest_file_handle:
+    with open(dest_file , 'w') as dest_file_handle:
         dest_file_handle.writelines([coord[0] + ' ' + coord[1] + '\n' for coord in coordinates])
 
 
 def main():
     net = caffe.Net(deploy_prototxt, caffe_model, caffe.TEST)
     transformer = create_transformer(net, load_mean_binary())
-    arr = load_test_image_txt()
+    arr = load_test_image_txt()[:10]
     coordinates = []
     for i, pair in enumerate(arr):
-        coordinates.append(forward(net, transformer, pair[0], pair[1]))
+        result = copy.deepcopy(forward(net, transformer, pair[0], pair[1]))
+	coordinates.append(result)
+	print coordinates[0]
         if i % 50 == 0:
             print '{0} / {1}: '.format(i, len(arr))
+    for d in range(len(coordinates)):
+	print coordinates[d]
     dump_coordinates(image_txt + 'coordinates.txt', coordinates)
     return
 

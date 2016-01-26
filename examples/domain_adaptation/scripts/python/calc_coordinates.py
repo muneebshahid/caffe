@@ -53,19 +53,20 @@ def dump_coordinates(dest_file, coordinates):
     with open(dest_file , 'w') as dest_file_handle:
         for coord in coordinates:
             str1, str2 = list_to_str(coord[0]), list_to_str(coord[1])
-            dest_file_handle.write(str1 + str2 + '\n')
+            dest_file_handle.write(str1 + ',' + str2 + '\n')
 
 
 def main():
     net = caffe.Net(deploy_prototxt, caffe_model, caffe.TEST)
     transformer = create_transformer(net, load_mean_binary())
-    arr = load_test_image_txt()[:10]
+    arr = load_test_image_txt()
     coordinates = []
     for i, pair in enumerate(arr):
         result = copy.deepcopy(forward(net, transformer, pair[0], pair[1]))
         coordinates.append(result)
         if i % 50 == 0:
             print '{0} / {1}: '.format(i, len(arr))
+    print 'writing file'
     dump_coordinates(image_txt + 'coordinates.txt', coordinates)
     return
 

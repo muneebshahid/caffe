@@ -6,7 +6,6 @@ import os_helper as osh
 def forward(net, transformer, img1, img2):
     img1 = transformer.preprocess(transformer_key, caffe.io.load_image(img1))
     img2 = transformer.preprocess(transformer_key, caffe.io.load_image(img2))
-    print img1.shape
     net.blobs['data_1'].data[...] = img1
     net.blobs['data_2'].data[...] = img2
     output = net.forward()
@@ -25,7 +24,7 @@ def create_transformer(net, mean_arr):
 def load_mean_binary():
     # load mean binary proto
     blob = caffe.proto.caffe_pb2.BlobProto()
-    mean_data = open(data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto', 'rb').read()
+    mean_data = open(mean_file, 'rb').read()
     blob.ParseFromString(mean_data)
     return np.array(caffe.io.blobproto_to_array(blob))
 
@@ -51,7 +50,11 @@ def main():
     net = caffe.Net(deploy_prototxt, caffe_model, caffe.TEST)
     transformer = create_transformer(net, load_mean_binary())
     arr = load_test_image_txt()
-    coordinates = [forward(net, transformer, pair[0], pair[1]) for pair in arr]
+    coordinates = []
+    for i, pair in enumerate(arr):
+        coordinates.append(forward(net, transformer, pair[0], pair[1]))
+        if i % 50 == 0:
+            print '{0} / {1}: '.format(i, len(arr))
     dump_coordinates(image_txt + 'coordinates.txt', coordinates)
     return
 
@@ -63,7 +66,7 @@ if __name__ == '__main__':
     data = caffe_root + '/../data/'
     results = caffe_root + '/../results/'
     image_txt = caffe_root + '/data/domain_adaptation_data/images/'
-    deploy_prototxt = caffe_root + '/examples/domain_adaptation/network/alexnet/train_vals/deploy.prototxt'
+    deploy_prototxt = caffe_root + '/examples/domain_adaptation/network/alexnet/pretrained/train_vals/deploy.prototxt'
     caffe_model = results + '/alex/1-200k/snapshots_iter_200000.caffemodel'
     mean_file = data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto'
     main()

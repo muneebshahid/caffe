@@ -13,13 +13,6 @@ def forward(net, transformer, img1, img2):
     return output['fc8_n'], output['fc8_n_p']
 
 
-def print_r(net, img1, img2):
-    r1 = output(net, img1, img2)
-    print '-----------------------------------'
-    print "untrained: ", r1
-    print 'distance: ', np.linalg.norm(r1['fc8_n'] - r1['fc8_n_p'])
-
-
 def create_transformer(net, mean_arr):
     transformer = caffe.io.Transformer({transformer_key: net.blobs['data_1'].data.shape})
     transformer.set_transpose(transformer_key, (2, 0, 1))
@@ -48,11 +41,18 @@ def load_test_image_txt():
                     ims[i].append(col[0])
     return [[im1, im2] for im1, im2 in zip(ims[0], ims[1])]
 
+
+def dump_coordinates(dest_file, coordinates):
+    with open(dest_file) as dest_file_handle:
+        dest_file_handle.writelines([coord[0] + ' ' + coord[1] + '\n' for coord in coordinates])
+
+
 def main():
     net = caffe.Net(deploy_prototxt, caffe_model, caffe.TEST)
     transformer = create_transformer(net, load_mean_binary())
     arr = load_test_image_txt()
     coordinates = [forward(net, transformer, pair[0], pair[1]) for pair in arr]
+    dump_coordinates(image_txt + 'coordinates.txt', coordinates)
     return
 
 

@@ -3,6 +3,7 @@ import numpy as np
 import os_helper as osh
 import copy
 
+
 def forward(net, transformer, img1, img2):
     img1 = transformer.preprocess(transformer_key, caffe.io.load_image(img1))
     img2 = transformer.preprocess(transformer_key, caffe.io.load_image(img2))
@@ -41,9 +42,18 @@ def load_test_image_txt():
     return [[im1, im2] for im1, im2 in zip(ims[0], ims[1])]
 
 
+def list_to_str(list_):
+    str_ = ''
+    for element in list_:
+        str_ += (str(element) + ' ')
+    return  str_
+
+
 def dump_coordinates(dest_file, coordinates):
     with open(dest_file , 'w') as dest_file_handle:
-        dest_file_handle.writelines([coord[0] + ' ' + coord[1] + '\n' for coord in coordinates])
+        for coord in coordinates:
+            str1, str2 = list_to_str(coord[0]), list_to_str(coord[1])
+            dest_file_handle.write(str1 + str2 + '\n')
 
 
 def main():
@@ -53,12 +63,9 @@ def main():
     coordinates = []
     for i, pair in enumerate(arr):
         result = copy.deepcopy(forward(net, transformer, pair[0], pair[1]))
-	coordinates.append(result)
-	print coordinates[0]
+        coordinates.append(result)
         if i % 50 == 0:
             print '{0} / {1}: '.format(i, len(arr))
-    for d in range(len(coordinates)):
-	print coordinates[d]
     dump_coordinates(image_txt + 'coordinates.txt', coordinates)
     return
 

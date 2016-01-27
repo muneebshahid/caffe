@@ -10,7 +10,7 @@ def forward(net, transformer, img1, img2):
     net.blobs['data_1'].data[...] = img1
     net.blobs['data_2'].data[...] = img2
     output = net.forward()
-    return [output['fc8_n'][0], output['fc8_n_p'][0]]
+    return np.hstack((output['fc8_n'][0][np.newaxis, :], output['fc8_n_p'][0][np.newaxis, :]))
 
 
 def create_transformer(net, mean_arr):
@@ -68,16 +68,17 @@ def main():
     net = caffe.Net(deploy_prototxt, caffe_model, caffe.TEST)
     transformer = create_transformer(net, load_mean_binary())
     arr = load_test_image_txt()
-    coordinates = []
+    coordinates = [np.array([]), np.array([])]
     for i, dataset in enumerate(arr):
-        for j, pair in enumerate(dataset):
+        for j, pair in enumerate(dataset[:1]):
             result = copy.deepcopy(forward(net, transformer, pair[0], pair[1]))
-            print type(result)
-            coordinates.append(result)
+            print result.shape
+            print coordinates[i].shape
+            coordinates[i] = np.vstack((coordinates[i], result))
             if i % 50 == 0:
                 print '{0} / {1}: '.format(j, len(arr))
         print 'writing file'
-        dump_coordinates(image_txt + 'coordinates.txt', coordinates)
+        #dump_coordinates(image_txt + 'coordinates.txt', coordinates)
     return
 
 

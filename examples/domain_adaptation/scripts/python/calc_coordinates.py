@@ -32,21 +32,29 @@ def load_mean_binary():
 
 def load_test_image_txt():
     test_files = ['test1.txt', 'test2.txt']
-    ims = [[], []]
+    ims_freiburg = [[], []]
+    ims_michigan = [[], []]
     for i, test_file in enumerate(test_files):
         with open(image_txt + test_file, 'r') as file_handle:
             for line in file_handle.readlines():
                 col = line.replace('\n', '').split(' ')
                 if col[1] == '1':
-                    ims[i].append(col[0])
-    return [[im1, im2] for im1, im2 in zip(ims[0], ims[1])]
+                    if 'freiburg' in col[0]:
+                        ims_freiburg[i].append(col[0])
+                    else:
+                        ims_michigan[i].append(col[0])
+
+    return [[im1, im2]
+            for im1, im2 in zip(ims_freiburg[0], ims_freiburg[1])], \
+           [[im1, im2]
+            for im1, im2 in zip(ims_michigan[0], ims_michigan[1])]
 
 
 def list_to_str(list_):
     str_ = ''
     for element in list_:
         str_ += (str(element) + ' ')
-    return  str_
+    return str_
 
 
 def dump_coordinates(dest_file, coordinates):
@@ -61,13 +69,15 @@ def main():
     transformer = create_transformer(net, load_mean_binary())
     arr = load_test_image_txt()
     coordinates = []
-    for i, pair in enumerate(arr):
-        result = copy.deepcopy(forward(net, transformer, pair[0], pair[1]))
-        coordinates.append(result)
-        if i % 50 == 0:
-            print '{0} / {1}: '.format(i, len(arr))
-    print 'writing file'
-    dump_coordinates(image_txt + 'coordinates.txt', coordinates)
+    for i, dataset in enumerate(arr):
+        for j, pair in enumerate(dataset):
+            result = copy.deepcopy(forward(net, transformer, pair[0], pair[1]))
+            print type(result)
+            coordinates.append(result)
+            if i % 50 == 0:
+                print '{0} / {1}: '.format(j, len(arr))
+        print 'writing file'
+        dump_coordinates(image_txt + 'coordinates.txt', coordinates)
     return
 
 

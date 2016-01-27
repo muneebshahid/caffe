@@ -69,11 +69,11 @@ def main():
     arr = load_test_image_txt()
     coordinates = [[], []]
     for i, dataset in enumerate(arr):
-        for j, pair in enumerate(dataset[:10]):
+        for j, pair in enumerate(dataset):
             result = copy.deepcopy(forward(net, transformer, pair[0], pair[1]))
             coordinates[i].append(result)
-            if i % 50 == 0:
-                print '{0} / {1}: '.format(j, len(arr))
+            if j % 50 == 0:
+                print '{0} / {1}: '.format(j, len(dataset))
 
     print 'writing files'
     for i, coord_data in enumerate(coordinates):
@@ -90,6 +90,6 @@ if __name__ == '__main__':
     results = caffe_root + '/../results/'
     image_txt = caffe_root + '/data/domain_adaptation_data/images/'
     deploy_prototxt = caffe_root + '/examples/domain_adaptation/network/alexnet/pretrained/train_vals/deploy.prototxt'
-    caffe_model = results + '/alex/1-200k/snapshots_iter_200000.caffemodel'
+    caffe_model = results + '/alex/unaug_25k/snapshots_iter_25000.caffemodel'
     mean_file = data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto'
     main()

@@ -19,7 +19,6 @@ def plot_data(qu, db):
 
 def create_score_mat(qu, db):
     score_mat = np.ones((qu.shape[0], qu.shape[0]))
-    print score_mat.shape
     for i, qu_point in enumerate(qu):
         for j, db_point in enumerate(db):
             score_mat[i, j] = np.linalg.norm(qu_point - db_point)
@@ -31,20 +30,24 @@ def create_score_mat(qu, db):
 def accuracy(score_mat):
     count = 0
     for i, row in enumerate(score_mat):
-        count += (1 if i == np.argmin(row) else 0)
+        count += (1 if i in np.argsort(row)[:20] else 0)
     return count
 
 
 def main():
     freiburg, michigan = read_files()
     freiburg_qu, freiburg_db = freiburg[:, :3], freiburg[:, 3:]
+    michigan_qu, michigan_db = michigan[:, :3], michigan[:, 3:]
     #plot_data(freiburg_qu[:100], freiburg_db[:100])score
-    score_mat = create_score_mat(freiburg_qu, freiburg_db)
-    np.savetxt(caffe_root + '/data/domain_adaptation_data/images/scores.txt', score_mat)
+    #score_mat = create_score_mat(michigan_qu, michigan_db)
+    score_mat = np.loadtxt(score_txt)
+    np.savetxt(caffe_root + '/data/domain_adaptation_data/images/scores.txt', score_mat, '%10.5f')
+    print accuracy(score_mat)
     return
 
 
 if __name__ == '__main__':
     caffe_root = osh.get_env_var('CAFFE_ROOT')
     coord_file_txt = caffe_root + '/data/domain_adaptation_data/images/coordinates'
+    score_txt = caffe_root + '/data/domain_adaptation_data/images/scores.txt'
     main()

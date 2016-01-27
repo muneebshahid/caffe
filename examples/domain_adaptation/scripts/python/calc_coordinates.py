@@ -5,7 +5,6 @@ import copy
 
 
 def forward(net, transformer, img1, img2):
-    print img1, img2
     img1 = transformer.preprocess(transformer_key, caffe.io.load_image(img1))
     img2 = transformer.preprocess(transformer_key, caffe.io.load_image(img2))
     net.blobs['data_1'].data[...] = img1

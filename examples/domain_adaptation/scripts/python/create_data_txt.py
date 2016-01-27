@@ -344,28 +344,28 @@ def process_datasets(keys, root_folder_path, write_path, augmented_limit=1):
     for key in keys:
         ext = '.jpg' if key != 'michigan' else '.tiff'
         data_set_pos = get_dataset(key, root_folder_path)
-        data_set_neg = create_negatives(key, data_set_pos)
         # Add fukui data only for training.
         if key != 'fukui':
-            train_data_pos_key, test_data_pos_temp = split_train_test(data_set_pos)
-            train_data_neg_key, test_data_neg_temp = split_train_test(data_set_neg)
+            train_data_pos_temp, test_data_pos_temp = split_train_test(data_set_pos)
+            train_data_neg_temp = create_negatives(key, train_data_pos_temp)
+            test_data_neg_temp = create_negatives(key, test_data_pos_temp)
         else:
-            train_data_pos_key, test_data_pos_temp = data_set_pos, []
-            train_data_neg_key, test_data_neg_temp = data_set_neg, []
+            train_data_pos_temp, test_data_pos_temp = data_set_pos, []
+            train_data_neg_temp, test_data_neg_temp = create_negatives(key, data_set_pos), []
 
-        train_data_pos.extend(train_data_pos_key)
-        train_data_neg.extend(train_data_neg_key)
+        train_data_pos.extend(train_data_pos_temp)
+        train_data_neg.extend(train_data_neg_temp)
         test_data_pos.extend(test_data_pos_temp)
         test_data_neg.extend(test_data_neg_temp)
 
         # ----------------------------------------------------------
         # Testing without augmented data
-        train_data_un_aug_pos.extend(train_data_pos_key)
-        train_data_un_aug_neg.extend(train_data_neg_key)
+        train_data_un_aug_pos.extend(train_data_pos_temp)
+        train_data_un_aug_neg.extend(train_data_neg_temp)
         # ----------------------------------------------------------
 
-        augmented_pos, augmented_dict = get_augmented_data_pos(train_data_pos_key, ext, augmented_limit)
-        augmented_neg = create_negatives(key, train_data_pos_key, len(augmented_pos), augmented_dict, 0.7)
+        augmented_pos, augmented_dict = get_augmented_data_pos(train_data_pos_temp, ext, augmented_limit)
+        augmented_neg = create_negatives(key, train_data_pos_temp, len(augmented_pos), augmented_dict, 0.7)
         train_data_pos.extend(augmented_pos)
         train_data_neg.extend(augmented_neg)
 

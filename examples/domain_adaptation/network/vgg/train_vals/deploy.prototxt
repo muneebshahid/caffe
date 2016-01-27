@@ -7,16 +7,16 @@ input: "data_1"
 input_shape {
   dim: 1
   dim: 3
-  dim: 227
-  dim: 227
+  dim: 224
+  dim: 224
 }
 
 input: "data_2"
 input_shape {
   dim: 1
   dim: 3
-  dim: 227
-  dim: 227
+  dim: 224
+  dim: 224
 }
 
 # ------------------------------------------------------------------------ Conv1
@@ -764,10 +764,10 @@ layer {
 }
 
 layer {
-  name: "fc8_n_P"
+  name: "fc8_n_p"
   type: "InnerProduct"
   bottom: "fc7_P"
-  top: "fc8_n_P"
+  top: "fc8_n_p"
   param {
     name: "fc8_n_w"
     lr_mult: 10

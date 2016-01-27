@@ -5,13 +5,13 @@ import copy
 
 
 def forward(net, transformer, img1, img2):
+    print img1, img2
     img1 = transformer.preprocess(transformer_key, caffe.io.load_image(img1))
     img2 = transformer.preprocess(transformer_key, caffe.io.load_image(img2))
     net.blobs['data_1'].data[...] = img1
     net.blobs['data_2'].data[...] = img2
     output = net.forward()
-    result = [output['fc8_n'][0], output['fc8_n_p'][0]]
-    print result
+    result = np.hstack((output['fc8_n'][0], output['fc8_n_p'][0]))
     return result
 
 
@@ -69,9 +69,8 @@ def main():
     arr = load_test_image_txt()
     coordinates = [[], []]
     for i, dataset in enumerate(arr):
-        for j, pair in enumerate(dataset[:2]):
+        for j, pair in enumerate(dataset[:10]):
             result = copy.deepcopy(forward(net, transformer, pair[0], pair[1]))
-            print result
             coordinates[i].append(result)
             if i % 50 == 0:
                 print '{0} / {1}: '.format(j, len(arr))
@@ -79,7 +78,6 @@ def main():
     print 'writing files'
     for i, coord_data in enumerate(coordinates):
         arr_data = np.array(coord_data)
-        print arr_data, arr_data.shape
         dump_coordinates(image_txt + 'coordinates' + str(i) + '.txt', arr_data)
     return
 

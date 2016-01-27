@@ -10,7 +10,9 @@ def forward(net, transformer, img1, img2):
     net.blobs['data_1'].data[...] = img1
     net.blobs['data_2'].data[...] = img2
     output = net.forward()
-    return [output['fc8_n'][0], output['fc8_n_p'][0]]
+    result = [output['fc8_n'][0], output['fc8_n_p'][0]]
+    print result
+    return result
 
 
 def create_transformer(net, mean_arr):

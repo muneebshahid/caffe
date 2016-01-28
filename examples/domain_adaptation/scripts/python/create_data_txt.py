@@ -334,7 +334,7 @@ def pseudo_shuffle_data(data, pseudo_shuffle):
             i += 1
 
 
-def process_datasets(keys, root_folder_path, write_path, augmented_limit=1):
+def process_datasets(keys, root_folder_path, write_path, augmented_limit):
     train_data_un_aug_pos = []
     train_data_un_aug_neg = []
     train_data_pos = []
@@ -364,7 +364,7 @@ def process_datasets(keys, root_folder_path, write_path, augmented_limit=1):
         train_data_un_aug_neg.extend(train_data_neg_temp)
         # ----------------------------------------------------------
 
-        augmented_pos, augmented_dict = get_augmented_data_pos(train_data_pos_temp, ext, augmented_limit)
+        augmented_pos, augmented_dict = get_augmented_data_pos(train_data_pos_temp, ext, augmented_limit[key])
         augmented_neg = create_negatives(key, train_data_pos_temp, len(augmented_pos), augmented_dict, 0.7)
         train_data_pos.extend(augmented_pos)
         train_data_neg.extend(augmented_neg)
@@ -418,7 +418,8 @@ def main():
         sys.exit()
     keys = ['freiburg', 'michigan', 'fukui']
     write_path = caffe_root + '/data/domain_adaptation_data/images/'
-    process_datasets(keys, root_folder_path, write_path)
+    augmented_limit = {keys[0]: 4, keys[1]: 2, keys[2]: 1}
+    process_datasets(keys, root_folder_path, write_path, augmented_limit=augmented_limit)
 
 if __name__ == "__main__":
     AUGMENTED_KEYS = ['tra' , 'rot', 'aff', 'per']

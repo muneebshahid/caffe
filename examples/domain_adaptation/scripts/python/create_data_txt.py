@@ -109,9 +109,9 @@ def evenly_mix_source_target(dataset, batch_size=8):
         i += batch_size
 
 
-def create_negatives(key, dataset, augmented_length=None, chosen_aug=None, select_orig=0.7):
+def create_negatives(key, dataset, length=None, augmented=False, chosen_aug=None, select_orig=0.7):
     negatives = []
-    pos_examples = len(dataset) if augmented_length is None else augmented_length
+    pos_examples = len(dataset) if length is None else length
     neg_examples = 0
     fix_dist = False
     image_gap = 0
@@ -128,7 +128,7 @@ def create_negatives(key, dataset, augmented_length=None, chosen_aug=None, selec
     while neg_examples < pos_examples:
         im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap, fix_dist)
         ims = dataset[im_index_1], dataset[im_index_2]
-        if augmented_length is None:
+        if not augmented:
             negatives.append([ims[0][0], ims[1][1], 0, 0, True, True])
         else:
             instance = []
@@ -347,27 +347,29 @@ def process_datasets(keys, root_folder_path, write_path, augmented_limit):
         # Add fukui data only for training.
         if key != 'fukui':
             train_data_pos_temp, test_data_pos_temp = split_train_test(data_set_pos)
-            train_data_neg_temp = create_negatives(key, train_data_pos_temp)
-            test_data_neg_temp = create_negatives(key, test_data_pos_temp)
+            train_data_neg_temp, test_data_neg_temp = create_negatives(key, train_data_pos_temp, 300000), \
+                                                      create_negatives(key, test_data_pos_temp)
         else:
             train_data_pos_temp, test_data_pos_temp = data_set_pos, []
-            train_data_neg_temp, test_data_neg_temp = create_negatives(key, data_set_pos), []
+            train_data_neg_temp, test_data_neg_temp = create_negatives(key, data_set_pos, 300000), []
 
         train_data_pos.extend(train_data_pos_temp)
         train_data_neg.extend(train_data_neg_temp)
         test_data_pos.extend(test_data_pos_temp)
         test_data_neg.extend(test_data_neg_temp)
 
-        # ----------------------------------------------------------
-        # Testing without augmented data
-        train_data_un_aug_pos.extend(train_data_pos_temp)
-        train_data_un_aug_neg.extend(train_data_neg_temp)
-        # ----------------------------------------------------------
-
-        augmented_pos, augmented_dict = get_augmented_data_pos(train_data_pos_temp, ext, augmented_limit[key])
-        augmented_neg = create_negatives(key, train_data_pos_temp, len(augmented_pos), augmented_dict, 0.7)
-        train_data_pos.extend(augmented_pos)
-        train_data_neg.extend(augmented_neg)
+        if augmented_limit is not None:
+            # ----------------------------------------------------------
+            # Testing without augmented data
+            train_data_un_aug_pos.extend(train_data_pos_temp)
+            train_data_un_aug_neg.extend(train_data_neg_temp)
+            # ----------------------------------------------------------
+            augmented_pos, augmented_dict = get_augmented_data_pos(train_data_pos_temp, ext, augmented_limit[key])
+            augmented_neg = create_negatives(key, train_data_pos_temp,
+                                             len(augmented_pos), True,
+                                             augmented_dict, 0.7)
+            train_data_pos.extend(augmented_pos)
+            train_data_neg.extend(augmented_neg)
 
     random.shuffle(train_data_pos)
     random.shuffle(train_data_neg)
@@ -375,38 +377,42 @@ def process_datasets(keys, root_folder_path, write_path, augmented_limit):
     random.shuffle(train_data_un_aug_pos)
     random.shuffle(train_data_un_aug_neg)
 
-    print "un augmented train data pos {0}, train data neg {1}".format(len(train_data_un_aug_pos),
-                                                                       len(train_data_un_aug_neg))
-    pseudo_shuffle_data(data=train_data_un_aug_pos, pseudo_shuffle=20)
-    pseudo_shuffle_data(data=train_data_un_aug_neg, pseudo_shuffle=20)
-    print "un augmented extended train data pos {0}, train data neg {1}".format(len(train_data_un_aug_pos),
-                                                                                len(train_data_un_aug_neg))
+    if augmented_limit is not None:
+        print "un augmented train data pos {0}, train data neg {1}".format(len(train_data_un_aug_pos),
+                                                                           len(train_data_un_aug_neg))
+        pseudo_shuffle_data(data=train_data_un_aug_pos, pseudo_shuffle=1)
+        pseudo_shuffle_data(data=train_data_un_aug_neg, pseudo_shuffle=1)
+        print "un augmented extended train data pos {0}, train data neg {1}".format(len(train_data_un_aug_pos),
+                                                                                    len(train_data_un_aug_neg))
 
     print "augmented train data pos {0}, train data neg {1}".format(len(train_data_pos), len(train_data_neg))
-    pseudo_shuffle_data(data=train_data_pos, pseudo_shuffle=2)
-    pseudo_shuffle_data(data=train_data_neg, pseudo_shuffle=2)
+    pseudo_shuffle_data(data=train_data_pos, pseudo_shuffle=0)
+    pseudo_shuffle_data(data=train_data_neg, pseudo_shuffle=0)
     print "augmented extended train data pos {0}, train data neg {1}".format(len(train_data_pos), len(train_data_neg))
 
     train_data_aug = evenly_mix_pos_neg(data_pos=train_data_pos,
                                         data_neg=train_data_neg,
                                         batch_size=8)
-    train_data_un_aug = evenly_mix_pos_neg(data_pos=train_data_un_aug_pos,
-                                           data_neg=train_data_un_aug_neg,
-                                           batch_size=8)
+    if augmented_limit is not None:
+        train_data_un_aug = evenly_mix_pos_neg(data_pos=train_data_un_aug_pos,
+                                               data_neg=train_data_un_aug_neg,
+                                               batch_size=8)
     test_data = test_data_pos
     test_data.extend(test_data_neg)
 
     print "augmented train data {0}".format(len(train_data_aug))
-    print "un augmented train data {0}".format(len(train_data_un_aug))
     print "test data {0}".format(len(test_data))
+    if augmented_limit is not None:
+        print "un augmented train data {0}".format(len(train_data_un_aug))
 
     print 'writing files....'
     write_data(train_data_aug, root_folder_path, write_path, 'train1', file_num=1, lmdb=False)
     write_data(train_data_aug, root_folder_path, write_path, 'train2', file_num=2, lmdb=False)
     write_data(test_data, root_folder_path, write_path, 'test1', file_num=1, lmdb=False)
     write_data(test_data, root_folder_path, write_path, 'test2', file_num=2, lmdb=False)
-    write_data(train_data_un_aug, root_folder_path, write_path, 'train_un_aug_1', file_num=1, lmdb=False)
-    write_data(train_data_un_aug, root_folder_path, write_path, 'train_un_aug_2', file_num=2, lmdb=False)
+    if augmented_limit is not None:
+        write_data(train_data_un_aug, root_folder_path, write_path, 'train_un_aug_1', file_num=1, lmdb=False)
+        write_data(train_data_un_aug, root_folder_path, write_path, 'train_un_aug_2', file_num=2, lmdb=False)
 
 
 def main():
@@ -419,7 +425,7 @@ def main():
     keys = ['freiburg', 'michigan', 'fukui']
     write_path = caffe_root + '/data/domain_adaptation_data/images/'
     augmented_limit = {keys[0]: 4, keys[1]: 2, keys[2]: 1}
-    process_datasets(keys, root_folder_path, write_path, augmented_limit=augmented_limit)
+    process_datasets(keys, root_folder_path, write_path, None)
 
 if __name__ == "__main__":
     AUGMENTED_KEYS = ['tra' , 'rot', 'aff', 'per']

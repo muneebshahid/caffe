@@ -5,7 +5,6 @@ import copy
 
 
 def forward(net, transformer, img1, img2):
-    print img1, img2
     img1 = transformer.preprocess(transformer_key, caffe.io.load_image(img1))
     img2 = transformer.preprocess(transformer_key, caffe.io.load_image(img2))
     net.blobs['data_1'].data[...] = img1
@@ -44,7 +43,7 @@ def load_test_image_txt():
                     if 'freiburg' in col[0]:
                         ims_freiburg[i].append(col[0])
                     else:
-                        ims_michigan[i].append(col[0])
+                        ims_michigan[i].append(col[0].replace('michigan', 'mich-jpeg').replace('.tiff', '.jpg'))
 
     return [[im1, im2]
             for im1, im2 in zip(ims_freiburg[0], ims_freiburg[1])], \

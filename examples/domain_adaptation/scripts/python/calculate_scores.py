@@ -7,33 +7,18 @@ caffe_root = osh.get_env_var('CAFFE_ROOT')
 data = caffe_root + '/../data/'
 results = caffe_root + '/../results/'
 mean_file = data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto'
-<<<<<<< HEAD
-im1 = data + 'images/orig/freiburg/summer/imageCompressedCam0_0000002.jpg'
-im2 = data + 'images/orig/freiburg/winter/imageCompressedCam0_0001645.jpg'
 deploy = '/examples/domain_adaptation/network/alexnet/pretrained/train_vals/deploy.prototxt'
-=======
 im1 = data + 'images/orig/freiburg/summer/imageCompressedCam0_0003904.jpg'
 im2 = data + 'images/orig/freiburg/winter/imageCompressedCam0_0016412.jpg'
->>>>>>> aac5fcbe052aa62e4fcc3c208013430948530e87
 blob = caffe.proto.caffe_pb2.BlobProto()
 mean_data = open(data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto', 'rb').read()
-caffe_model = results + '/alex/1-200k/snapshots_iter_200000.caffemodel'
+caffe_model = results + '/curr.caffemodel'
 blob.ParseFromString(mean_data)
 arr = np.array(caffe.io.blobproto_to_array(blob))
-<<<<<<< HEAD
 net1 = caffe.Net(caffe_root + deploy,
                  caffe.TEST)
 net2 = caffe.Net(caffe_root + deploy,
-                 results + '/alex/1-200k/snapshots_iter_200000.caffemodel', caffe.TEST)
-=======
-net1 = caffe.Net(caffe_root +
-                 '/examples/domain_adaptation/network/alexnet/pretrained/train_vals/deploy.prototxt',
-                 caffe.TEST)
-net2 = caffe.Net(caffe_root +
-                 '/examples/domain_adaptation/network/alexnet/pretrained/train_vals/deploy.prototxt',
-                 caffe_model, caffe.TEST)
->>>>>>> aac5fcbe052aa62e4fcc3c208013430948530e87
-
+                 results + caffe_model, caffe.TEST)
 
 def output(net, img1, img2):
     transformer = caffe.io.Transformer({'data_': net.blobs['data_1'].data.shape})

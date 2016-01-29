@@ -27,7 +27,7 @@ def create_score_mat(qu, db):
     return score_mat
 
 
-def pr_recall(score_mat, im_range=3, threshold=.1):
+def pr_recall(score_mat, im_range=3, threshold=.35):
     count = 0
     true_pos, false_neg, false_pos = 0, 0, 0
     for i, row in enumerate(score_mat):
@@ -57,12 +57,14 @@ def pr_recall(score_mat, im_range=3, threshold=.1):
 
 def main():
     freiburg, michigan = read_files()
-    freiburg_qu, freiburg_db = freiburg[:, :3], freiburg[:, 3:]
+    print freiburg.shape
+    freiburg_qu, freiburg_db = freiburg[:, :128], freiburg[:, 128:]
+    print freiburg_qu.shape, freiburg_db.shape
     michigan_qu, michigan_db = michigan[:, :3], michigan[:, 3:]
     #plot_data(freiburg_qu[:100], freiburg_db[:100])score
-    #score_mat = create_score_mat(michigan_qu, michigan_db)
-    #np.savetxt(caffe_root + '/data/domain_adaptation_data/images/scores.txt', score_mat, '%10.5f')
+    #score_mat = create_score_mat(freiburg_qu, freiburg_db)
     score_mat = np.loadtxt(score_txt)
+    np.savetxt(caffe_root + '/data/domain_adaptation_data/images/scores.txt', score_mat, '%10.5f')
     print pr_recall(score_mat)
     return
 

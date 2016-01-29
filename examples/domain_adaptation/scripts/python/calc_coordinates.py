@@ -89,7 +89,7 @@ if __name__ == '__main__':
     data = caffe_root + '/../data/'
     results = caffe_root + '/../results/'
     image_txt = caffe_root + '/data/domain_adaptation_data/images/'
-    deploy_prototxt = caffe_root + '/examples/domain_adaptation/network/alexnet/pretrained/train_vals/deploy.prototxt'
+    deploy_prototxt = caffe_root + '/examples/domain_adaptation/network/deploy.prototxt'
     caffe_model = results + '/curr.caffemodel'
     mean_file = data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto'
     main()

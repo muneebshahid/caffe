@@ -68,7 +68,7 @@ def main():
     arr = load_test_image_txt()
     coordinates = [[], []]
     for i, dataset in enumerate(arr):
-        for j, pair in enumerate(dataset[:10]):
+        for j, pair in enumerate(dataset):
             result = copy.deepcopy(forward(net, transformer, pair[0], pair[1]))
             coordinates[i].append(result)
             if j % 50 == 0:

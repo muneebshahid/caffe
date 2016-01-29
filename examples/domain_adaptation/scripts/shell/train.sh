@@ -33,7 +33,7 @@ then
 		echo "wrong 2nd param"
 		exit
 	fi
-	$CAFFE_ROOT/build/tools/caffe train --solver=$solver --weights=$model --snapshot=$snapshot --log_dir=$log_dir -gpu 0
+	$CAFFE_ROOT/build/tools/caffe train --solver=$solver --weights=$model --snapshot=$snapshot --log_dir=$log_dir -gpu 1 
 elif [ "$1" = "scratch" ]
 then	
 	solver=$network"scratch_solver.prototxt"

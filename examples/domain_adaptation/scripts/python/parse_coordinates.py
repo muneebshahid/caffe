@@ -24,7 +24,7 @@ def create_score_mat(qu, db):
             score_mat[i, j] = np.linalg.norm(qu_point - db_point)
         if i % 50 == 0:
             print i
-    return score_mat
+    return np.apply_along_axis(lambda row: row / np.linalg.norm(row), 1, score_mat)
 
 
 def pr_recall(score_mat, im_range=3, threshold=.15):
@@ -55,18 +55,30 @@ def pr_recall(score_mat, im_range=3, threshold=.15):
     return pr, recall
 
 
+def min_vals_around_diag(score_mat, k=20, diag=50):
+    values_inside, values_outside = 0, 0
+    for i, row in enumerate(score_mat):
+        sorted_args = np.argsort(row)[:k]
+        range_arr = range(i - diag, i + diag +1)
+        for min_arg in sorted_args:
+            if min_arg in range_arr:
+                values_inside += 1
+            else:
+                values_outside += 1
+    total_pts = values_inside + values_outside
+    return values_inside / float(total_pts)
+
 def main():
     freiburg, michigan = read_files()
-    print freiburg.shape
     freiburg_qu, freiburg_db = freiburg[:, :128], freiburg[:, 128:]
-    print freiburg_qu.shape, freiburg_db.shape
     michigan_qu, michigan_db = michigan[:, :128], michigan[:, 128:]
     #plot_data(freiburg_qu[:100], freiburg_db[:100])score
     #score_mat = create_score_mat(freiburg_qu, freiburg_db)
     #score_mat = create_score_mat(michigan_qu, michigan_db)
     score_mat = np.loadtxt(score_txt)
     np.savetxt(caffe_root + '/data/domain_adaptation_data/images/scores.txt', score_mat, '%10.5f')
-    print pr_recall(score_mat)
+    #print pr_recall(score_mat)
+    print min_vals_around_diag(score_mat)
     return
 
 

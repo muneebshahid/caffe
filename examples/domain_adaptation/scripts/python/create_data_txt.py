@@ -72,7 +72,15 @@ def get_augmented_data_pos(data_set, ext, limit=4):
     return augmented_data, augmented_dict
 
 
+def add_zeros_alderly(string, max_len=5):
+    len_str = len(string)
+    for i in range(max_len - len_str):
+        string = '0' + string
+    return string
+
+
 def get_distant_images(data_len, image_gap, fix_dist=False):
+    im_index_1, im_index_2 = None, None
     im_index_1 = np.random.randint(0, data_len)
     if not fix_dist:
         im_diff = im_index_1 - image_gap - 1
@@ -160,8 +168,8 @@ def create_negatives(key, dataset, length=None, augmented=False, chosen_aug=None
 
 def get_dataset(key, root_folder_path):
     data_set = []
+    folder_path = root_folder_path + key + '/'
     if key == 'freiburg':
-        folder_path = root_folder_path + 'freiburg/'
         print "processing freiburg data....."
         save_neg_im = False
         data_set_freiburg_pos = []
@@ -176,13 +184,13 @@ def get_dataset(key, root_folder_path):
                                       .replace('\n', ' 1 1').split(' ')
                                   for line in data_reader.readlines())]
             for instance in data_set_freiburg:
-                i = 1
-                while len(instance) - 2 > i:
-                    seasons = [instance[0], instance[i]]
+                j = 1
+                while len(instance) - 2 > j:
+                    seasons = [instance[0], instance[j]]
                     seasons.extend(instance[-2:])
                     seasons.extend([True, True])
                     data_set.append(seasons)
-                    i += 1
+                    j += 1
     elif key == 'michigan':
         mich_ignore = range(1264, 1272)
         mich_ignore.extend(range(1473, 1524))
@@ -194,7 +202,6 @@ def get_dataset(key, root_folder_path):
         mich_ignore.extend(range(10095, 10677))
         mich_ignore.extend(range(11270, 11776))
         mich_ignore.extend(range(11985, 12575))
-        folder_path = root_folder_path + 'michigan/'
         print 'Processing michigan data.....'
         files_michigan = ['michigan/aug/' + im + '.tiff'
                           for im in
@@ -213,7 +220,6 @@ def get_dataset(key, root_folder_path):
                         'SP': ['4', '04000000', '04000001', '04000002'],
                         'AU': ['1', '01000000', '01000001', '01000002', '01000003'],
                         'WI': ['None']}
-        folder_path = root_folder_path + 'fukui/'
         print 'processing fukui data.....'
         extra_im_range = 3
         seasons = ['AU', 'SP', 'SU', 'WI']
@@ -274,12 +280,21 @@ def get_dataset(key, root_folder_path):
                                                   qu_image_path.replace(root_folder_path, ''), 1, 1, True, True]
                                     data_set.append(gt_example)
     elif key == 'alderly':
-        folder_path = root_folder_path + 'alderly/'
         frame_matches = pd.read_csv(folder_path + 'framematches.csv')
         for value in frame_matches.values:
-            path_a = 'alderly/FRAMESA/Image' + str(00000 + value[0]) + '.jpg'
-            path_b = 'alderly/FRAMESB/Image' + str(00000 + value[1]) + '.jpg'
+            path_a = 'alderly/FRAMESA/Image' + add_zeros_alderly(str(value[0])) + '.jpg'
+            path_b = 'alderly/FRAMESB/Image' + add_zeros_alderly(str(value[1])) + '.jpg'
             data_set.append([path_a, path_b, 1, 1, True, True])
+    elif key == 'kitti':
+        folder_path_2k11 = folder_path + '2011_09_26/'
+        sequence_folders = osh.list_dir(folder_path_2k11)
+        images_02 = []
+        for sequence_folder in sequence_folders:
+            full_path = folder_path_2k11 + sequence_folder + 'image_02/data/'
+            images_02 = [full_path + im_file for im_file in osh.list_dir(full_path)]
+        for image_02 in images_02:
+            data_instance = [image_02, image_02.replace('image_02', 'image_03')]
+            data_instance.extend([1, 1, True, True])
     return data_set
 
 
@@ -350,7 +365,6 @@ def process_datasets(keys, root_folder_path, write_path, augmented_limit):
     test_data_neg = []
     neg_limit = 300000
     for key in keys:
-        ext = '.jpg' if key != 'michigan' else '.tiff'
         data_set_pos = get_dataset(key, root_folder_path)
         # Add fukui data only for training.
         if key != 'fukui':
@@ -367,6 +381,7 @@ def process_datasets(keys, root_folder_path, write_path, augmented_limit):
         test_data_neg.extend(test_data_neg_temp)
 
         if augmented_limit is not None:
+            ext = '.jpg' if key != 'michigan' else '.tiff'
             train_data_aug_pos.extend(train_data_pos_temp)
             train_data_aug_neg.extend(train_data_neg_temp)
             augmented_pos, augmented_dict = get_augmented_data_pos(train_data_pos_temp, ext, augmented_limit[key])

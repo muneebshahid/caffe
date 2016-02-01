@@ -32,7 +32,7 @@ def extend_data(data):
     return temp_data
 
 
-def print_progress(curr_iterate, total_iteration, print_after_iterations=5000):
+def print_progress(curr_iterate, total_iteration, print_after_iterations=10000):
     if curr_iterate % print_after_iterations == 0:
         print "{0} / {1}".format(curr_iterate, total_iteration)
 
@@ -89,7 +89,7 @@ def get_distant_images(dataset, image_gap, gps_gap, fix_dist=False):
     data_len = len(dataset)
     im_1, im_2 = None, None
     # gps data available
-    if dataset[0][-1] is not None:
+    if dataset[0][-1] is not None and gps_gap != 0:
         while True:
             im_1, im_2 = random.sample(dataset, 2)
             if np.linalg.norm(im_1[-1] - im_2[-1]) > gps_gap:
@@ -150,6 +150,7 @@ def create_negatives(key, dataset, length=None, augmented=False, chosen_aug=None
         image_gap = 100
     elif key == 'kitti':
         image_gap = 100
+        gps_gap = .00045
     assert image_gap > 0 or gps_gap > 0
     while neg_examples < pos_examples:
         ims = get_distant_images(dataset, image_gap, gps_gap, fix_dist)
@@ -188,10 +189,8 @@ def get_dataset(key, root_folder_path):
             data_set_freiburg = [line.replace('\n', '').split(' ') for line in data_reader.readlines()]
 
         with open(folder_path + 'pxgps/summer_track.pxgps') as gps_reader:
-            frei_gps_data = [[float(gps_coordinates[0]), float(gps_coordinates[1])]
-                        for gps_coordinates in
-                            [line.replace('\n', '').split(' ')[1:]
-                            for line in gps_reader.readlines()]]
+            frei_gps_data = [np.array(line.replace('\n', '').split(' ')[1:], np.float64)
+                              for line in gps_reader.readlines()]
 
             for instance in data_set_freiburg:
                 j = 1
@@ -199,7 +198,7 @@ def get_dataset(key, root_folder_path):
                     file_name, _ = osh.split_file_extension(osh.extract_name_from_path(instance[0]))
                     gps_index = int(file_name[-7:])
                     data_set.append([folder_path + instance[0],
-                                     folder_path + instance[j], 1, np.array(frei_gps_data[gps_index])])
+                                     folder_path + instance[j], 1, frei_gps_data[gps_index]])
                     j += 1
     elif key == 'michigan':
         mich_ignore = range(1264, 1272)
@@ -300,7 +299,10 @@ def get_dataset(key, root_folder_path):
             full_path = folder_path_2k11 + sequence_folder + '/image_02/data/'
             images_02 = [full_path + im_file for im_file in osh.list_dir(full_path)]
             for image_02 in images_02:
-                data_set.append([image_02, image_02.replace('image_02', 'image_03'), 1, None])
+                gps_file = image_02.replace('image_02', 'oxts').replace('.png', '.txt')
+                with open(gps_file) as gps_file_handle:
+                    gps_coordinates = np.array(gps_file_handle.readline().split(' ')[:2], np.float64)
+                data_set.append([image_02, image_02.replace('image_02', 'image_03'), 1, gps_coordinates])
     return data_set
 
 
@@ -449,7 +451,7 @@ def main():
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()
-    keys = ['freiburg', 'kitti', 'alderly', 'michigan', 'fukui']
+    keys = ['kitti', 'michigan', 'freiburg', 'alderly', 'fukui']
     write_path = caffe_root + '/data/domain_adaptation_data/images/'
     augmented_limit = {keys[0]: 1, keys[1]: 1, keys[2]: 1, keys[3]: 1, keys[4]: 1}
     process_datasets(keys, root_folder_path, write_path, augmented_limit)

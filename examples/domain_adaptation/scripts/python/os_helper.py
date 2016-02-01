@@ -48,7 +48,7 @@ def get_env_var(var, exception=True):
 
 
 def split_file_extension(var):
-    return os.path.splitext(var)
+    return ntpath.splitext(var)
 
 
 def path_rel_to_abs(rel_path, curr_dir_file ='.'):

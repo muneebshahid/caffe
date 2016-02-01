@@ -62,9 +62,9 @@ def get_augmented_data_pos(data_set, ext, limit=4):
             id_2 = im_2.replace('orig', 'augmented') + '-' + key_2 + aug_im_2 + ext
 
             # append to data
-            augmented_data.append([instance[0], id_2, 1])
-            augmented_data.append([instance[1], id_1, 1])
-            augmented_data.append([id_1, id_2, instance[2], 1])
+            augmented_data.append([instance[0], id_2, 1, instance[-1]])
+            augmented_data.append([id_1, instance[1], 1, instance[-1]])
+            augmented_data.append([id_1, id_2, 1, instance[-1]])
 
             # add to dict
             augmented_dict[instance[0]].append(id_1)
@@ -85,21 +85,30 @@ def add_zeros_alderly(string, max_len=5):
     return string
 
 
-def get_distant_images(data_len, image_gap, fix_dist=False):
-    im_index_1, im_index_2 = None, None
-    im_index_1 = np.random.randint(0, data_len)
-    if not fix_dist:
-        im_diff = im_index_1 - image_gap - 1
+def get_distant_images(dataset, image_gap, gps_gap, fix_dist=False):
+    data_len = len(dataset)
+    im_1, im_2 = None, None
+    # gps data available
+    if dataset[0][-1] is not None:
         while True:
-            im_index_2 = np.random.randint(0, data_len)
-            if abs(im_index_1 - im_index_2) > im_diff:
+            im_1, im_2 = random.sample(dataset, 2)
+            if np.linalg.norm(im_1[-1] - im_2[-1]) > gps_gap:
                 break
     else:
-        if im_index_1 + image_gap >= data_len:
-            im_index_2 = im_index_1 - image_gap
+        im_index_1 = np.random.randint(0, data_len)
+        if not fix_dist:
+            im_diff = im_index_1 - image_gap - 1
+            while True:
+                im_index_2 = np.random.randint(0, data_len)
+                if abs(im_index_1 - im_index_2) > im_diff:
+                    break
         else:
-            im_index_2 = im_index_1 + image_gap
-    return im_index_1, im_index_2
+            if im_index_1 + image_gap >= data_len:
+                im_index_2 = im_index_1 - image_gap
+            else:
+                im_index_2 = im_index_1 + image_gap
+        im_1, im_2 = dataset[im_index_1], dataset[im_index_2]
+    return im_1, im_2
 
 
 def evenly_mix_source_target(dataset, batch_size=8):
@@ -126,9 +135,10 @@ def create_negatives(key, dataset, length=None, augmented=False, chosen_aug=None
     pos_examples = len(dataset) if length is None else length
     neg_examples = 0
     fix_dist = False
-    image_gap = 0
+    image_gap, gps_gap = 0, 0
     if key == 'freiburg':
         image_gap = 200
+        gps_gap = .00045
         print 'creating freiburg negative examples'
     elif key == 'michigan':
         image_gap = 600
@@ -140,17 +150,13 @@ def create_negatives(key, dataset, length=None, augmented=False, chosen_aug=None
         image_gap = 100
     elif key == 'kitti':
         image_gap = 100
-    assert image_gap > 0
+    assert image_gap > 0 or gps_gap > 0
     while neg_examples < pos_examples:
-        im_index_1, im_index_2 = get_distant_images(len(dataset), image_gap, fix_dist)
-        ims = dataset[im_index_1], dataset[im_index_2]
+        ims = get_distant_images(dataset, image_gap, gps_gap, fix_dist)
         if not augmented:
-            negatives.append([ims[0][0], ims[1][1], 0])
+            negatives.append([ims[0][0], ims[1][1], 0, ims[0][-1]])
         else:
             instance = []
-            im_file = []
-            im_file.extend(osh.split_file_extension(ims[0][0]))
-            im_file.extend(osh.split_file_extension(ims[1][1]))
             likelihoods = np.random.rand(2, 1)
             for i, likelihood in enumerate(likelihoods):
                 if likelihood < select_orig:
@@ -158,12 +164,15 @@ def create_negatives(key, dataset, length=None, augmented=False, chosen_aug=None
                 elif chosen_aug is not None:
                         instance.append(random.choice(chosen_aug[ims[i][i]]))
                 else:
+                    im_file = []
+                    im_file.extend(osh.split_file_extension(ims[0][0]))
+                    im_file.extend(osh.split_file_extension(ims[1][1]))
                     f_name, f_ext = im_file[i]
                     aug_key = random.choice(AUGMENTED_KEYS)
                     num = random.choice(range(0, 3))
                     full_im = f_name + '-' + aug_key + str(num) + f_ext
                     instance.append(full_im)
-            instance.append(0)
+            instance.extend([0, ims[0][-1]])
             negatives.append(instance)
         print_progress(neg_examples, pos_examples)
         neg_examples += 1
@@ -175,22 +184,22 @@ def get_dataset(key, root_folder_path):
     folder_path = root_folder_path + key + '/'
     if key == 'freiburg':
         print "processing freiburg data....."
-        save_neg_im = False
-        data_set_freiburg_pos = []
-        data_set_freiburg_neg = []
         with open(folder_path + 'processed_season_match.txt', "r") as data_reader:
             data_set_freiburg = [line.replace('\n', '').split(' ') for line in data_reader.readlines()]
 
         with open(folder_path + 'pxgps/summer_track.pxgps') as gps_reader:
-            gps_data = [array[1:]
-                        for line in gps_reader.readlines()
-                        for array in line.replace('\n', '').split(' ')]
+            frei_gps_data = [[float(gps_coordinates[0]), float(gps_coordinates[1])]
+                        for gps_coordinates in
+                            [line.replace('\n', '').split(' ')[1:]
+                            for line in gps_reader.readlines()]]
 
             for instance in data_set_freiburg:
                 j = 1
                 while j < len(instance):
+                    file_name, _ = osh.split_file_extension(osh.extract_name_from_path(instance[0]))
+                    gps_index = int(file_name[-7:])
                     data_set.append([folder_path + instance[0],
-                                     folder_path + instance[j], 1])
+                                     folder_path + instance[j], 1, np.array(frei_gps_data[gps_index])])
                     j += 1
     elif key == 'michigan':
         mich_ignore = range(1264, 1272)
@@ -212,9 +221,9 @@ def get_dataset(key, root_folder_path):
         for im_file in files_michigan:
             file_n = osh.extract_name_from_path(im_file)
             if int(file_n[:-5]) in mich_ignore:
-                #print "ignoring {0}".format(file_n[:-5])
+                # print "ignoring {0}".format(file_n[:-5])
                 continue
-            data_set.append([im_file, im_file.replace('aug', 'jan'), 1])
+            data_set.append([im_file, im_file.replace('aug', 'jan'), 1, None])
     elif key == 'fukui':
         # mislabeled examples
         fukui_ignore = {'SU': ['4', '04000000'],
@@ -256,7 +265,7 @@ def get_dataset(key, root_folder_path):
                             print qu_image_path
                             print db_image_path
                             print '----------------'
-                        gt_example = [qu_image_path, db_image_path, 1]
+                        gt_example = [qu_image_path, db_image_path, 1, None]
 
                         data_set.append(gt_example)
                         int_db_image = int(db_image)
@@ -267,7 +276,7 @@ def get_dataset(key, root_folder_path):
                             if im in im_range:
                                 db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt + '/', season_folder)
                                 if osh.is_file(db_image_path):
-                                    gt_example = [qu_image_path, db_image_path, 1]
+                                    gt_example = [qu_image_path, db_image_path, 1, None]
                                     data_set.append(gt_example)
 
                         # append images after if possible
@@ -275,14 +284,14 @@ def get_dataset(key, root_folder_path):
                             if im in im_range:
                                 db_image_path = get_fukui_im_path('0' + str(im) + '.jpg', gt + '/', season_folder)
                                 if osh.is_file(db_image_path):
-                                    gt_example = [qu_image_path, db_image_path, 1]
+                                    gt_example = [qu_image_path, db_image_path, 1, None]
                                     data_set.append(gt_example)
     elif key == 'alderly':
         frame_matches = pd.read_csv(folder_path + 'framematches.csv')
         for value in frame_matches.values:
             path_a = folder_path + 'FRAMESA/Image' + add_zeros_alderly(str(value[0])) + '.jpg'
             path_b = folder_path + 'FRAMESB/Image' + add_zeros_alderly(str(value[1])) + '.jpg'
-            data_set.append([path_a, path_b, 1])
+            data_set.append([path_a, path_b, 1, None])
     elif key == 'kitti':
         folder_path_2k11 = folder_path + '2011_09_26/'
         sequence_folders = osh.list_dir(folder_path_2k11)
@@ -291,7 +300,7 @@ def get_dataset(key, root_folder_path):
             full_path = folder_path_2k11 + sequence_folder + '/image_02/data/'
             images_02 = [full_path + im_file for im_file in osh.list_dir(full_path)]
             for image_02 in images_02:
-                data_set.append([image_02, image_02.replace('image_02', 'image_03'), 1])
+                data_set.append([image_02, image_02.replace('image_02', 'image_03'), 1, None])
     return data_set
 
 
@@ -301,7 +310,7 @@ def write_data(data_set, root_folder_path, write_path, file_path, file_num=None,
         with open(file_path + '.txt', 'w') as w:
             # file1 uses columns 0 and 2, while file2 uses columns 1 and 3
             w.writelines([str(instance[file_num - 1]).replace('\\', '/') + ' ' +
-                          str(instance[-1]) +
+                          str(instance[-2]) +
                           '\n' for instance in data_set])
     else:
         with open(file_path + '.txt', 'w') as w:
@@ -440,7 +449,7 @@ def main():
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()
-    keys = ['kitti', 'freiburg', 'alderly', 'michigan', 'fukui']
+    keys = ['freiburg', 'kitti', 'alderly', 'michigan', 'fukui']
     write_path = caffe_root + '/data/domain_adaptation_data/images/'
     augmented_limit = {keys[0]: 1, keys[1]: 1, keys[2]: 1, keys[3]: 1, keys[4]: 1}
     process_datasets(keys, root_folder_path, write_path, augmented_limit)

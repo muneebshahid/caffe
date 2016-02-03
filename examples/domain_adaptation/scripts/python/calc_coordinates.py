@@ -43,7 +43,7 @@ def load_test_image_txt():
                     if 'freiburg' in col[0]:
                         ims_freiburg[i].append(col[0])
                     else:
-                        ims_michigan[i].append(col[0])
+                        ims_michigan[i].append(col[0].replace('michigan', 'mich-jpeg').replace('.tiff', '.jpg'))
 
     return [[im1, im2]
             for im1, im2 in zip(ims_freiburg[0], ims_freiburg[1])], \
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     data = caffe_root + '/../data/'
     results = caffe_root + '/../results/'
     image_txt = caffe_root + '/data/domain_adaptation_data/images/'
-    deploy_prototxt = caffe_root + '/examples/domain_adaptation/network/alexnet/pretrained/train_vals/deploy.prototxt'
-    caffe_model = results + '/alex/unaug_25k/snapshots_iter_25000.caffemodel'
+    deploy_prototxt = caffe_root + '/examples/domain_adaptation/network/deploy.prototxt'
+    caffe_model = results + '/curr.caffemodel'
     mean_file = data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto'
     main()

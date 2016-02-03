@@ -3,98 +3,22 @@ name: "AlexNet2Siamese"
 # ------------------------------------------------------------------ Data Layer
 # -----------------------------------------------------------------------------
 
-layer {
-  name: "data_1"
-#  type: "Data"
-  type: "ImageData"
-  top: "data_1"
-  top: "sim_labels"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-
-  image_data_param {
-#  data_param {  
-#    source: "data/domain_adaptation_data/lmdb/train1"
-#    backend: LMDB
-    source: "data/domain_adaptation_data/images/train1.txt"
-    batch_size: 32 
-  }
+input: "data_1"
+input_shape {
+  dim: 1
+  dim: 3
+  dim: 227
+  dim: 227
 }
 
-layer {
-  name: "data_2"
-#  type: "Data"
-  type: "ImageData"
-  top: "data_2"
-  top: "dummy_labels"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  image_data_param {
-#  data_param {  
-#    source: "data/domain_adaptation_data/lmdb/train2"
-#    backend: LMDB
-    source: "data/domain_adaptation_data/images/train2.txt"
-    batch_size: 320 
-  }
+input: "data_2"
+input_shape {
+  dim: 1
+  dim: 3
+  dim: 227
+  dim: 227
 }
 
-layer {
-  name: "data_1"
-#  type: "Data"
-  type: "ImageData"
-  top: "data_1"
-  top: "sim_labels"
-  include {
-    phase: TEST
-  }
-  transform_param {
-    mirror: false
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  image_data_param {
-#  data_param {  
-#    source: "data/domain_adaptation_data/lmdb/test1"
-#    backend: LMDB
-    source: "data/domain_adaptation_data/images/test1.txt"
-    batch_size: 320 
-  }
-}
-
-layer {
-  name: "data_2"
-#  type: "Data"
-  type: "ImageData"
-  top: "data_2"
-  top: "dummy_labels"
-  include {
-    phase: TEST
-  }
-  transform_param {
-    mirror: false
-    crop_size: 227
-    mean_file: "../data/models/alexnet/pretrained/places205CNN_mean.binaryproto"
-  }
-  image_data_param {
-#  data_param {  
-#    source: "data/domain_adaptation_data/lmdb/test2"
-#    backend: LMDB
-    source: "data/domain_adaptation_data/images/test2.txt"
-    batch_size: 256
-  }
-}
 
 # ----------------------------------------------------------------------- Net 1
 # -----------------------------------------------------------------------------
@@ -109,12 +33,12 @@ layer {
   top: "conv1"
   param {
     name: "conv1_w"
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
     name: "conv1_b"
-    lr_mult: 0
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -169,12 +93,12 @@ layer {
   top: "conv2"
   param {
     name: "conv2_w"
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
     name: "conv2_b"
-    lr_mult: 0
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -296,15 +220,7 @@ layer {
   top: "conv4"
 }
 
-#layer {
-#  name: "dropconv4"
-#  type: "Dropout"
-#  bottom: "conv4"
-#  top: "conv4"
-#  dropout_param {
-#    dropout_ratio: 0.2
-#  }
-#}
+
 # ---------------------------------------------------------------------- Conv 5
 layer {
   name: "conv5"
@@ -354,15 +270,6 @@ layer {
   }
 }
 
-#layer {
-#  name: "droppool5"
-#  type: "Dropout"
-#  bottom: "pool5"
-#  top: "pool5"
-#  dropout_param {
-#    dropout_ratio: 0.5
-#  }
-#}
 # -----------------------------------------------------------------------------
 # -------------------------------------------------------- Inner Product Layers
 # -----------------------------------------------------------------------------
@@ -470,12 +377,12 @@ layer {
   top: "conv1_p"
   param {
     name: "conv1_w"
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
     name: "conv1_b"
-    lr_mult: 0
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -530,12 +437,12 @@ layer {
   top: "conv2_p"
   param {
     name: "conv2_w"
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
     name: "conv2_b"
-    lr_mult: 0
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -656,16 +563,6 @@ layer {
   bottom: "conv4_p"
   top: "conv4_p"
 }
-
-#layer {
-#  name: "dropconv4_p"
-#  type: "Dropout"
-#  bottom: "conv4_p"
-#  top: "conv4_p"
-#  dropout_param {
-#    dropout_ratio: 0.5
-#  }
-#}
 # ---------------------------------------------------------------------- Conv 5
 layer {
   name: "conv5_p"
@@ -714,15 +611,6 @@ layer {
     stride: 2
   }
 }
-#layer {
-#  name: "droppool5_p"
-#  type: "Dropout"
-#  bottom: "pool5_p"
-#  top: "pool5_p"
-#  dropout_param {
-#    dropout_ratio: 0.5
-#  }
-#}
 # -----------------------------------------------------------------------------
 # -------------------------------------------------------- Inner Product Layers
 # -----------------------------------------------------------------------------
@@ -871,23 +759,4 @@ layer {
       value: 0
     }
   }
-}
-
-# ------------------------------------------------------------------- Siamese Loss
-layer {
-  name: "siamese_loss"
-  type: "ContrastiveLoss"
-  bottom: "fc8_n"
-  bottom: "fc8_n_p"
-  bottom: "sim_labels"
-  top: "siamese_loss"
-  contrastive_loss_param {
-    margin: 1
-  }
-}
-
-layer {
-  name: "silencer"
-  type: "Silence"
-  bottom: "dummy_labels"
 }

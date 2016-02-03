@@ -32,7 +32,7 @@ def extend_data(data):
     return temp_data
 
 
-def print_progress(curr_iterate, total_iteration, print_after_iterations=10000):
+def print_progress(curr_iterate, total_iteration, print_after_iterations=50000):
     if curr_iterate % print_after_iterations == 0:
         print "{0} / {1}".format(curr_iterate, total_iteration)
 
@@ -84,6 +84,14 @@ def add_zeros_alderly(string, max_len=5):
         string = '0' + string
     return string
 
+
+def floor_ceil_int(x):
+    remainder = x % 10
+    if remainder < 5:
+        x -= remainder
+    else:
+        x += (10 - remainder)
+    return x
 
 def get_distant_images(dataset, image_gap, gps_gap, fix_dist=False):
     data_len = len(dataset)
@@ -148,9 +156,14 @@ def create_negatives(key, dataset, length=None, augmented=False, chosen_aug=None
         print 'creating fukui negative examples'
     elif key == 'alderly':
         image_gap = 100
+        print 'creating alderly negative examples'
     elif key == 'kitti':
         image_gap = 100
         gps_gap = .00045
+        print 'creating kitti negative examples'
+    elif key == 'nordland':
+        gps_gap = .00045
+        print 'creating nordland negative examples'
     assert image_gap > 0 or gps_gap > 0
     while neg_examples < pos_examples:
         ims = get_distant_images(dataset, image_gap, gps_gap, fix_dist)
@@ -212,14 +225,14 @@ def get_dataset(key, root_folder_path):
         mich_ignore.extend(range(11270, 11776))
         mich_ignore.extend(range(11985, 12575))
         print 'Processing michigan data.....'
-        files_michigan = [folder_path + 'aug/' + im + '.tiff'
+        files_michigan = [folder_path + 'aug/' + im + '.jpg'
                           for im in
-                          sorted([im[:-5] for im in
+                          sorted([im[:-4] for im in
                                   osh.list_dir(folder_path + 'aug/')], key=int)]
 
         for im_file in files_michigan:
             file_n = osh.extract_name_from_path(im_file)
-            if int(file_n[:-5]) in mich_ignore:
+            if int(file_n[:-4]) in mich_ignore:
                 # print "ignoring {0}".format(file_n[:-5])
                 continue
             data_set.append([im_file, im_file.replace('aug', 'jan'), 1, None])
@@ -292,6 +305,7 @@ def get_dataset(key, root_folder_path):
             path_b = folder_path + 'FRAMESB/Image' + add_zeros_alderly(str(value[1])) + '.jpg'
             data_set.append([path_a, path_b, 1, None])
     elif key == 'kitti':
+        print 'processing kitti dataset....'
         folder_path_2k11 = folder_path + '2011_09_26/'
         sequence_folders = osh.list_dir(folder_path_2k11)
         images_02 = []
@@ -303,6 +317,31 @@ def get_dataset(key, root_folder_path):
                 with open(gps_file) as gps_file_handle:
                     gps_coordinates = np.array(gps_file_handle.readline().split(' ')[:2], np.float64)
                 data_set.append([image_02, image_02.replace('image_02', 'image_03'), 1, gps_coordinates])
+    elif key == 'nordland':
+        print 'Processing nordland data.....'
+        offset = 171
+        files_nordland = [folder_path + 'summer/' + im + '.jpg'
+                          for im in
+                          sorted([im[:-4] for im in
+                                  osh.list_dir(folder_path + 'summer/')], key=int)]
+        gps_file = pd.read_csv(folder_path + 'nordlandsbanen_time_pos.csv')
+
+        for im_file in files_nordland:
+            im_file_num, _ = osh.split_file_extension(osh.extract_name_from_path(im_file))
+            im_file_num = int(im_file_num)
+            im_file_index = floor_ceil_int(im_file_num - offset) / 10
+            summer_image = im_file
+            winter_image = im_file.replace('summer', 'winter')
+            fall_image = im_file.replace('summer', 'fall')
+            spring_image = im_file.replace('summer', 'spring')
+
+            gps_coordinates = np.array(gps_file.values[im_file_index, 1:], np.float64)
+            data_set.append([summer_image, winter_image, 1, gps_coordinates])
+            data_set.append([summer_image, spring_image, 1, gps_coordinates])
+            data_set.append([summer_image, fall_image, 1, gps_coordinates])
+            data_set.append([winter_image, spring_image, 1, gps_coordinates])
+            data_set.append([winter_image, fall_image, 1, gps_coordinates])
+            data_set.append([spring_image, fall_image, 1, gps_coordinates])
     return data_set
 
 
@@ -343,6 +382,7 @@ def evenly_mix_pos_neg(data_pos, data_neg, batch_size=8):
         else:
             batch_pos = data_pos[j:]
             j = 0
+            random.shuffle(data_pos)
         batch = batch_pos
         batch.extend(batch_neg)
         random.shuffle(batch)
@@ -360,33 +400,24 @@ def pseudo_shuffle_data(data, pseudo_shuffle):
             i += 1
 
 
-def process_datasets(keys, root_folder_path, write_path, augmented_limit):
+def process_datasets(keys, root_folder_path, write_path, augmented_limit, neg_limit):
     train_data_aug_pos = []
     train_data_aug_neg = []
     train_data_pos = []
     train_data_neg = []
     test_data_pos = []
     test_data_neg = []
-    neg_limit = None
     for key in keys:
         data_set_pos = get_dataset(key, root_folder_path)
         # Add fukui data only for training.
         if key != 'fukui':
             train_data_pos_temp, test_data_pos_temp = split_train_test(data_set_pos)
-            train_data_neg_temp, test_data_neg_temp = create_negatives(key, train_data_pos_temp,
-                                                                       len(train_data_pos_temp)
-                                                                       if neg_limit is None
-                                                                       else neg_limit), \
-                                                      create_negatives(key, test_data_pos_temp,
-                                                                       len(test_data_pos_temp)
-                                                                       if neg_limit is None
-                                                                       else neg_limit)
+            train_data_neg_temp = create_negatives(key, train_data_pos_temp, length=neg_limit[key])
+            test_data_neg_temp = create_negatives(key, test_data_pos_temp, length=len(test_data_pos_temp))
         else:
             train_data_pos_temp, test_data_pos_temp = data_set_pos, []
-            train_data_neg_temp, test_data_neg_temp = create_negatives(key, train_data_pos_temp,
-                                                                       len(train_data_pos_temp)
-                                                                       if neg_limit is None
-                                                                       else neg_limit), []
+            train_data_neg_temp = create_negatives(key, train_data_pos_temp, length=neg_limit[key])
+            test_data_neg_temp = []
 
         train_data_pos.extend(train_data_pos_temp)
         train_data_neg.extend(train_data_neg_temp)
@@ -451,10 +482,16 @@ def main():
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()
-    keys = ['kitti', 'michigan', 'freiburg', 'alderly', 'fukui']
+    keys = ['nordland', 'freiburg', 'michigan', 'kitti', 'alderly', 'fukui']
     write_path = caffe_root + '/data/domain_adaptation_data/images/'
-    augmented_limit = {keys[0]: 1, keys[1]: 1, keys[2]: 1, keys[3]: 1, keys[4]: 1}
-    process_datasets(keys, root_folder_path, write_path, augmented_limit)
+    augmented_limit = {keys[0]: 1, keys[1]: 1, keys[2]: 1, keys[3]: 1, keys[4]: 1, keys[5]: 1}
+    neg_limit = {keys[0]: 400000,
+                 keys[1]: 350000,
+                 keys[2]: 300000,
+                 keys[3]: 100000,
+                 keys[4]: 350000,
+                 keys[5]: 350000}
+    process_datasets(keys, root_folder_path, write_path, None, neg_limit)
 
 if __name__ == "__main__":
     AUGMENTED_KEYS = ['tra' , 'rot', 'aff', 'per']

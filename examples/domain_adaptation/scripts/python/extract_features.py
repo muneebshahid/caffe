@@ -21,7 +21,7 @@ class FeatureExtractor():
         self.__transformer.set_transpose('data_', (2, 0, 1))
         self.__transformer.set_mean('data_', mean_data[0].mean(1).mean(1))
         # set max scale i.e  0 - 255
-        self.__transformer.se_raw_scale('data_', 255)
+        self.__transformer.set_raw_scale('data_', 255)
         # switch to bgr from rgb
         self.__transformer.set_channel_swap('data_', (2, 1, 0))
         return

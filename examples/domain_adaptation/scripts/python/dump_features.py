@@ -30,7 +30,7 @@ if __name__ == '__main__':
     caffe_root = osh.get_env_var('CAFFE_ROOT')
     txt_path = caffe_root + '/data/domain_adaptation_data/images/'
     save_path = caffe_root + '/data/domain_adaptation_data/features/'
-    deploy_path = caffe_root + '/examples/domain_adaptation/network/deploy.txt'
+    deploy_path = caffe_root + '/examples/domain_adaptation/network/deploy.prototxt'
     model_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_iter_300000_upgraded.caffemodel'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
     main()

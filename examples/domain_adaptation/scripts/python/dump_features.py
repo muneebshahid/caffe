@@ -1,6 +1,6 @@
 from extract_features import FeatureExtractor
 import numpy as np
-
+import os_helper as osh
 
 def load_file(path):
     data = []
@@ -13,7 +13,7 @@ def normalize(feature):
     return feature.flatten().astype(dtype=np.float64)[np.newaxis, :] / np.linalg.norm(feature)
 
 
-def main(txt_path, save_path, model_path, deploy_path, mean_binary_path):
+def main():
     fe = FeatureExtractor(model_path, deploy_path, mean_binary_path)
     data_1 = load_file(txt_path[0])
     data_2 = load_file(txt_path[1])
@@ -27,4 +27,10 @@ def main(txt_path, save_path, model_path, deploy_path, mean_binary_path):
         np.savetxt(save_path + str(f) + '.npy', feature)
 
 if __name__ == '__main__':
+    caffe_root = osh.get_env_var('CAFFE_ROOT')
+    txt_path = caffe_root + '/data/domain_adaptation_data/images/'
+    save_path = caffe_root + '/data/domain_adaptation_data/features/'
+    deploy_path = caffe_root + '/examples/domain_adaptation/network/deploy.txt'
+    model_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_iter_300000_upgraded.caffemodel'
+    mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
     main()

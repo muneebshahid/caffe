@@ -2,10 +2,14 @@ from extract_features import FeatureExtractor
 import numpy as np
 import os_helper as osh
 
+
 def load_file(path):
     data = []
     with open(path) as file_handle:
-        data = [line.replace('\n', '') for line in file_handle.readlines()]
+        for line in file_handle.readlines():
+            line = line.replace('\n', '').split(' ')
+            if line[1] == '1':
+                data.append(line[0])
     return data
 
 

@@ -258,10 +258,9 @@ def process_datasets(keys, root_folder_path, write_path, augmented_limit, neg_li
         test_data_neg.extend(test_data_neg_temp)
 
         if augmented_limit is not None:
-            ext = '.jpg' if key != 'michigan' else '.tiff'
             train_data_aug_pos.extend(train_data_pos_temp)
             train_data_aug_neg.extend(train_data_neg_temp)
-            augmented_pos, augmented_dict = get_augmented_data_pos(train_data_pos_temp, ext, augmented_limit[key])
+            augmented_pos, augmented_dict = get_augmented_data_pos(train_data_pos_temp, '.jpg', augmented_limit[key])
             augmented_neg = create_negatives(key, train_data_pos_temp,
                                              len(augmented_pos), True,
                                              augmented_dict, 0.7)

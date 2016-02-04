@@ -195,7 +195,7 @@ class DataLoader():
         dataset = []
         print 'Processing nordland data.....'
         offset = 171
-        files_nordland = [folder_path + 'summer/' + im + '.jpg'
+        files_nordland = [folder_path + 'summer/' + im + '.png'
                           for im in
                           sorted([im[:-4] for im in
                                   osh.list_dir(folder_path + 'summer/')], key=int)]

@@ -1,4 +1,4 @@
-#from extract_features import FeatureExtractor
+from extract_features import FeatureExtractor
 import numpy as np
 import os_helper as osh
 
@@ -19,12 +19,13 @@ def normalize(feature):
 
 
 def main():
-    #fe = FeatureExtractor(model_path, deploy_path, mean_binary_path)
+    fe = FeatureExtractor(model_path, deploy_path, mean_binary_path)
     data_1 = load_file(txt_path + '/test1.txt')
     data_2 = load_file(txt_path + '/test2.txt')
     features_1, features_2 = [], []
     for i, (im1, im2) in enumerate(zip(data_1, data_2)):
-        result = {'conv3': np.random.rand(64896), 'conv3_p': np.random.rand(64896)}#fe.extract([im1, im2], ['conv3', 'conv3_p'])
+        #result = {'conv3': np.random.rand(64896), 'conv3_p': np.random.rand(64896)}#fe.extract([im1, im2], ['conv3', 'conv3_p'])
+        result = fe.extract([im1, im2], ['conv3', 'conv3_p'])
         features_1.append(normalize(result['conv3'].copy()))
         features_2.append(normalize(result['conv3_p'].copy()))
         if i % 100 == 0:
@@ -39,6 +40,6 @@ if __name__ == '__main__':
     txt_path = caffe_root + '/data/domain_adaptation_data/images/'
     save_path = caffe_root + '/data/domain_adaptation_data/features/'
     deploy_path = caffe_root + '/examples/domain_adaptation/network/deploy.prototxt'
-    model_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_iter_300000_upgraded.caffemodel'
+    model_path = caffe_root + '../results/curr.caffemodel'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
     main()

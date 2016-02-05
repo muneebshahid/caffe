@@ -309,6 +309,7 @@ def process_datasets(keys, root_folder_path, write_path, augmented_limit, neg_li
 
 def main():
     caffe_root = osh.get_env_var('CAFFE_ROOT')
+    print caffe_root
     root_folder_path = caffe_root + '/../data/images/orig/'
     root_folder_path = root_folder_path.replace('\\', '/')
     if not osh.is_dir(root_folder_path):

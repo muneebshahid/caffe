@@ -11,7 +11,7 @@ def forward(net, transformer, img1, img2):
     net.blobs['data_2'].data[...] = img2
     output = net.forward()
     result = np.hstack((output['fc8_n'][0], output['fc8_n_p'][0]))
-    return result
+    return result.copy()
 
 
 def create_transformer(net, mean_arr):
@@ -59,7 +59,7 @@ def list_to_str(list_):
 
 
 def dump_coordinates(dest_file, coordinates):
-    np.savetxt(dest_file, coordinates)
+    np.save(dest_file, coordinates)
 
 
 def main():
@@ -69,7 +69,7 @@ def main():
     coordinates = [[], []]
     for i, dataset in enumerate(arr):
         for j, pair in enumerate(dataset):
-            result = copy.deepcopy(forward(net, transformer, pair[0], pair[1]))
+            result = forward(net, transformer, pair[0], pair[1])
             coordinates[i].append(result)
             if j % 50 == 0:
                 print '{0} / {1}: '.format(j, len(dataset))

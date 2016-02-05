@@ -27,7 +27,7 @@ def create_score_mat(qu, db):
     return np.apply_along_axis(lambda row: row / np.linalg.norm(row), 1, score_mat)
 
 
-def pr_recall(score_mat, im_range=3, threshold=.15):
+def pr_recall(score_mat, im_range=3, threshold=1.8):
     count = 0
     true_pos, false_neg, false_pos = 0, 0, 0
     for i, row in enumerate(score_mat):
@@ -46,7 +46,7 @@ def pr_recall(score_mat, im_range=3, threshold=.15):
                 true_pos_found = True
             else:
                 false_pos += 1
-        if true_pos_found:
+        if not true_pos_found:
             true_pos += 1
         else:
             false_neg += 1
@@ -55,7 +55,7 @@ def pr_recall(score_mat, im_range=3, threshold=.15):
     return pr, recall
 
 
-def min_vals_around_diag(score_mat, k=20, diag=50):
+def min_vals_around_diag(score_mat, k=5, diag=20):
     values_inside, values_outside = 0, 0
     for i, row in enumerate(score_mat):
         sorted_args = np.argsort(row)[:k]
@@ -69,16 +69,19 @@ def min_vals_around_diag(score_mat, k=20, diag=50):
     return values_inside / float(total_pts)
 
 def main():
-    freiburg, michigan = read_files()
-    freiburg_qu, freiburg_db = freiburg[:, :128], freiburg[:, 128:]
-    michigan_qu, michigan_db = michigan[:, :128], michigan[:, 128:]
+    #freiburg, michigan = read_files()
+    #freiburg_qu, freiburg_db = freiburg[:, :128], freiburg[:, 128:]
+    #michigan_qu, michigan_db = michigan[:, :128], michigan[:, 128:]
     #plot_data(freiburg_qu[:100], freiburg_db[:100])score
     #score_mat = create_score_mat(freiburg_qu, freiburg_db)
     #score_mat = create_score_mat(michigan_qu, michigan_db)
-    score_mat = np.loadtxt(score_txt)
-    np.savetxt(caffe_root + '/data/domain_adaptation_data/images/scores.txt', score_mat, '%10.5f')
-    #print pr_recall(score_mat)
-    print min_vals_around_diag(score_mat)
+    #score_mat = np.loadtxt(score_txt)
+    score_file = 'scores_iter_60k.npy'
+    score_file = 'scores_untrained.npy'
+    score_mat = np.load(features_folder + 'scores_iter_60k.npy')
+    #np.savetxt(caffe_root + '/data/domain_adaptation_data/images/scores.txt', score_mat, '%10.5f')
+    print pr_recall(score_mat)
+    #print min_vals_around_diag(score_mat)
     return
 
 
@@ -86,4 +89,5 @@ if __name__ == '__main__':
     caffe_root = osh.get_env_var('CAFFE_ROOT')
     coord_file_txt = caffe_root + '/data/domain_adaptation_data/images/coordinates'
     score_txt = caffe_root + '/data/domain_adaptation_data/images/scores.txt'
+    features_folder = caffe_root + '/data/domain_adaptation_data/features/'
     main()

@@ -1,4 +1,4 @@
-from extract_features import FeatureExtractor
+#from extract_features import FeatureExtractor
 import numpy as np
 import os_helper as osh
 
@@ -14,21 +14,25 @@ def load_file(path):
 
 
 def normalize(feature):
-    return feature.flatten().astype(dtype=np.float64)[np.newaxis, :] / np.linalg.norm(feature)
+    flattened_features = feature.flatten().astype(dtype=np.float32)
+    return flattened_features / np.linalg.norm(flattened_features)
 
 
 def main():
-    fe = FeatureExtractor(model_path, deploy_path, mean_binary_path)
+    #fe = FeatureExtractor(model_path, deploy_path, mean_binary_path)
     data_1 = load_file(txt_path + '/test1.txt')
     data_2 = load_file(txt_path + '/test2.txt')
-    features = [np.empty((len(data_1), 64896)), np.empty((len(data_2), 64896))]
+    features_1, features_2 = [], []
     for i, (im1, im2) in enumerate(zip(data_1, data_2)):
-        result = fe.extract([im1, im2], ['conv3', 'conv3_p'])
-        temp_features = [result['conv3'].copy(), result['conv3_p'].copy()]
-        for j, temp_feature in enumerate(temp_features):
-            features[i][j] = normalize(temp_feature)
-    for f, feature in enumerate(features):
-        np.savetxt(save_path + str(f) + '.npy', feature)
+        result = {'conv3': np.random.rand(64896), 'conv3_p': np.random.rand(64896)}#fe.extract([im1, im2], ['conv3', 'conv3_p'])
+        features_1.append(normalize(result['conv3'].copy()))
+        features_2.append(normalize(result['conv3_p'].copy()))
+        if i % 100 == 0:
+            print '{0} / {1}'.format(i, len(data_1))
+    print 'writing files....'
+    np.save(save_path + 'features_1', np.array(features_1))
+    np.save(save_path + 'features_2', np.array(features_2))
+
 
 if __name__ == '__main__':
     caffe_root = osh.get_env_var('CAFFE_ROOT')

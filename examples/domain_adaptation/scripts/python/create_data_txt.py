@@ -314,15 +314,15 @@ def main():
     if not osh.is_dir(root_folder_path):
         print "source folder does'nt exist, existing....."
         sys.exit()
-    keys = ['fukui', 'nordland', 'freiburg', 'michigan', 'kitti', 'alderly']
+    keys = ['freiburg']#, 'fukui', 'nordland', 'michigan', 'kitti', 'alderly']
     write_path = caffe_root + '/data/domain_adaptation_data/images/'
-    augmented_limit = {keys[0]: 1, keys[1]: 1, keys[2]: 1, keys[3]: 1, keys[4]: 1, keys[5]: 1}
-    neg_limit = {keys[0]: 400000,
-                 keys[1]: 300000,
-                 keys[2]: 300000,
-                 keys[3]: 100000,
-                 keys[4]: 300000,
-                 keys[5]: 300000}
+    augmented_limit = {keys[0]: 1}#, keys[1]: 1, keys[2]: 1, keys[3]: 1, keys[4]: 1, keys[5]: 1}
+    neg_limit = {keys[0]: None}#,
+                 #keys[1]: 300000,
+                 #keys[2]: 300000,
+                 #keys[3]: 100000,
+                 #keys[4]: 300000,
+                 #keys[5]: 300000}
     process_datasets(keys, root_folder_path, write_path, None, neg_limit)
 
 if __name__ == "__main__":

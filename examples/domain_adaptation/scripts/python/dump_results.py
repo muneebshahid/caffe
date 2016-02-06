@@ -31,6 +31,9 @@ def load_file(path, keys):
     return data
 
 
+def dump_results(model_folder, model_id, key, result_str, results):
+    np.save(save_path + model_folder + '_' + model_id + '_' + key + result_str, results)
+
 def normalize(feature):
     flattened_features = feature.flatten().astype(dtype=np.float32)
     return flattened_features / np.linalg.norm(flattened_features)
@@ -38,50 +41,53 @@ def normalize(feature):
 
 def main():
     keys = ['freiburg', 'michigan']
-    fe = FeatureExtractor(model_path, deploy_path, mean_binary_path)
     data = load_file(txt_path, keys)
-    for key in data:
-        print 'processing: ', key
-        coordinates_1, coordinates_2 = [], []
-        features_1, features_2 = [], []
-        key_data = data[key]
-        for i, image_pair in enumerate(key_data):
-            im1, im2 = image_pair[0], image_pair[1]
-            result = fe.extract([im1, im2], ['conv3', 'conv3_p'])
-            features_1.append(normalize(result['conv3'].copy()))
-            features_2.append(normalize(result['conv3_p'].copy()))
-            coordinates_1.append(result['fc8_n'][0].copy())
-            coordinates_2.append(result['fc8_n_p'][0].copy())
-            if i % 500 == 0:
-                print '{0} / {1}'.format(i, len(key_data))
+    for model_folder in osh.list_dir(root_model_path):
+        model_folder_path = root_model_path + model_folder + '/'
+        deploy_path = model_folder_path + 'deploy.prototxt'
+        for caffe_model in osh.get_folder_contents(model_folder_path, '*.caffemodel'):
+            fe = FeatureExtractor(caffe_model, deploy_path, mean_binary_path)
+            for key in data:
+                print 'processing: {0}_{1}_{2}'.format(model_folder, caffe_model, key)
+                coordinates_1, coordinates_2 = [], []
+                features_1, features_2 = [], []
+                key_data = data[key]
+                for i, image_pair in enumerate(key_data):
+                    im1, im2 = image_pair[0], image_pair[1]
+                    result = fe.extract([im1, im2], ['conv3', 'conv3_p'])
+                    features_1.append(normalize(result['conv3'].copy()))
+                    features_2.append(normalize(result['conv3_p'].copy()))
+                    coordinates_1.append(result['fc8_n'][0].copy())
+                    coordinates_2.append(result['fc8_n_p'][0].copy())
+                    if i % 500 == 0:
+                        print '{0} / {1}'.format(i, len(key_data))
 
-        print 'converting features to nd arrays...'
-        features_1 = np.array(features_1)
-        features_2 = np.array(features_2)
-        print 'calculating cos similarity...'
-        score_mat = features_1.dot(features_2.T)
-        score_mat = normalize_matrix(score_mat)
-        print 'writing files...'
-        np.save(save_path + '_' + key + '_features_1', np.array(features_1))
-        np.save(save_path + '_' + key + '_features_2', np.array(features_2))
-        np.save(save_path + '_' + key + '_cos_sim', np.array(score_mat))
+                print 'converting features to nd arrays...'
+                features_1 = np.array(features_1)
+                features_2 = np.array(features_2)
+                print 'calculating cos similarity...'
+                score_mat = features_1.dot(features_2.T)
+                score_mat = normalize_matrix(score_mat)
+                print 'writing files...'
+                dump_results(model_folder, caffe_model, key, '_features_1', features_1)
+                dump_results(model_folder, caffe_model, key, '_features_2', features_2)
+                dump_results(model_folder, caffe_model, key, '_cos_sim', score_mat)
 
-        print 'converting coordinates to nd arrays...'
-        coordinates_1 = np.array(coordinates_1)
-        coordinates_2 = np.array(coordinates_2)
-        print 'calculating score mat...'
-        score_mat = create_score_mat(coordinates_1, coordinates_2)
-        print 'writing files...'
-        np.save(save_path + '_' + key + '_coordinates_1', np.array(coordinates_1))
-        np.save(save_path + '_' + key + '_coordinates_2', np.array(coordinates_2))
-        np.save(save_path + '_' + key + '_euc_dist', np.array(score_mat))
-    print 'done'
+                print 'converting coordinates to nd arrays...'
+                coordinates_1 = np.array(coordinates_1)
+                coordinates_2 = np.array(coordinates_2)
+                print 'calculating score mat...'
+                score_mat = create_score_mat(coordinates_1, coordinates_2)
+                print 'writing files...'
+                dump_results(model_folder, caffe_model, key, '_coordinates_1', coordinates_1)
+                dump_results(model_folder, caffe_model, key, '_coordinates_2', coordinates_2)
+                dump_results(model_folder, caffe_model, key, '_euc_dist', score_mat)
+            print 'done'
 
 if __name__ == '__main__':
     caffe_root = osh.get_env_var('CAFFE_ROOT')
     txt_path = caffe_root + '/data/domain_adaptation_data/images/'
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
-    deploy_path = caffe_root + '/examples/domain_adaptation/network/deploy.prototxt'
-    model_path = caffe_root + '../results/curr.caffemodel'
+    root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
     main()

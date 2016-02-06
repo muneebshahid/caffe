@@ -27,12 +27,13 @@ def load_file(path, keys):
                 line_2 = line_2.replace('\n', '').split(' ')
                 if line_1[1] == '1' and line_2[1] == '1':
                     if key in line_1[0] and key in line_2[0]:
-                        data[key].append([line_1, line_2])
+                        data[key].append([line_1[0], line_2[0]])
     return data
 
 
 def dump_results(model_folder, model_id, key, result_str, results):
     np.save(save_path + model_folder + '_' + model_id + '_' + key + result_str, results)
+
 
 def normalize(feature):
     flattened_features = feature.flatten().astype(dtype=np.float32)
@@ -45,16 +46,22 @@ def main():
     for model_folder in osh.list_dir(root_model_path):
         model_folder_path = root_model_path + model_folder + '/'
         deploy_path = model_folder_path + 'deploy.prototxt'
-        for caffe_model in osh.get_folder_contents(model_folder_path, '*.caffemodel'):
-            fe = FeatureExtractor(caffe_model, deploy_path, mean_binary_path)
+        for caffe_model_path in osh.get_folder_contents(model_folder_path, '*.caffemodel'):
+            fe = FeatureExtractor(model_path=caffe_model_path,
+                                  deploy_path=deploy_path,
+                                  mean_binary_path=mean_binary_path,
+                                  input_layers=['data_1', 'data_2'])
+            model_id = osh.extract_name_from_path(caffe_model_path)
             for key in data:
-                print 'processing: {0}_{1}_{2}'.format(model_folder, caffe_model, key)
+                print 'processing: {0}_{1}_{2}'.format(model_folder, model_id, key)
                 coordinates_1, coordinates_2 = [], []
                 features_1, features_2 = [], []
                 key_data = data[key]
                 for i, image_pair in enumerate(key_data):
-                    im1, im2 = image_pair[0], image_pair[1]
-                    result = fe.extract([im1, im2], ['conv3', 'conv3_p'])
+                    #result = {'conv3': np.random.rand(1, 600), 'conv3_p': np.random.rand(1, 600)
+                    #          , 'fc8_n': np.random.rand(1, 128), 'fc8_n_p': np.random.rand(1, 128)}
+                    result = fe.extract(images=image_pair,
+                                        blob_keys=['conv3', 'conv3_p'])
                     features_1.append(normalize(result['conv3'].copy()))
                     features_2.append(normalize(result['conv3_p'].copy()))
                     coordinates_1.append(result['fc8_n'][0].copy())
@@ -69,9 +76,9 @@ def main():
                 score_mat = features_1.dot(features_2.T)
                 score_mat = normalize_matrix(score_mat)
                 print 'writing files...'
-                dump_results(model_folder, caffe_model, key, '_features_1', features_1)
-                dump_results(model_folder, caffe_model, key, '_features_2', features_2)
-                dump_results(model_folder, caffe_model, key, '_cos_sim', score_mat)
+                dump_results(model_folder, model_id, key, '_features_1', features_1)
+                dump_results(model_folder, model_id, key, '_features_2', features_2)
+                dump_results(model_folder, model_id, key, '_cos_sim', score_mat)
 
                 print 'converting coordinates to nd arrays...'
                 coordinates_1 = np.array(coordinates_1)
@@ -79,9 +86,9 @@ def main():
                 print 'calculating score mat...'
                 score_mat = create_score_mat(coordinates_1, coordinates_2)
                 print 'writing files...'
-                dump_results(model_folder, caffe_model, key, '_coordinates_1', coordinates_1)
-                dump_results(model_folder, caffe_model, key, '_coordinates_2', coordinates_2)
-                dump_results(model_folder, caffe_model, key, '_euc_dist', score_mat)
+                dump_results(model_folder, model_id, key, '_coordinates_1', coordinates_1)
+                dump_results(model_folder, model_id, key, '_coordinates_2', coordinates_2)
+                dump_results(model_folder, model_id, key, '_euc_dist', score_mat)
             print 'done'
 
 if __name__ == '__main__':

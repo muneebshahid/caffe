@@ -213,8 +213,8 @@ class DataLoader():
             gps_coordinates = np.array(gps_file.values[im_file_index, 1:], np.float64)
             dataset.append([summer_image, winter_image, 1, gps_coordinates])
             dataset.append([summer_image, spring_image, 1, gps_coordinates])
-            dataset.append([summer_image, fall_image, 1, gps_coordinates])
+            dataset.append([fall_image, summer_image, 1, gps_coordinates])
             dataset.append([winter_image, spring_image, 1, gps_coordinates])
-            dataset.append([winter_image, fall_image, 1, gps_coordinates])
+            dataset.append([fall_image, winter_image, 1, gps_coordinates])
             dataset.append([spring_image, fall_image, 1, gps_coordinates])
         return dataset

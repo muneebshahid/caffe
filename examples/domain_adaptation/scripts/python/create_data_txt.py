@@ -211,7 +211,7 @@ def write_data(data_set, root_folder_path, write_path, file_path, file_num=None,
     else:
         with open(file_path + '.txt', 'w') as w:
            w.writelines(
-                    [instance.replace('\\', '/') + ' sim' + '\n' for instance
+                    [instance[0].replace('\\', '/') + ' ' + str(instance[1]) + '\n' for instance
                      in data_set])
 
 
@@ -277,9 +277,8 @@ def create_triplets_data(key, data, triplets_dim):
 def flatten_triplets(data):
     flattened_data = []
     for multi_dim_data in data:
-        flattened_data.extend(multi_dim_data[:-1])
-        # for i, paired_image in enumerate(multi_dim_data[:-1]):
-        #    flattened_data.append([paired_image, 1 if i == 0 else 0, multi_dim_data[-1]])
+        for i, paired_image in enumerate(multi_dim_data[:-1]):
+            flattened_data.append([paired_image, 1 if i <= 1 else 0])
     return flattened_data
 
 
@@ -402,7 +401,7 @@ def main():
                  #keys[3]: 100000,
                  #keys[4]: 300000,
                  #keys[5]: 300000}
-    triplet_limit = {keys[0]: [20, 2],
+    triplet_limit = {keys[0]: [2, 2],
                      keys[1]: [10, 2],
                      keys[2]: [1, 2],
                      keys[3]: [5, 2],

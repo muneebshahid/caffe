@@ -85,14 +85,16 @@ def get_distant_images_fukui(dataset, image_gap, im1_fixed_index=None):
 
     im1 = random.choice(dataset) if im1_fixed_index is None else dataset[im1_fixed_index]
     im_1_num = int(im1[0].replace('\\', '/').split('/')[-2])
-    while True:
+    repeat = True
+    while repeat:
         im2 = random.choice(dataset)
         im_2_num = int(im2[0].replace('\\', '/').split('/')[-2])
         for group in pos_groups:
+            repeat = False
             if im_1_num in group and im_2_num in group:
+                repeat = True
                 break
-            else:
-                return im1, im2
+    return im1, im2
 
 
 def get_distant_images(dataset, image_gap, gps_gap, is_fukui, im1_fixed_index=None):
@@ -282,6 +284,19 @@ def flatten_triplets(data):
     return flattened_data
 
 
+def pad_triplets(data, triplet_size, batch_size=640):
+    data_len = len(data)
+    remainder = data_len % float(batch_size)
+    if remainder > 0:
+        final_size = data_len - remainder + batch_size
+        triples_needed = (final_size - data_len) / triplet_size
+        indices = np.random.randint(0, data_len/4.0, triples_needed)
+        for index in indices:
+            for triplet in range(triplet_size):
+                final_index = triplet_size * index + triplet
+                data.append(data[final_index])
+
+
 def process_datasets(keys, root_folder_path, write_path, augmented_limit, neg_limit, triplets_dim=None):
     train_data_triplets = []
     test_data_triplets = []
@@ -333,13 +348,15 @@ def process_datasets(keys, root_folder_path, write_path, augmented_limit, neg_li
     if triplets_dim is not None:
         random.shuffle(train_data_triplets)
         print "triplet data {0}".format(len(train_data_triplets))
-        pseudo_shuffle_data(data=train_data_triplets, pseudo_shuffle=0)
+        pseudo_shuffle_data(data=train_data_triplets, pseudo_shuffle=2)
         print "extended triplet data {0}".format(len(train_data_triplets))
         print "triplet test data {0}".format(len(test_data_triplets))
         flattened_triplets_train = flatten_triplets(train_data_triplets)
         flattened_triplets_test = flatten_triplets(test_data_triplets)
         print "flattened triplet data train {0}".format(len(flattened_triplets_train))
         print "flattened triplet data test {0}".format(len(flattened_triplets_test))
+        pad_triplets(flattened_triplets_train, 4, 640)
+        print "padded triplet data train {0}".format(len(flattened_triplets_train))
         print "writing files...."
         write_data(flattened_triplets_train, root_folder_path, write_path, 'triplet_data_train')
         write_data(flattened_triplets_test, root_folder_path, write_path, 'triplet_data_test')
@@ -394,19 +411,19 @@ def main():
         sys.exit()
     keys = ['freiburg', 'michigan', 'nordland', 'fukui', 'kitti', 'alderly']
     write_path = caffe_root + '/data/domain_adaptation_data/images/'
-    augmented_limit = {keys[0]: 1}#, keys[1]: 1, keys[2]: 1, keys[3]: 1, keys[4]: 1, keys[5]: 1}
-    neg_limit = {keys[0]: None}#,
-                 #keys[1]: 300000,
-                 #keys[2]: 300000,
-                 #keys[3]: 100000,
-                 #keys[4]: 300000,
-                 #keys[5]: 300000}
-    triplet_limit = {keys[0]: [2, 2],
-                     keys[1]: [10, 2],
-                     keys[2]: [1, 2],
-                     keys[3]: [5, 2],
+    augmented_limit = {keys[0]: 1, keys[1]: 1, keys[2]: 1, keys[3]: 1, keys[4]: 1, keys[5]: 1}
+    neg_limit = {keys[0]: None,
+                 keys[1]: 300000,
+                 keys[2]: 300000,
+                 keys[3]: 100000,
+                 keys[4]: 300000,
+                 keys[5]: 300000}
+    triplet_limit = {keys[0]: [20, 2],
+                     keys[1]: [12, 2],
+                     keys[2]: [2, 2],
+                     keys[3]: [10, 2],
                      keys[4]: [2, 2],
-                     keys[5]: [7, 2],}
+                     keys[5]: [10, 2],}
     process_datasets(keys, root_folder_path, write_path, None, neg_limit, triplet_limit)
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ def normalize(feature):
 
 
 def main():
-    keys = ['freiburg', 'michigan']
+    keys = ['freiburg']#, 'michigan']
     data = load_file(txt_path, keys)
     for model_folder in osh.list_dir(root_model_path):
         model_folder_path = root_model_path + model_folder + '/'
@@ -57,20 +57,33 @@ def main():
                 coordinates_1, coordinates_2 = [], []
                 features_1, features_2 = [], []
                 key_data = data[key]
-                for i, image_pair in enumerate(key_data):
-                    #result = {'conv3': np.random.rand(1, 600), 'conv3_p': np.random.rand(1, 600)
-                    #          , 'fc8_n': np.random.rand(1, 128), 'fc8_n_p': np.random.rand(1, 128)}
-                    result = fe.extract(images=image_pair,
-                                        blob_keys=['conv3', 'conv3_p'])
-                    features_1.append(normalize(result['conv3'].copy()))
-                    features_2.append(normalize(result['conv3_p'].copy()))
-                    coordinates_1.append(result['fc8_n'][0].copy())
-                    coordinates_2.append(result['fc8_n_p'][0].copy())
+                key_data_len = len(key_data)
+                num_iter = int(np.ceil(key_data_len / float(batch_size)))
+                for i in range(num_iter):
+                    if batch_size * i <= key_data_len:
+                        curr_batch_size = batch_size
+                    else:
+                        curr_batch_size = key_data_len - batch_size * i
+                    result = {'conv3': np.ones((curr_batch_size, 600)) * 5,
+                              'conv3_p': np.random.rand(curr_batch_size, 600),
+                              'fc8_n': np.random.rand(curr_batch_size, 128),
+                              'fc8_n_p': np.random.rand(curr_batch_size, 128)}
+                    start_index = i * batch_size
+                    end_index = start_index + batch_size
+                    images = key_data[start_index:end_index]
+                    '''result = fe.extract(images=images,
+                                        blob_keys=['conv3', 'conv3_p'])'''
+
+                    features_1.extend([normalize(feature) for feature in result['conv3'].copy()])
+                    features_2.extend([normalize(feature) for feature in result['conv3_p'].copy()])
+                    coordinates_1.extend([feature for feature in result['fc8_n'].copy()])
+                    coordinates_2.append([feature for feature in result['fc8_n_p'].copy()])
                     if i % 500 == 0:
                         print '{0} / {1}'.format(i, len(key_data))
 
                 print 'converting features to nd arrays...'
                 features_1 = np.array(features_1)
+                print features_1.shape
                 features_2 = np.array(features_2)
                 print 'calculating cos similarity...'
                 score_mat = features_1.dot(features_2.T)
@@ -97,4 +110,5 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
+    batch_size = 256
     main()

@@ -348,7 +348,7 @@ def process_datasets(keys, root_folder_path, write_path, augmented_limit, neg_li
     if triplets_dim is not None:
         random.shuffle(train_data_triplets)
         print "triplet data {0}".format(len(train_data_triplets))
-        pseudo_shuffle_data(data=train_data_triplets, pseudo_shuffle=2)
+        pseudo_shuffle_data(data=train_data_triplets, pseudo_shuffle=0)
         print "extended triplet data {0}".format(len(train_data_triplets))
         print "triplet test data {0}".format(len(test_data_triplets))
         flattened_triplets_train = flatten_triplets(train_data_triplets)

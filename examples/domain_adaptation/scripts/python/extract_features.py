@@ -7,6 +7,7 @@ class FeatureExtractor():
     __transformer = None
     __transformer_key = None
     __input_layers = None
+    __batch_size = None
 
     def __init__(self, model_path, deploy_path, mean_binary_path, input_layers):
         self.__transformer_key = 'data_'
@@ -28,11 +29,17 @@ class FeatureExtractor():
         self.__transformer.set_raw_scale(self.__transformer_key, 255)
         # switch to bgr from rgb
         self.__transformer.set_channel_swap(self.__transformer_key, (2, 1, 0))
-        return
+
+    def set_batch_dim(self, batch_dim):
+        for layer in self.__input_layers:
+            self.__net.blobs[layer].reshape(batch_dim)
 
     def extract(self, images, blob_keys):
-        assert len(images) == len(self.__input_layers)
-        for i, input_layer in enumerate(self.__input_layers):
-            image = self.__transformer.preprocess(self.__transformer_key, caffe.io.load_image(images[i]))
-            self.__net.blobs[input_layer].data[...] = image
+        assert len(images[0]) == len(self.__input_layers)
+        for layer in self.__input_layers:
+            assert len(images) != self.__net[layer].data.shape[0]
+        for i, image_pair in enumerate(images):
+            for j, input_layer in enumerate(self.__input_layers):
+                image = self.__transformer.preprocess(self.__transformer_key, caffe.io.load_image(image_pair[j]))
+                self.__net.blobs[input_layer].data[i] = image
         return self.__net.forward(blob_keys)

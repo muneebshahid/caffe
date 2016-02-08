@@ -29,7 +29,10 @@ def pr_recall(score_mat, sim=True, im_range=3, threshold=.045):
         closest_args = []
         for j, args in enumerate(sorted_args):
             curr_ele = score_mat[i, args]
-            if curr_ele < threshold:
+            if sim and curr_ele < threshold:
+                closest_args = sorted_args[:j]
+                break
+            elif not sim and curr_ele >= threshold:
                 closest_args = sorted_args[:j]
                 break
 
@@ -43,8 +46,11 @@ def pr_recall(score_mat, sim=True, im_range=3, threshold=.045):
             true_pos += 1
         else:
             false_neg += 1
-    pr = true_pos / float(true_pos + false_pos)
-    recall = true_pos / float(true_pos + false_neg)
+
+    pr_denom = float(true_pos + false_pos)
+    recall_denom = float(true_pos + false_neg)
+    pr = (true_pos / pr_denom) if pr_denom > 0 else 0
+    recall = (true_pos / recall_denom) if recall_denom > 0 else 0
     return pr, recall
 
 
@@ -63,14 +69,27 @@ def vals_around_diag(score_mat, sim=True, k=3, diag=5):
 
 
 def main():
-    #freiburg_coords = np.load(coord_file_path + '0.npy')
-    score_mats = ['scores_untrained.npy', 'scores_iter_20k.npy', 'scores_iter_60k.npy']
-    for score_mat in score_mats:
-        score_mat = np.load(features_folder + score_mat)
-        #np.save(features_folder + score_file, score_mat)
-        score_mat = np.apply_along_axis(lambda row: row / np.linalg.norm(row), 1, score_mat)
-        print pr_recall(score_mat, threshold=.035)
-        #print vals_around_diag(score_mat)
+    score_data = [#['untrained_places205CNN_iter_300000_upgraded.caffemodel_freiburg_cos_sim.npy',
+                   #0.0443317064121, 0.0274826074699, True]]
+                  #['mix_data_snapshots_iter_100000.caffemodel_freiburg_cos_sim.npy',
+                   #0.037, 0.0213330272421, True],]
+                  #['nordland_only_snapshots_iter_100000.caffemodel_freiburg_cos_sim.npy',
+                   #0.0372817616013, 0.0265447199265, True]]
+                  #['first_four_snapshots_iter_100000.caffemodel_michigan_cos_sim.npy',
+                   #0.0223434343434, 0.0198, True]
+                    ['mix_data_snapshots_iter_100000.caffemodel_michigan_euc_dist.npy',
+                     .0005, 0.02, False]]
+    for data in score_data:
+        print 'processing: {0}'.format(data[0])
+        score_mat = np.load(results_folder + data[0])
+        pr_recal_list = []
+        #score_mat = np.apply_along_axis(lambda row: row / np.linalg.norm(row), 1, score_mat)
+        values = np.linspace(data[1], data[2], 100)
+        for i, value in enumerate(values):
+            pr_recal_result = pr_recall(score_mat, threshold=value, sim=data[-1])
+            pr_recal_list.append(pr_recal_result)
+            print i, value, pr_recal_result
+        np.save(results_folder + 'pr_recall_' + data[0].replace('.npy', ''), np.array(pr_recal_list))
     return
 
 
@@ -78,5 +97,5 @@ if __name__ == '__main__':
     caffe_root = osh.get_env_var('CAFFE_ROOT')
     coord_file_path = caffe_root + '/data/domain_adaptation_data/images/coordinates'
     score_txt = caffe_root + '/data/domain_adaptation_data/images/scores.txt'
-    features_folder = caffe_root + '/data/domain_adaptation_data/features/'
+    results_folder = caffe_root + '/data/domain_adaptation_data/results/'
     main()

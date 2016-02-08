@@ -65,7 +65,7 @@ def main():
                         curr_batch_size = batch_size
                     else:
                         curr_batch_size = key_data_len - batch_size * i
-                        fe.set_batch_dim((curr_batch_size, 3, 227, 227))
+                        fe.set_batch_dim(curr_batch_size)
                     '''result = {'conv3': np.ones((curr_batch_size, 600)) * 5,
                               'conv3_p': np.random.rand(curr_batch_size, 600),
                               'fc8_n': np.random.rand(curr_batch_size, 128),

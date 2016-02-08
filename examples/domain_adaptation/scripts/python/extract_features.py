@@ -30,9 +30,9 @@ class FeatureExtractor():
         # switch to bgr from rgb
         self.__transformer.set_channel_swap(self.__transformer_key, (2, 1, 0))
 
-    def set_batch_dim(self, batch_dim):
+    def set_batch_dim(self, batch_size, c=3, h=227, w=227):
         for layer in self.__input_layers:
-            self.__net.blobs[layer].reshape(batch_dim)
+            self.__net.blobs[layer].reshape(batch_size, c, h, w)
 
     def extract(self, images, blob_keys):
         assert len(images[0]) == len(self.__input_layers)

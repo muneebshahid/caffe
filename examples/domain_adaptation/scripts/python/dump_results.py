@@ -71,8 +71,8 @@ def main():
                     start_index = i * batch_size
                     end_index = start_index + batch_size
                     images = key_data[start_index:end_index]
-                    '''result = fe.extract(images=images,
-                                        blob_keys=['conv3', 'conv3_p'])'''
+                    result = fe.extract(images=images,
+                                        blob_keys=['conv3', 'conv3_p'])
 
                     features_1.extend([normalize(feature) for feature in result['conv3'].copy()])
                     features_2.extend([normalize(feature) for feature in result['conv3_p'].copy()])

@@ -37,7 +37,7 @@ class FeatureExtractor():
     def extract(self, images, blob_keys):
         assert len(images[0]) == len(self.__input_layers)
         for layer in self.__input_layers:
-            assert len(images) != self.__net[layer].data.shape[0]
+            assert len(images) == self.__net.blobs[layer].data.shape[0]
         for i, image_pair in enumerate(images):
             for j, input_layer in enumerate(self.__input_layers):
                 image = self.__transformer.preprocess(self.__transformer_key, caffe.io.load_image(image_pair[j]))

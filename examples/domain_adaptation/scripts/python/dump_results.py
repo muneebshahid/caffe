@@ -58,16 +58,18 @@ def main():
                 features_1, features_2 = [], []
                 key_data = data[key]
                 key_data_len = len(key_data)
+                fe.set_batch_dim((batch_size, 3, 227, 227))
                 num_iter = int(np.ceil(key_data_len / float(batch_size)))
                 for i in range(num_iter):
                     if batch_size * i <= key_data_len:
                         curr_batch_size = batch_size
                     else:
                         curr_batch_size = key_data_len - batch_size * i
-                    result = {'conv3': np.ones((curr_batch_size, 600)) * 5,
+                        fe.set_batch_dim((curr_batch_size, 3, 227, 227))
+                    '''result = {'conv3': np.ones((curr_batch_size, 600)) * 5,
                               'conv3_p': np.random.rand(curr_batch_size, 600),
                               'fc8_n': np.random.rand(curr_batch_size, 128),
-                              'fc8_n_p': np.random.rand(curr_batch_size, 128)}
+                              'fc8_n_p': np.random.rand(curr_batch_size, 128)}'''
                     start_index = i * batch_size
                     end_index = start_index + batch_size
                     images = key_data[start_index:end_index]
@@ -78,8 +80,7 @@ def main():
                     features_2.extend([normalize(feature) for feature in result['conv3_p'].copy()])
                     coordinates_1.extend([feature for feature in result['fc8_n'].copy()])
                     coordinates_2.append([feature for feature in result['fc8_n_p'].copy()])
-                    if i % 500 == 0:
-                        print '{0} / {1}'.format(i, len(key_data))
+                    print '{0} / {1}'.format(i * batch_size, len(key_data))
 
                 print 'converting features to nd arrays...'
                 features_1 = np.array(features_1)

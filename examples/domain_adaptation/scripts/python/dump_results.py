@@ -54,10 +54,11 @@ def main():
         features_1, features_2 = [], []
         key_data = data[key]
         key_data_len = len(key_data)
-        fe.set_batch_dim((batch_size, 3, 227, 227))
+	processed = 0
+        fe.set_batch_dim(batch_size, 3, 227, 227)
         num_iter = int(np.ceil(key_data_len / float(batch_size)))
         for i in range(num_iter):
-            if batch_size * i <= key_data_len:
+            if (batch_size * (i + 1)) <= key_data_len:
                 curr_batch_size = batch_size
             else:
                 curr_batch_size = key_data_len - batch_size * i
@@ -76,7 +77,8 @@ def main():
             features_2.extend([normalize(feature) for feature in result['conv3_p'].copy()])
             coordinates_1.extend([feature for feature in result['fc8_n'].copy()])
             coordinates_2.append([feature for feature in result['fc8_n_p'].copy()])
-            print '{0} / {1}'.format(i * batch_size, len(key_data))
+	    processed += curr_batch_size
+            print '{0} / {1}'.format(processed, len(key_data))
 
         print 'converting features to nd arrays...'
         features_1 = np.array(features_1)
@@ -107,8 +109,9 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
-    model_folder_path = root_model_path + 'caffemodel' + '/'
+    model_folder = 'untrained'
+    model_folder_path = root_model_path + model_folder + '/'
     deploy_path = model_folder_path + 'deploy.prototxt'
-    caffe_model_path = model_folder_path + '.caffemodel'
-    batch_size = 256
+    caffe_model_path = model_folder_path + 'places205CNN_iter_300000_upgraded.caffemodel'
+    batch_size = 512 
     main()

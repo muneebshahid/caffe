@@ -32,7 +32,9 @@ class FeatureExtractor():
 
     def set_batch_dim(self, batch_size, c=3, h=227, w=227):
         for layer in self.__input_layers:
+            print 'prior batch size: {0}'.format(self.__net.blobs[layer].data.shape)
             self.__net.blobs[layer].reshape(batch_size, c, h, w)
+            print 'curr batch size: {0}'.format(self.__net.blobs[layer].data.shape)
 
     def extract(self, images, blob_keys):
         assert len(images[0]) == len(self.__input_layers)

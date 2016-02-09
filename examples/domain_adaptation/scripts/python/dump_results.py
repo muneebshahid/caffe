@@ -47,7 +47,7 @@ def filter_data(key, dataset):
             if ('summer' in pair[0] or 'summer' in pair[1]) and ('winter' in pair[0] or 'winter' in pair[1]):
                 filtered_data.append(pair)
     else:
-	filtered_data = dataset
+        filtered_data = dataset
     return filtered_data
 
 def main():
@@ -66,7 +66,7 @@ def main():
         key_data_len = len(key_data)
         processed = 0
         fe.set_batch_dim(batch_size, 3, 227, 227)
-	print 'total data {0}'.format(key_data_len)
+        print 'total data {0}'.format(key_data_len)
         num_iter = int(np.ceil(key_data_len / float(batch_size)))
         for i in range(num_iter):
             if (batch_size * (i + 1)) <= key_data_len:

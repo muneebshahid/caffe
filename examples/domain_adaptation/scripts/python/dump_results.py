@@ -14,7 +14,7 @@ def create_score_mat(qu, db):
             score_mat[i, j] = np.linalg.norm(qu_point - db_point)
         if i % 100 == 0:
             print i
-    return normalize_matrix(score_mat)
+    return score_mat#normalize_matrix(score_mat)
 
 
 def load_file(path, keys):
@@ -41,7 +41,7 @@ def normalize(feature):
 
 
 def main():
-    keys = ['freiburg']#, 'michigan']
+    keys = ['freiburg', 'michigan']
     data = load_file(txt_path, keys)
     fe = FeatureExtractor(model_path=caffe_model_path,
                               deploy_path=deploy_path,
@@ -54,7 +54,7 @@ def main():
         features_1, features_2 = [], []
         key_data = data[key]
         key_data_len = len(key_data)
-	processed = 0
+        processed = 0
         fe.set_batch_dim(batch_size, 3, 227, 227)
         num_iter = int(np.ceil(key_data_len / float(batch_size)))
         for i in range(num_iter):
@@ -77,7 +77,7 @@ def main():
             features_2.extend([normalize(feature) for feature in result['conv3_p'].copy()])
             coordinates_1.extend([feature for feature in result['fc8_n'].copy()])
             coordinates_2.append([feature for feature in result['fc8_n_p'].copy()])
-	    processed += curr_batch_size
+            processed += curr_batch_size
             print '{0} / {1}'.format(processed, len(key_data))
 
         print 'converting features to nd arrays...'

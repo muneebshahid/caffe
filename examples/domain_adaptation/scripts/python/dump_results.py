@@ -40,8 +40,16 @@ def normalize(feature):
     return flattened_features / np.linalg.norm(flattened_features)
 
 
+def filter_data(key, dataset):
+    filtered_data = []
+    if key == 'nordland':
+        for pair in dataset:
+            if ('summer' in pair[0] or 'summer' in pair[1]) and ('winter' in pair[0] or 'winter' in pair[1]):
+                filtered_data.append(pair)
+    return filtered_data
+
 def main():
-    keys = ['freiburg', 'michigan']
+    keys = ['nordland']#'freiburg', 'michigan']
     data = load_file(txt_path, keys)
     fe = FeatureExtractor(model_path=caffe_model_path,
                               deploy_path=deploy_path,
@@ -52,10 +60,11 @@ def main():
         print 'processing: {0}_{1}_{2}'.format(model_folder, model_id, key)
         coordinates_1, coordinates_2 = [], []
         features_1, features_2 = [], []
-        key_data = data[key]
+        key_data = filter_data(key, data[key])
         key_data_len = len(key_data)
         processed = 0
         fe.set_batch_dim(batch_size, 3, 227, 227)
+	print 'total data {0}'.format(key_data_len)
         num_iter = int(np.ceil(key_data_len / float(batch_size)))
         for i in range(num_iter):
             if (batch_size * (i + 1)) <= key_data_len:
@@ -109,9 +118,9 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
-    model_folder = 'untrained'
+    model_folder = 'nordland_only'
     model_folder_path = root_model_path + model_folder + '/'
     deploy_path = model_folder_path + 'deploy.prototxt'
-    caffe_model_path = model_folder_path + 'places205CNN_iter_300000_upgraded.caffemodel'
-    batch_size = 512 
+    caffe_model_path = model_folder_path + 'snapshots_iter_140000.caffemodel'
+    batch_size = 1024
     main()

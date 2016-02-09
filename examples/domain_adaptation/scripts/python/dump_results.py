@@ -46,10 +46,12 @@ def filter_data(key, dataset):
         for pair in dataset:
             if ('summer' in pair[0] or 'summer' in pair[1]) and ('winter' in pair[0] or 'winter' in pair[1]):
                 filtered_data.append(pair)
+    else:
+	filtered_data = dataset
     return filtered_data
 
 def main():
-    keys = ['nordland']#'freiburg', 'michigan']
+    keys = ['freiburg', 'michigan', 'nordland',]
     data = load_file(txt_path, keys)
     fe = FeatureExtractor(model_path=caffe_model_path,
                               deploy_path=deploy_path,
@@ -85,7 +87,7 @@ def main():
             features_1.extend([normalize(feature) for feature in result['conv3'].copy()])
             features_2.extend([normalize(feature) for feature in result['conv3_p'].copy()])
             coordinates_1.extend([feature for feature in result['fc8_n'].copy()])
-            coordinates_2.append([feature for feature in result['fc8_n_p'].copy()])
+            coordinates_2.extend([feature for feature in result['fc8_n_p'].copy()])
             processed += curr_batch_size
             print '{0} / {1}'.format(processed, len(key_data))
 

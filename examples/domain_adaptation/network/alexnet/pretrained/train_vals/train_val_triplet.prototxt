@@ -23,7 +23,7 @@ layer {
 #  data_param {  
 #    source: "data/domain_adaptation_data/lmdb/train1"
 #    backend: LMDB
-    source: "data/domain_adaptation_data/images/train1.txt"
+    source: "data/domain_adaptation_data/images/triplet_data_train.txt"
     batch_size: 256 
   }
 }
@@ -46,8 +46,8 @@ layer {
 #  data_param {  
 #    source: "data/domain_adaptation_data/lmdb/test1"
 #    backend: LMDB
-    source: "data/domain_adaptation_data/images/test1.txt"
-    batch_size: 640 
+    source: "data/domain_adaptation_data/images/triplet_data_test.txt"
+    batch_size: 639 
   }
 }
 
@@ -431,9 +431,29 @@ layer {
   bottom: "fc8_n"
   bottom: "sim_labels"
   top: "loss"
+  include {
+    phase: TRAIN
+  }
   triplet_loss_param {
     margin: 1
     losstype: 1
     num_triplets: 2
+    use_pair: 1
+  }
+}
+layer {
+  name: "loss"
+  type: "TripletLoss"
+  bottom: "fc8_n"
+  bottom: "sim_labels"
+  top: "loss"
+  include {
+    phase: TEST
+  }
+  triplet_loss_param {
+    margin: 1
+    losstype: 1
+    num_triplets: 1 
+    use_pair: 1
   }
 }

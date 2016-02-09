@@ -43,67 +43,63 @@ def normalize(feature):
 def main():
     keys = ['freiburg']#, 'michigan']
     data = load_file(txt_path, keys)
-    for model_folder in osh.list_dir(root_model_path):
-        model_folder_path = root_model_path + model_folder + '/'
-        deploy_path = model_folder_path + 'deploy.prototxt'
-        for caffe_model_path in osh.get_folder_contents(model_folder_path, '*.caffemodel'):
-            fe = FeatureExtractor(model_path=caffe_model_path,
-                                  deploy_path=deploy_path,
-                                  mean_binary_path=mean_binary_path,
-                                  input_layers=['data_1', 'data_2'])
-            model_id = osh.extract_name_from_path(caffe_model_path)
-            for key in data:
-                print 'processing: {0}_{1}_{2}'.format(model_folder, model_id, key)
-                coordinates_1, coordinates_2 = [], []
-                features_1, features_2 = [], []
-                key_data = data[key]
-                key_data_len = len(key_data)
-                fe.set_batch_dim((batch_size, 3, 227, 227))
-                num_iter = int(np.ceil(key_data_len / float(batch_size)))
-                for i in range(num_iter):
-                    if batch_size * i <= key_data_len:
-                        curr_batch_size = batch_size
-                    else:
-                        curr_batch_size = key_data_len - batch_size * i
-                        fe.set_batch_dim(curr_batch_size)
-                    '''result = {'conv3': np.ones((curr_batch_size, 600)) * 5,
-                              'conv3_p': np.random.rand(curr_batch_size, 600),
-                              'fc8_n': np.random.rand(curr_batch_size, 128),
-                              'fc8_n_p': np.random.rand(curr_batch_size, 128)}'''
-                    start_index = i * batch_size
-                    end_index = start_index + batch_size
-                    images = key_data[start_index:end_index]
-                    result = fe.extract(images=images,
-                                        blob_keys=['conv3', 'conv3_p'])
+    fe = FeatureExtractor(model_path=caffe_model_path,
+                              deploy_path=deploy_path,
+                              mean_binary_path=mean_binary_path,
+                              input_layers=['data_1', 'data_2'])
+    model_id = osh.extract_name_from_path(caffe_model_path)
+    for key in data:
+        print 'processing: {0}_{1}_{2}'.format(model_folder, model_id, key)
+        coordinates_1, coordinates_2 = [], []
+        features_1, features_2 = [], []
+        key_data = data[key]
+        key_data_len = len(key_data)
+        fe.set_batch_dim((batch_size, 3, 227, 227))
+        num_iter = int(np.ceil(key_data_len / float(batch_size)))
+        for i in range(num_iter):
+            if batch_size * i <= key_data_len:
+                curr_batch_size = batch_size
+            else:
+                curr_batch_size = key_data_len - batch_size * i
+                fe.set_batch_dim(curr_batch_size)
+            '''result = {'conv3': np.ones((curr_batch_size, 600)) * 5,
+                      'conv3_p': np.random.rand(curr_batch_size, 600),
+                      'fc8_n': np.random.rand(curr_batch_size, 128),
+                      'fc8_n_p': np.random.rand(curr_batch_size, 128)}'''
+            start_index = i * batch_size
+            end_index = start_index + batch_size
+            images = key_data[start_index:end_index]
+            result = fe.extract(images=images,
+                                blob_keys=['conv3', 'conv3_p'])
 
-                    features_1.extend([normalize(feature) for feature in result['conv3'].copy()])
-                    features_2.extend([normalize(feature) for feature in result['conv3_p'].copy()])
-                    coordinates_1.extend([feature for feature in result['fc8_n'].copy()])
-                    coordinates_2.append([feature for feature in result['fc8_n_p'].copy()])
-                    print '{0} / {1}'.format(i * batch_size, len(key_data))
+            features_1.extend([normalize(feature) for feature in result['conv3'].copy()])
+            features_2.extend([normalize(feature) for feature in result['conv3_p'].copy()])
+            coordinates_1.extend([feature for feature in result['fc8_n'].copy()])
+            coordinates_2.append([feature for feature in result['fc8_n_p'].copy()])
+            print '{0} / {1}'.format(i * batch_size, len(key_data))
 
-                print 'converting features to nd arrays...'
-                features_1 = np.array(features_1)
-                print features_1.shape
-                features_2 = np.array(features_2)
-                print 'calculating cos similarity...'
-                score_mat = features_1.dot(features_2.T)
-                score_mat = normalize_matrix(score_mat)
-                print 'writing files...'
-                dump_results(model_folder, model_id, key, '_features_1', features_1)
-                dump_results(model_folder, model_id, key, '_features_2', features_2)
-                dump_results(model_folder, model_id, key, '_cos_sim', score_mat)
+        print 'converting features to nd arrays...'
+        features_1 = np.array(features_1)
+        print features_1.shape
+        features_2 = np.array(features_2)
+        print 'calculating cos similarity...'
+        score_mat = features_1.dot(features_2.T)
+        score_mat = normalize_matrix(score_mat)
+        print 'writing files...'
+        dump_results(model_folder, model_id, key, '_features_1', features_1)
+        dump_results(model_folder, model_id, key, '_features_2', features_2)
+        dump_results(model_folder, model_id, key, '_cos_sim', score_mat)
 
-                print 'converting coordinates to nd arrays...'
-                coordinates_1 = np.array(coordinates_1)
-                coordinates_2 = np.array(coordinates_2)
-                print 'calculating score mat...'
-                score_mat = create_score_mat(coordinates_1, coordinates_2)
-                print 'writing files...'
-                dump_results(model_folder, model_id, key, '_coordinates_1', coordinates_1)
-                dump_results(model_folder, model_id, key, '_coordinates_2', coordinates_2)
-                dump_results(model_folder, model_id, key, '_euc_dist', score_mat)
-            print 'done'
+        print 'converting coordinates to nd arrays...'
+        coordinates_1 = np.array(coordinates_1)
+        coordinates_2 = np.array(coordinates_2)
+        print 'calculating score mat...'
+        score_mat = create_score_mat(coordinates_1, coordinates_2)
+        print 'writing files...'
+        dump_results(model_folder, model_id, key, '_coordinates_1', coordinates_1)
+        dump_results(model_folder, model_id, key, '_coordinates_2', coordinates_2)
+        dump_results(model_folder, model_id, key, '_euc_dist', score_mat)
+    print 'done'
 
 if __name__ == '__main__':
     caffe_root = osh.get_env_var('CAFFE_ROOT')
@@ -111,5 +107,8 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
+    model_folder_path = root_model_path + 'caffemodel' + '/'
+    deploy_path = model_folder_path + 'deploy.prototxt'
+    caffe_model_path = model_folder_path + '.caffemodel'
     batch_size = 256
     main()

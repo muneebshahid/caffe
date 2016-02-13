@@ -51,7 +51,7 @@ def filter_data(key, dataset):
     return filtered_data
 
 def main():
-    keys = ['freiburg', 'michigan', 'nordland',]
+    keys = ['nordland']#'michigan'i, 'freiburg' ]
     data = load_file(txt_path, keys)
     fe = FeatureExtractor(model_path=caffe_model_path,
                               deploy_path=deploy_path,
@@ -120,9 +120,9 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
-    model_folder = 'nordland_only'
+    model_folder = 'triplet_loss_four'
     model_folder_path = root_model_path + model_folder + '/'
     deploy_path = model_folder_path + 'deploy.prototxt'
-    caffe_model_path = model_folder_path + 'snapshots_iter_140000.caffemodel'
+    caffe_model_path = model_folder_path + 'snapshots_iter_10000.caffemodel'
     batch_size = 1024
     main()

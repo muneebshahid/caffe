@@ -71,14 +71,38 @@ def vals_around_diag(score_mat, sim=True, k=3, diag=5):
 def main():
     score_data = [#['untrained_places205CNN_iter_300000_upgraded.caffemodel_freiburg_cos_sim.npy',
                    #0.0443317064121, 0.0274826074699, True]]
-                  #['mix_data_snapshots_iter_100000.caffemodel_freiburg_cos_sim.npy',
-                   #0.037, 0.0213330272421, True],]
-                  #['nordland_only_snapshots_iter_100000.caffemodel_freiburg_cos_sim.npy',
-                   #0.0372817616013, 0.0265447199265, True]]
-                  #['first_four_snapshots_iter_100000.caffemodel_michigan_cos_sim.npy',
-                   #0.0223434343434, 0.0198, True]
-                    ['mix_data_snapshots_iter_100000.caffemodel_michigan_euc_dist.npy',
-                     .0005, 0.02, False]]
+                   #['untrained_places205CNN_iter_300000_upgraded.caffemodel_michigan_cos_sim.npy',
+                   #0.0382727272727, 0.0227575757576, True]]
+                   ['untrained_places205CNN_iter_300000_upgraded.caffemodel_nordland_cos_sim.npy',
+                   0.021, 0.012, True]]
+		   #['nordland_only_snapshots_iter_140000.caffemodel_nordland_cos_sim.npy',
+                   #0.0155, 0.0108, True]]
+                   #['nordland_only_snapshots_iter_140000.caffemodel_freiburg_cos_sim.npy',
+                   #0.0370626383018, 0.0266, True]] 
+		   #['nordland_only_snapshots_iter_140000.caffemodel_michigan_cos_sim.npy',
+                   #0.0305306122449, 0.0214891774892, True]]
+		   #['nordland_only_snapshots_iter_15000_mich.caffemodel_michigan_cos_sim.npy',
+                   #0.0303479569973, 0.0214891774892, True]]
+                   #['triplet_loss_snapshots_iter_120000.caffemodel_freiburg_cos_sim.npy',
+                   #0.0376727272727, 0.0268236914601, True]]
+		   #['triplet_loss_snapshots_iter_120000.caffemodel_nordland_cos_sim.npy',
+                   #0.018585858585858585, 0.0113, True]]
+		   #['triplet_loss_snapshots_iter_40000.caffemodel_freiburg_cos_sim.npy',
+                   #0.045, 0.0271908896124, True]]
+		   #['triplet_loss_snapshots_iter_40000.caffemodel_nordland_cos_sim.npy',
+                   #0.0209595959596, 0.0120931537598, True]]
+		   #['triplet_loss_snapshots_iter_40000.caffemodel_michigan_cos_sim.npy',
+                   # 0.0369, 0.0226172703466, True]]
+		   #['triplet_loss_four_snapshots_iter_40000.caffemodel_freiburg_cos_sim.npy',
+                   #0.045, 0.0271908896124, True]]
+		   #['triplet_loss_four_snapshots_iter_40000.caffemodel_michigan_cos_sim.npy',
+                   #0.0382323232323, 0.0229466380981, True]]
+		   #['triplet_loss_four_snapshots_iter_40000.caffemodel_nordland_cos_sim.npy',
+                   #.0210845832058, 0.0121205092451, True]]
+		   #['triplet_loss_four_snapshots_iter_40000.caffemodel_freiburg_euc_dist.npy',
+                   #70, 110, False]]
+		   #['triplet_loss_snapshots_iter_120000.caffemodel_michigan_euc_dist.npy', 0, .1, False]]
+                   #['mix_data_snapshots_iter_200000.caffemodel_michigan_cos_sim.npy', 0.03, 0.0213131313131, True]]
     for data in score_data:
         print 'processing: {0}'.format(data[0])
         score_mat = np.load(results_folder + data[0])

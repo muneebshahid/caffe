@@ -44,4 +44,5 @@ class FeatureExtractor():
             for j, input_layer in enumerate(self.__input_layers):
                 image = self.__transformer.preprocess(self.__transformer_key, caffe.io.load_image(image_pair[j]))
                 self.__net.blobs[input_layer].data[i] = image
+	print 'forwarding....'
         return self.__net.forward(blob_keys)

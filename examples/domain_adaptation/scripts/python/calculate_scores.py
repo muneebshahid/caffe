@@ -15,10 +15,10 @@ mean_data = open(data + 'models/alexnet/pretrained/places205CNN_mean.binaryproto
 caffe_model = results + '/curr.caffemodel'
 blob.ParseFromString(mean_data)
 arr = np.array(caffe.io.blobproto_to_array(blob))
-net1 = caffe.Net(deploy, caffe.TEST)
-net2 = caffe.Net(deploy, caffe_model, caffe.TEST)
+#net1 = caffe.Net(deploy, caffe.TEST)
+net1 = caffe.Net(deploy, caffe_model, caffe.TEST)
 
-transformer = caffe.io.Transformer({'data_': net2.blobs['data_1'].data.shape})
+transformer = caffe.io.Transformer({'data_': net1.blobs['data_1'].data.shape})
 transformer.set_transpose('data_', (2, 0, 1))
 transformer.set_mean('data_', arr[0].mean(1).mean(1))
 transformer.set_raw_scale('data_', 255)
@@ -35,11 +35,11 @@ def output(net, t, img1, img2):
 
 def print_r(img1, img2):
     r1 = output(net1, transformer, img1, img2)
-    r2 = output(net2, transformer, img1, img2)
+    #r2 = output(net2, transformer, img1, img2)
     print '-----------------------------------'
-    print "untrained: ", r1
+    print "trained: ", r1
     print 'distance: ', np.linalg.norm(r1['fc8_n'] - r1['fc8_n_p'])
     print '-----------------------------------'
-    print "trained: ", r2
-    print 'distance: ', np.linalg.norm(r2['fc8_n'] - r2['fc8_n_p'])
+    #print "trained: ", r2
+    #print 'distance: ', np.linalg.norm(r2['fc8_n'] - r2['fc8_n_p'])
 

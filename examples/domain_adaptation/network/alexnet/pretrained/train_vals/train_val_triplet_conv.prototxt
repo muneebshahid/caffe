@@ -47,7 +47,7 @@ layer {
 #    source: "data/domain_adaptation_data/lmdb/test1"
 #    backend: LMDB
     source: "data/domain_adaptation_data/images/triplet_data_test.txt"
-    batch_size: 639 
+    batch_size: 640 
   }
 }
 
@@ -64,12 +64,12 @@ layer {
   top: "conv1"
   param {
     name: "conv1_w"
-    lr_mult: 1
+    lr_mult: .0001
     decay_mult: 1
   }
   param {
     name: "conv1_b"
-    lr_mult: 2
+    lr_mult: .0002
     decay_mult: 0
   }
   convolution_param {
@@ -124,12 +124,12 @@ layer {
   top: "conv2"
   param {
     name: "conv2_w"
-    lr_mult: 1
+    lr_mult: .0001
     decay_mult: 1
   }
   param {
     name: "conv2_b"
-    lr_mult: 2
+    lr_mult: .0002
     decay_mult: 0
   }
   convolution_param {
@@ -184,12 +184,12 @@ layer {
   top: "conv3"
   param {
     name: "conv3_w"
-    lr_mult: 1
+    lr_mult: .0001
     decay_mult: 1
   }
   param {
     name: "conv3_b"
-    lr_mult: 2
+    lr_mult: .0002
     decay_mult: 0
   }
   convolution_param {
@@ -221,12 +221,12 @@ layer {
   top: "conv4"
   param {
     name: "conv4_w"
-    lr_mult: 1
+    lr_mult: .0001
     decay_mult: 1
   }
   param {
     name: "conv4_b"
-    lr_mult: 2
+    lr_mult: .0002
     decay_mult: 0
   }
   convolution_param {
@@ -252,164 +252,19 @@ layer {
 }
 
 
-# ---------------------------------------------------------------------- Conv 5
-layer {
-  name: "conv5"
-  type: "Convolution"
-  bottom: "conv4"
-  top: "conv5"
-  param {
-    name: "conv5_w"
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    name: "conv5_b"
-    lr_mult: 2
-    decay_mult: 0
-  }
-  convolution_param {
-    num_output: 256
-    pad: 1
-    kernel_size: 3
-    group: 2
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 1
-    }
-  }
-}
-layer {
-  name: "relu5"
-  type: "ReLU"
-  bottom: "conv5"
-  top: "conv5"
-}
-layer {
-  name: "pool5"
-  type: "Pooling"
-  bottom: "conv5"
-  top: "pool5"
-  pooling_param {
-    pool: MAX
-    kernel_size: 3
-    stride: 2
-  }
-}
-
-# -----------------------------------------------------------------------------
-# -------------------------------------------------------- Inner Product Layers
-# -----------------------------------------------------------------------------
-
-# ------------------------------------------------------------------------ fc 6
-
-layer {
-  name: "fc6"
-  type: "InnerProduct"
-  bottom: "pool5"
-  top: "fc6"
-  param {
-    name: "fc6_w"
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    name: "fc6_b"
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 4096
-    weight_filler {
-      type: "gaussian"
-      std: 0.005
-    }
-    bias_filler {
-      type: "constant"
-      value: 1
-    }
-  }
-}
-layer {
-  name: "relu6"
-  type: "ReLU"
-  bottom: "fc6"
-  top: "fc6"
-}
-layer {
-  name: "drop6"
-  type: "Dropout"
-  bottom: "fc6"
-  top: "fc6"
-  dropout_param {
-    dropout_ratio: 0.5
-  }
-}
-
-# ------------------------------------------------------------------------ fc 7
-layer {
-  name: "fc7"
-  type: "InnerProduct"
-  bottom: "fc6"
-  top: "fc7"
-  param {
-    name: "fc7_w"
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    name: "fc7_b"
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 4096
-    weight_filler {
-      type: "gaussian"
-      std: 0.005
-    }
-    bias_filler {
-      type: "constant"
-      value: 1
-    }
-  }
-}
-layer {
-  name: "relu7"
-  type: "ReLU"
-  bottom: "fc7"
-  top: "fc7"
-}
-layer {
-  name: "drop7"
-  type: "Dropout"
-  bottom: "fc7"
-  top: "fc7"
-  dropout_param {
-    dropout_ratio: 0.5
-  }
-}
-
-
-# ------------------------------------------------------------------------ fc 8
-
 layer {
   name: "fc8_n"
   type: "InnerProduct"
-  bottom: "fc7"
+  bottom: "conv4"
   top: "fc8_n"
   param {
     name: "fc8_n_w"
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
     name: "fc8_n_b"
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   inner_product_param {
@@ -438,7 +293,6 @@ layer {
     margin: 1
     losstype: 1
     num_triplets: 2
-    use_pair: 1
   }
 }
 layer {
@@ -447,13 +301,12 @@ layer {
   bottom: "fc8_n"
   bottom: "sim_labels"
   top: "loss"
-  include {
+ include {
     phase: TEST
   }
   triplet_loss_param {
     margin: 1
     losstype: 1
-    num_triplets: 1 
-    use_pair: 1
+    num_triplets: 1
   }
 }

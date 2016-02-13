@@ -192,6 +192,12 @@ class DataLoader():
 
     @staticmethod
     def __load_nordland(folder_path):
+        ignore = range(26417, 26538)
+        ignore.extend(range(28980, 29088))
+        ignore.extend(range(30442, 30494))
+        ignore.extend(range(31089, 31182))
+        ignore.extend(range(32397, 33041))
+        ignore.extend(range(35609, 35653))
         dataset = []
         print 'Processing nordland data.....'
         offset = 171
@@ -204,6 +210,8 @@ class DataLoader():
         for im_file in files_nordland:
             im_file_num, _ = osh.split_file_extension(osh.extract_name_from_path(im_file))
             im_file_num = int(im_file_num)
+            if im_file_num in ignore:
+                continue
             im_file_index = DataLoader.floor_ceil_int(im_file_num - offset) / 10
             summer_image = im_file
             winter_image = im_file.replace('summer', 'winter')

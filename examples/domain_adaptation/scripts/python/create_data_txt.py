@@ -424,7 +424,7 @@ def main():
                      keys[3]: [10, 2],
                      keys[4]: [2, 2],
                      keys[5]: [10, 2],}
-    process_datasets(keys, root_folder_path, write_path, None, neg_limit, triplet_limit)
+    process_datasets(keys, root_folder_path, write_path, None, neg_limit, None)
 
 if __name__ == "__main__":
     AUGMENTED_KEYS = ['tra' , 'rot', 'aff', 'per']

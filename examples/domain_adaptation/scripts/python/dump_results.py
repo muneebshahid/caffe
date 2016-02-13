@@ -43,6 +43,12 @@ def normalize(feature):
 def filter_data(key, dataset):
     filtered_data = []
     if key == 'nordland':
+        ignore = range(26417, 26538)
+        ignore.extend(range(28980, 29088))
+        ignore.extend(range(30442, 30494))
+        ignore.extend(range(31089, 31182))
+        ignore.extend(range(32397, 33041))
+        ignore.extend(range(35609, 35653))
         for pair in dataset:
             if ('summer' in pair[0] or 'summer' in pair[1]) and ('winter' in pair[0] or 'winter' in pair[1]):
                 filtered_data.append(pair)

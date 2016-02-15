@@ -73,12 +73,14 @@ def main():
                    #0.0443317064121, 0.0274826074699, True]]
                    #['untrained_places205CNN_iter_300000_upgraded.caffemodel_michigan_cos_sim.npy',
                    #0.0382727272727, 0.0227575757576, True]]
-                   ['untrained_places205CNN_iter_300000_upgraded.caffemodel_nordland_cos_sim.npy',
-                   0.021, 0.012, True]]
+                   #['untrained_places205CNN_iter_300000_upgraded.caffemodel_nordland_cos_sim.npy',
+                   #0.0225, 0.012656565656565, True]]
 		   #['nordland_only_snapshots_iter_140000.caffemodel_nordland_cos_sim.npy',
-                   #0.0155, 0.0108, True]]
+                   #0.0159909090909, 0.0115, True]]
                    #['nordland_only_snapshots_iter_140000.caffemodel_freiburg_cos_sim.npy',
                    #0.0370626383018, 0.0266, True]] 
+		   #['nordland_only_snapshots_iter_120000_10_margin.caffemodel_nordland_cos_sim.npy',
+                   #0.0241515151515, .013, True]] 
 		   #['nordland_only_snapshots_iter_140000.caffemodel_michigan_cos_sim.npy',
                    #0.0305306122449, 0.0214891774892, True]]
 		   #['nordland_only_snapshots_iter_15000_mich.caffemodel_michigan_cos_sim.npy',
@@ -97,8 +99,8 @@ def main():
                    #0.045, 0.0271908896124, True]]
 		   #['triplet_loss_four_snapshots_iter_40000.caffemodel_michigan_cos_sim.npy',
                    #0.0382323232323, 0.0229466380981, True]]
-		   #['triplet_loss_four_snapshots_iter_40000.caffemodel_nordland_cos_sim.npy',
-                   #.0210845832058, 0.0121205092451, True]]
+		   ['triplet_loss_four_snapshots_iter_33000_10_margin.caffemodel_nordland_cos_sim.npy',
+                   .013, 0.0106, True]]
 		   #['triplet_loss_four_snapshots_iter_40000.caffemodel_freiburg_euc_dist.npy',
                    #70, 110, False]]
 		   #['triplet_loss_snapshots_iter_120000.caffemodel_michigan_euc_dist.npy', 0, .1, False]]

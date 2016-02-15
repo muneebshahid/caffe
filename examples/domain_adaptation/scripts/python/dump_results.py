@@ -51,6 +51,10 @@ def filter_data(key, dataset):
         ignore.extend(range(35609, 35653))
         for pair in dataset:
             if ('summer' in pair[0] or 'summer' in pair[1]) and ('winter' in pair[0] or 'winter' in pair[1]):
+		file_id, _ = osh.split_file_extension(osh.extract_name_from_path(pair[0])) 
+		if int(file_id) in ignore:
+		    print 'ignoring...', file_id
+		    continue
                 filtered_data.append(pair)
     else:
         filtered_data = dataset
@@ -88,10 +92,10 @@ def main():
             end_index = start_index + batch_size
             images = key_data[start_index:end_index]
             result = fe.extract(images=images,
-                                blob_keys=['conv3', 'conv3_p'])
+                                blob_keys=['fc7', 'fc7_p'])
 
-            features_1.extend([normalize(feature) for feature in result['conv3'].copy()])
-            features_2.extend([normalize(feature) for feature in result['conv3_p'].copy()])
+            features_1.extend([normalize(feature) for feature in result['fc7'].copy()])
+            features_2.extend([normalize(feature) for feature in result['fc7_p'].copy()])
             coordinates_1.extend([feature for feature in result['fc8_n'].copy()])
             coordinates_2.extend([feature for feature in result['fc8_n_p'].copy()])
             processed += curr_batch_size
@@ -126,9 +130,9 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
-    model_folder = 'triplet_loss_four'
+    model_folder = 'untrained'
     model_folder_path = root_model_path + model_folder + '/'
     deploy_path = model_folder_path + 'deploy.prototxt'
-    caffe_model_path = model_folder_path + 'snapshots_iter_10000.caffemodel'
+    caffe_model_path = model_folder_path + 'places205CNN_iter_300000_upgraded.caffemodel'
     batch_size = 1024
     main()

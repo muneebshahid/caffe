@@ -31,8 +31,8 @@ def load_file(path, keys):
     return data
 
 
-def dump_results(model_folder, model_id, key, result_str, results):
-    np.save(save_path + model_folder + '_' + model_id + '_' + key + result_str, results)
+def dump_results(model_folder, model_id, key, feature_key, result_str, results):
+    np.save(save_path + model_folder + '_' + model_id + '_' + key + '_' + feature_key + '_' + result_str, results)
 
 
 def normalize(feature):
@@ -51,22 +51,21 @@ def filter_data(key, dataset):
         ignore.extend(range(35609, 35653))
         for pair in dataset:
             if ('summer' in pair[0] or 'summer' in pair[1]) and ('winter' in pair[0] or 'winter' in pair[1]):
-		file_id, _ = osh.split_file_extension(osh.extract_name_from_path(pair[0])) 
-		if int(file_id) in ignore:
-		    print 'ignoring...', file_id
-		    continue
+                file_id, _ = osh.split_file_extension(osh.extract_name_from_path(pair[0]))
+                if int(file_id) in ignore:
+                    print 'ignoring...', file_id
+                    continue
                 filtered_data.append(pair)
     else:
         filtered_data = dataset
     return filtered_data
 
+
 def main():
     keys = ['nordland']#'michigan'i, 'freiburg' ]
     data = load_file(txt_path, keys)
-    fe = FeatureExtractor(model_path=caffe_model_path,
-                              deploy_path=deploy_path,
-                              mean_binary_path=mean_binary_path,
-                              input_layers=['data_1', 'data_2'])
+    fe = FeatureExtractor(model_path=caffe_model_path, deploy_path=deploy_path, mean_binary_path=mean_binary_path,
+                          input_layers=input_layers)
     model_id = osh.extract_name_from_path(caffe_model_path)
     for key in data:
         print 'processing: {0}_{1}_{2}'.format(model_folder, model_id, key)
@@ -92,12 +91,12 @@ def main():
             end_index = start_index + batch_size
             images = key_data[start_index:end_index]
             result = fe.extract(images=images,
-                                blob_keys=['fc7', 'fc7_p'])
+                                blob_keys=feature_layers)
 
-            features_1.extend([normalize(feature) for feature in result['fc7'].copy()])
-            features_2.extend([normalize(feature) for feature in result['fc7_p'].copy()])
-            coordinates_1.extend([feature for feature in result['fc8_n'].copy()])
-            coordinates_2.extend([feature for feature in result['fc8_n_p'].copy()])
+            features_1.extend([normalize(feature) for feature in result[feature_layers[0]].copy()])
+            features_2.extend([normalize(feature) for feature in result[feature_layers[1]].copy()])
+            coordinates_1.extend([feature for feature in result[output_layers[0]].copy()])
+            coordinates_2.extend([feature for feature in result[output_layers[1]].copy()])
             processed += curr_batch_size
             print '{0} / {1}'.format(processed, len(key_data))
 
@@ -109,9 +108,9 @@ def main():
         score_mat = features_1.dot(features_2.T)
         score_mat = normalize_matrix(score_mat)
         print 'writing files...'
-        dump_results(model_folder, model_id, key, '_features_1', features_1)
-        dump_results(model_folder, model_id, key, '_features_2', features_2)
-        dump_results(model_folder, model_id, key, '_cos_sim', score_mat)
+        dump_results(model_folder, model_id, key, feature_layers[0], 'features_1', features_1)
+        dump_results(model_folder, model_id, key, feature_layers[1], 'features_2', features_2)
+        dump_results(model_folder, model_id, key, feature_layers[0] + feature_layers[1], 'cos_sim', score_mat)
 
         print 'converting coordinates to nd arrays...'
         coordinates_1 = np.array(coordinates_1)
@@ -119,9 +118,9 @@ def main():
         print 'calculating score mat...'
         score_mat = create_score_mat(coordinates_1, coordinates_2)
         print 'writing files...'
-        dump_results(model_folder, model_id, key, '_coordinates_1', coordinates_1)
-        dump_results(model_folder, model_id, key, '_coordinates_2', coordinates_2)
-        dump_results(model_folder, model_id, key, '_euc_dist', score_mat)
+        dump_results(model_folder, model_id, key, output_layers[0], 'coordinates_1', coordinates_1)
+        dump_results(model_folder, model_id, key, output_layers[1], 'coordinates_2', coordinates_2)
+        dump_results(model_folder, model_id, key, output_layers[0] + output_layers[1], 'euc_dist', score_mat)
     print 'done'
 
 if __name__ == '__main__':
@@ -135,6 +134,7 @@ if __name__ == '__main__':
     deploy_path = model_folder_path + 'deploy.prototxt'
     caffe_model_path = model_folder_path + 'places205CNN_iter_300000_upgraded.caffemodel'
     batch_size = 1024
+    input_layers = ['data_1', 'data_2']
     output_layers = ['fc8', 'fc8_p']
     feature_layers = ['conv3', 'conv3_p']
     main()

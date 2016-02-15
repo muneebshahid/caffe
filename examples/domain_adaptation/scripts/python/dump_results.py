@@ -135,4 +135,6 @@ if __name__ == '__main__':
     deploy_path = model_folder_path + 'deploy.prototxt'
     caffe_model_path = model_folder_path + 'places205CNN_iter_300000_upgraded.caffemodel'
     batch_size = 1024
+    output_layers = ['fc8', 'fc8_p']
+    feature_layers = ['conv3', 'conv3_p']
     main()

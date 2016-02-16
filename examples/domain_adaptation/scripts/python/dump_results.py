@@ -53,7 +53,6 @@ def filter_data(key, dataset):
             if ('summer' in pair[0] or 'summer' in pair[1]) and ('winter' in pair[0] or 'winter' in pair[1]):
                 file_id, _ = osh.split_file_extension(osh.extract_name_from_path(pair[0]))
                 if int(file_id) in ignore:
-#                    print 'ignoring...', file_id
                     continue
                 filtered_data.append(pair)
     else:
@@ -99,7 +98,6 @@ def main():
             coordinates_2.extend([feature for feature in result[output_layers[1]].copy()])
             processed += curr_batch_size
             print '{0} / {1}'.format(processed, len(key_data))
-	fe.set_batch_dim(1)
         print 'converting features to nd arrays...'
         features_1 = np.array(features_1)
         print features_1.shape

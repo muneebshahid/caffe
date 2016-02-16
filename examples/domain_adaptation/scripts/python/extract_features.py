@@ -10,6 +10,8 @@ class FeatureExtractor():
     __batch_size = None
 
     def __init__(self, model_path, deploy_path, mean_binary_path, input_layers):
+        caffe.set_mode_gpu()
+        caffe.set_device(0)
         self.__transformer_key = 'data_'
         self.__input_layers = input_layers
         # convert binary proto to numpy array

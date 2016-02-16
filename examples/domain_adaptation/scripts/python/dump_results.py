@@ -53,7 +53,7 @@ def filter_data(key, dataset):
             if ('summer' in pair[0] or 'summer' in pair[1]) and ('winter' in pair[0] or 'winter' in pair[1]):
                 file_id, _ = osh.split_file_extension(osh.extract_name_from_path(pair[0]))
                 if int(file_id) in ignore:
-                    print 'ignoring...', file_id
+#                    print 'ignoring...', file_id
                     continue
                 filtered_data.append(pair)
     else:
@@ -99,7 +99,7 @@ def main():
             coordinates_2.extend([feature for feature in result[output_layers[1]].copy()])
             processed += curr_batch_size
             print '{0} / {1}'.format(processed, len(key_data))
-
+	fe.set_batch_dim(1)
         print 'converting features to nd arrays...'
         features_1 = np.array(features_1)
         print features_1.shape
@@ -109,8 +109,8 @@ def main():
         score_mat = normalize_matrix(score_mat)
         print 'writing files...'
         dump_results(model_folder, model_id, key, feature_layers[0], 'features_1', features_1)
-        dump_results(model_folder, model_id, key, feature_layers[1], 'features_2', features_2)
-        dump_results(model_folder, model_id, key, feature_layers[0] + feature_layers[1], 'cos_sim', score_mat)
+        dump_results(model_folder, model_id, key, feature_layers[0], 'features_2', features_2)
+        dump_results(model_folder, model_id, key, feature_layers[0], 'cos_sim', score_mat)
 
         print 'converting coordinates to nd arrays...'
         coordinates_1 = np.array(coordinates_1)
@@ -119,8 +119,8 @@ def main():
         score_mat = create_score_mat(coordinates_1, coordinates_2)
         print 'writing files...'
         dump_results(model_folder, model_id, key, output_layers[0], 'coordinates_1', coordinates_1)
-        dump_results(model_folder, model_id, key, output_layers[1], 'coordinates_2', coordinates_2)
-        dump_results(model_folder, model_id, key, output_layers[0] + output_layers[1], 'euc_dist', score_mat)
+        dump_results(model_folder, model_id, key, output_layers[0], 'coordinates_2', coordinates_2)
+        dump_results(model_folder, model_id, key, output_layers[0], 'euc_dist', score_mat)
     print 'done'
 
 if __name__ == '__main__':
@@ -129,12 +129,12 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
-    model_folder = 'untrained'
+    model_folder = 'nordland_only'
     model_folder_path = root_model_path + model_folder + '/'
     deploy_path = model_folder_path + 'deploy.prototxt'
-    caffe_model_path = model_folder_path + 'places205CNN_iter_300000_upgraded.caffemodel'
+    caffe_model_path = model_folder_path + 'snapshots_iter_120000_10_margin.caffemodel'
     batch_size = 1024
     input_layers = ['data_1', 'data_2']
-    output_layers = ['fc8', 'fc8_p']
+    output_layers = ['fc8_n', 'fc8_n_p']
     feature_layers = ['conv3', 'conv3_p']
     main()

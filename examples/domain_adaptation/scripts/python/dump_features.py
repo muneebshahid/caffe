@@ -22,8 +22,7 @@ def dump_results(model_folder, model_id, key, feature_key, results):
 
 
 def normalize(feature):
-    flattened_features = feature.flatten().astype(dtype=np.float32)
-    return flattened_features / np.linalg.norm(flattened_features)
+    return feature / np.linalg.norm(feature)
 
 
 def filter_data(key, dataset):
@@ -79,8 +78,8 @@ def main():
             result = fe.extract(images=images,
                                 blob_keys=feature_layers)
             for i, feature_layer in enumerate(feature_layers):
-                features[i][0].extend([feature for feature in result[feature_layer].copy()])
-                features[i][1].extend([normalize(feature) for feature in result[feature_layer].copy()])
+                features[i][0].extend([feature.flatten().astype(dtype=np.float32) for feature in result[feature_layer].copy()])
+                features[i][1].extend([normalize(feature.flatten().astype(dtype=np.float32)) for feature in result[feature_layer].copy()])
             processed += curr_batch_size
             print '{0} / {1}'.format(processed, len(key_data))
 
@@ -88,7 +87,7 @@ def main():
             print 'converting ', feature_layer,' features to nd arrays...'
             features_np = np.array(features[i][0])
             features_np_norm = np.array(features[i][1])
-            print feature_layer, ' features shape:'
+            print feature_layer, ' features shape: ', features_np.shape
             print 'writing ', feature_layer
             dump_results(model_folder, model_id, key, feature_layer, features_np)
             dump_results(model_folder, model_id, key, feature_layer + '_norm', features_np_norm)
@@ -100,10 +99,10 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
-    model_folder = 'nordland_only'
+    model_folder = 'siamese'
     model_folder_path = root_model_path + model_folder + '/'
     deploy_path = model_folder_path + 'deploy.prototxt'
-    caffe_model_path = model_folder_path + 'snapshots_iter_120000_10_margin.caffemodel'
+    caffe_model_path = model_folder_path + 'snapshots_iter_60000_2048.caffemodel'
     batch_size = 1024
     input_layers = ['data_1', 'data_2']
     output_layers = ['fc8_n', 'fc8_n_p']

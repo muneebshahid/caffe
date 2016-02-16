@@ -3,20 +3,6 @@ import numpy as np
 import os_helper as osh
 
 
-def normalize_matrix(matrix):
-    return np.apply_along_axis(lambda row: row / np.linalg.norm(row), 1, matrix)
-
-
-def create_score_mat(qu, db):
-    score_mat = np.ones((qu.shape[0], qu.shape[0]))
-    for i, qu_point in enumerate(qu):
-        for j, db_point in enumerate(db):
-            score_mat[i, j] = np.linalg.norm(qu_point - db_point)
-        if i % 100 == 0:
-            print i
-    return score_mat#normalize_matrix(score_mat)
-
-
 def load_file(path, keys):
     data = {}
     for key in keys:
@@ -31,8 +17,8 @@ def load_file(path, keys):
     return data
 
 
-def dump_results(model_folder, model_id, key, feature_key, result_str, results):
-    np.save(save_path + model_folder + '_' + model_id + '_' + key + '_' + feature_key + '_' + result_str, results)
+def dump_results(model_folder, model_id, key, feature_key, results):
+    np.save(save_path + model_folder + '_' + model_id + '_' + key + '_' + feature_key, results)
 
 
 def normalize(feature):
@@ -69,7 +55,8 @@ def main():
     for key in data:
         print 'processing: {0}_{1}_{2}'.format(model_folder, model_id, key)
         coordinates_1, coordinates_2 = [], []
-        features_1, features_2 = [], []
+        # for each feature we dump two features normalized and un normalized
+        features = [[[], []] for feature_layer in feature_layers]
         key_data = filter_data(key, data[key])
         key_data_len = len(key_data)
         processed = 0
@@ -91,34 +78,20 @@ def main():
             images = key_data[start_index:end_index]
             result = fe.extract(images=images,
                                 blob_keys=feature_layers)
-
-            features_1.extend([normalize(feature) for feature in result[feature_layers[0]].copy()])
-            features_2.extend([normalize(feature) for feature in result[feature_layers[1]].copy()])
-            coordinates_1.extend([feature for feature in result[output_layers[0]].copy()])
-            coordinates_2.extend([feature for feature in result[output_layers[1]].copy()])
+            for i, feature_layer in enumerate(feature_layers):
+                features[i][0].extend([feature for feature in result[feature_layer].copy()])
+                features[i][1].extend([normalize(feature) for feature in result[feature_layer].copy()])
             processed += curr_batch_size
             print '{0} / {1}'.format(processed, len(key_data))
-        print 'converting features to nd arrays...'
-        features_1 = np.array(features_1)
-        print features_1.shape
-        features_2 = np.array(features_2)
-        print 'calculating cos similarity...'
-        score_mat = features_1.dot(features_2.T)
-        score_mat = normalize_matrix(score_mat)
-        print 'writing files...'
-        dump_results(model_folder, model_id, key, feature_layers[0], 'features_1', features_1)
-        dump_results(model_folder, model_id, key, feature_layers[0], 'features_2', features_2)
-        dump_results(model_folder, model_id, key, feature_layers[0], 'cos_sim', score_mat)
 
-        print 'converting coordinates to nd arrays...'
-        coordinates_1 = np.array(coordinates_1)
-        coordinates_2 = np.array(coordinates_2)
-        print 'calculating score mat...'
-        score_mat = create_score_mat(coordinates_1, coordinates_2)
-        print 'writing files...'
-        dump_results(model_folder, model_id, key, output_layers[0], 'coordinates_1', coordinates_1)
-        dump_results(model_folder, model_id, key, output_layers[0], 'coordinates_2', coordinates_2)
-        dump_results(model_folder, model_id, key, output_layers[0], 'euc_dist', score_mat)
+        for i, feature_layer in enumerate(feature_layers):
+            print 'converting ', feature_layer,' features to nd arrays...'
+            features_np = np.array(features[i][0])
+            features_np_norm = np.array(features[i][1])
+            print feature_layer, ' features shape:'
+            print 'writing ', feature_layer
+            dump_results(model_folder, model_id, key, feature_layer, features_np)
+            dump_results(model_folder, model_id, key, feature_layer + '_norm', features_np_norm)
     print 'done'
 
 if __name__ == '__main__':
@@ -134,5 +107,5 @@ if __name__ == '__main__':
     batch_size = 1024
     input_layers = ['data_1', 'data_2']
     output_layers = ['fc8_n', 'fc8_n_p']
-    feature_layers = ['conv3', 'conv3_p']
+    feature_layers = ['conv3', 'conv3_p', 'fc8_n', 'fc8_n_p']
     main()

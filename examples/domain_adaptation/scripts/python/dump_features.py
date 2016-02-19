@@ -17,8 +17,8 @@ def load_file(path, keys):
     return data
 
 
-def dump_results(model_folder, model_id, key, feature_key, results):
-    np.save(save_path + model_folder + '_' + model_id + '_' + key + '_' + feature_key, results)
+def dump_results(model_folder, model_id, key, sub_key, feature_key, results):
+    np.save(save_path + model_folder + '_' + model_id + '_' + key + '_' + sub_key + ' ' + feature_key, results)
 
 
 def normalize(feature):
@@ -26,8 +26,8 @@ def normalize(feature):
     return flattened_features / np.linalg.norm(flattened_features)
 
 
-def filter_data(key, dataset):
-    filtered_data = []
+def filter_data(key, sub_key, dataset):
+    filtered_images = []
     if key == 'nordland':
         ignore = range(26417, 26538)
         ignore.extend(range(28980, 29088))
@@ -40,58 +40,63 @@ def filter_data(key, dataset):
                 file_id, _ = osh.split_file_extension(osh.extract_name_from_path(pair[0]))
                 if int(file_id) in ignore:
                     continue
-                filtered_data.append(pair)
+                if 'summer' in pair[0]:
+                    image = pair[0].replace('summer', sub_key)
+                else:
+                    image = pair[1].replace('summer', sub_key)
+                filtered_images.append(image)
     else:
-        filtered_data = dataset
-    return filtered_data
+        filtered_images = dataset
+    return filtered_images
 
 
 def main():
-    keys = ['nordland']#'michigan'i, 'freiburg' ]
-    data = load_file(txt_path, keys)
     fe = FeatureExtractor(model_path=caffe_model_path, deploy_path=deploy_path, mean_binary_path=mean_binary_path,
-                          input_layers=input_layers)
+                          input_layer=input_layers)
+    data_set_keys = {'nordland': ['summer', 'winter']}#'michigan'i, 'freiburg' ]
+    data = load_file(txt_path, data_set_keys.keys())
     model_id = osh.extract_name_from_path(caffe_model_path)
     for key in data:
         print 'processing: {0}_{1}_{2}'.format(model_folder, model_id, key)
-        coordinates_1, coordinates_2 = [], []
-        # for each feature we dump two features normalized and un normalized
-        features = [[[], []] for feature_layer in feature_layers]
-        key_data = filter_data(key, data[key])
-        key_data_len = len(key_data)
-        processed = 0
-        fe.set_batch_dim(batch_size, 3, 227, 227)
-        print 'total data {0}'.format(key_data_len)
-        num_iter = int(np.ceil(key_data_len / float(batch_size)))
-        for i in range(num_iter):
-            if (batch_size * (i + 1)) <= key_data_len:
-                curr_batch_size = batch_size
-            else:
-                curr_batch_size = key_data_len - batch_size * i
-                fe.set_batch_dim(curr_batch_size)
-            '''result = {'conv3': np.ones((curr_batch_size, 600)) * 5,
-                      'conv3_p': np.random.rand(curr_batch_size, 600),
-                      'fc8_n': np.random.rand(curr_batch_size, 128),
-                      'fc8_n_p': np.random.rand(curr_batch_size, 128)}'''
-            start_index = i * batch_size
-            end_index = start_index + batch_size
-            images = key_data[start_index:end_index]
-            result = fe.extract(images=images,
-                                blob_keys=feature_layers)
-            for i, feature_layer in enumerate(feature_layers):
-                features[i][0].extend([feature for feature in result[feature_layer].copy()])
-                features[i][1].extend([normalize(feature) for feature in result[feature_layer].copy()])
-            processed += curr_batch_size
-            print '{0} / {1}'.format(processed, len(key_data))
+        for sub_key in data_set_keys[key]:
+            print 'processing: {0}'.format(sub_key)
+            # for each feature we dump two features normalized and un normalized
+            features = [[[], []] for feature_layer in feature_layers]
+            key_data = filter_data(key, sub_key, data[key])
+            key_data_len = len(key_data)
+            processed = 0
+            fe.set_batch_dim(batch_size, 3, 227, 227)
+            print 'total data {0}'.format(key_data_len)
+            num_iter = int(np.ceil(key_data_len / float(batch_size)))
+            for i in range(num_iter):
+                if (batch_size * (i + 1)) <= key_data_len:
+                    curr_batch_size = batch_size
+                else:
+                    curr_batch_size = key_data_len - batch_size * i
+                    fe.set_batch_dim(curr_batch_size)
+                '''result = {'conv3': np.ones((curr_batch_size, 600)) * 5,
+                          'conv3_p': np.random.rand(curr_batch_size, 600),
+                          'fc8_n': np.random.rand(curr_batch_size, 128),
+                          'fc8_n_p': np.random.rand(curr_batch_size, 128)}'''
+                start_index = i * batch_size
+                end_index = start_index + batch_size
+                images = key_data[start_index:end_index]
+                result = fe.extract(images=images,
+                                    blob_keys=feature_layers)
+                for i, feature_layer in enumerate(feature_layers):
+                    features[i][0].extend([feature for feature in result[feature_layer].copy()])
+                    features[i][1].extend([normalize(feature) for feature in result[feature_layer].copy()])
+                processed += curr_batch_size
+                print '{0} / {1}'.format(processed, len(key_data))
 
-        for i, feature_layer in enumerate(feature_layers):
-            print 'converting ', feature_layer,' features to nd arrays...'
-            features_np = np.array(features[i][0])
-            features_np_norm = np.array(features[i][1])
-            print feature_layer, ' features shape:'
-            print 'writing ', feature_layer
-            dump_results(model_folder, model_id, key, feature_layer, features_np)
-            dump_results(model_folder, model_id, key, feature_layer + '_norm', features_np_norm)
+            for i, feature_layer in enumerate(feature_layers):
+                print 'converting ', feature_layer,' features to nd arrays...'
+                features_np = np.array(features[i][0])
+                features_np_norm = np.array(features[i][1])
+                print feature_layer, ' features shape:'
+                print 'writing ', feature_layer
+                dump_results(model_folder, model_id, key, sub_key, feature_layer, features_np)
+                dump_results(model_folder, model_id, key, sub_key, feature_layer + '_norm', features_np_norm)
     print 'done'
 
 if __name__ == '__main__':
@@ -105,7 +110,7 @@ if __name__ == '__main__':
     deploy_path = model_folder_path + 'deploy.prototxt'
     caffe_model_path = model_folder_path + 'snapshots_iter_120000_10_margin.caffemodel'
     batch_size = 1024
-    input_layers = ['data_1', 'data_2']
-    output_layers = ['fc8_n', 'fc8_n_p']
-    feature_layers = ['conv3', 'conv3_p', 'fc8_n', 'fc8_n_p']
+    input_layers = ['data_1']
+    output_layers = ['fc8_n']
+    feature_layers = ['conv3', 'fc8_n']
     main()

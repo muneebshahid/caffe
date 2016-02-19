@@ -79,10 +79,14 @@ def main():
                    #0.0159909090909, 0.0115, True]]
                    #['nordland_only_snapshots_iter_140000.caffemodel_freiburg_cos_sim.npy',
                    #0.0370626383018, 0.0266, True]] 
-		   #['nordland_only_snapshots_iter_120000_10_margin.caffemodel_nordland_cos_sim.npy',
+		   #['nordland_only_snapshots_iter_120000_10_margin.caffemodel_nordland_cos_conv3_norm_conv3_p_norm.npy',
                    #0.0241515151515, .013, True]] 
-		   ['nordland_only_snapshots_iter_120000_10_margin.caffemodel_nordland_fc8_n_euc_dist.npy',
-                   1, 5, False]]
+		   #['nordland_only_snapshots_iter_120000_10_margin.caffemodel_nordland_euc_fc8_n_fc8_n_p.npy',
+                   #.06, 1.5, False]]
+		   ['nordland_only_snapshots_iter_120000_10_margin.caffemodel_nordland_euc_fc7_fc7_p.npy',
+                   .00075, .0057, False]] 
+		   #['nordland_only_snapshots_iter_120000_10_margin.caffemodel_nordland_euc_conv3_conv3_p.npy',
+                   #.0073, .0095, False]]
 		   #['nordland_only_snapshots_iter_15000_mich.caffemodel_michigan_cos_sim.npy',
                    #0.0303479569973, 0.0214891774892, True]]
                    #['triplet_loss_snapshots_iter_120000.caffemodel_freiburg_cos_sim.npy',
@@ -109,7 +113,8 @@ def main():
         print 'processing: {0}'.format(data[0])
         score_mat = np.load(results_folder + data[0])
         pr_recal_list = []
-        #score_mat = np.apply_along_axis(lambda row: row / np.linalg.norm(row), 1, score_mat)
+        score_mat = np.apply_along_axis(lambda row: row / np.linalg.norm(row), 1, score_mat)
+	print score_mat
         values = np.linspace(data[1], data[2], 100)
         for i, value in enumerate(values):
             pr_recal_result = pr_recall(score_mat, threshold=value, sim=data[-1])

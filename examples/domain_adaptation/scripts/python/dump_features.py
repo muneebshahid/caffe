@@ -22,8 +22,7 @@ def dump_results(model_folder, model_id, key, sub_key, feature_key, results):
 
 
 def normalize(feature):
-    flattened_features = feature.flatten().astype(dtype=np.float32)
-    return flattened_features / np.linalg.norm(flattened_features)
+    return feature / np.linalg.norm(feature)
 
 
 def filter_data(key, sub_key, dataset):
@@ -105,10 +104,10 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
-    model_folder = 'nordland_only'
+    model_folder = 'siamese'
     model_folder_path = root_model_path + model_folder + '/'
     deploy_path = model_folder_path + 'deploy.prototxt'
-    caffe_model_path = model_folder_path + 'snapshots_iter_120000_10_margin.caffemodel'
+    caffe_model_path = model_folder_path + 'snapshots_iter_60000_2048.caffemodel'
     batch_size = 1024
     input_layers = ['data_1']
     output_layers = ['fc8_n']

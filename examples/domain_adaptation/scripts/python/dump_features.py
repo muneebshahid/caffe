@@ -18,7 +18,7 @@ def load_file(path, keys):
 
 
 def dump_results(model_folder, model_id, key, sub_key, feature_key, results):
-    np.save(save_path + model_folder + '_' + model_id + '_' + key + '_' + sub_key + ' ' + feature_key, results)
+    np.save(save_path + model_folder + '_' + model_id + '_' + key + '_' + sub_key + '_' + feature_key, results)
 
 
 def normalize(feature):
@@ -52,7 +52,7 @@ def filter_data(key, sub_key, dataset):
 def main():
     fe = FeatureExtractor(model_path=caffe_model_path, deploy_path=deploy_path, mean_binary_path=mean_binary_path,
                           input_layer=input_layers)
-    data_set_keys = {'nordland': ['summer', 'winter']}#'michigan'i, 'freiburg' ]
+    data_set_keys = {'nordland': ['summer', 'winter', 'spring', 'fall']}#'michigan'i, 'freiburg' ]
     data = load_file(txt_path, data_set_keys.keys())
     model_id = osh.extract_name_from_path(caffe_model_path)
     for key in data:
@@ -83,8 +83,8 @@ def main():
                 result = fe.extract(images=images,
                                     blob_keys=feature_layers)
                 for i, feature_layer in enumerate(feature_layers):
-                    features[i][0].extend([feature for feature in result[feature_layer].copy()])
-                    features[i][1].extend([normalize(feature) for feature in result[feature_layer].copy()])
+                    features[i][0].extend([feature.flatten().astype(dtype=np.float64) for feature in result[feature_layer].copy()])
+                    features[i][1].extend([normalize(feature.flatten().astype(dtype=np.float64)) for feature in result[feature_layer].copy()])
                 processed += curr_batch_size
                 print '{0} / {1}'.format(processed, len(key_data))
 
@@ -104,12 +104,11 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
-    model_folder = 'siamese'
+    model_folder = 'untrained'
     model_folder_path = root_model_path + model_folder + '/'
     deploy_path = model_folder_path + 'deploy.prototxt'
-    caffe_model_path = model_folder_path + 'snapshots_iter_60000_2048.caffemodel'
+    caffe_model_path = model_folder_path + 'places205CNN_iter_300000_upgraded.caffemodel'
     batch_size = 1024
-    input_layers = ['data_1']
-    output_layers = ['fc8_n']
+    input_layers = 'data_1'
     feature_layers = ['conv3', 'fc8_n']
     main()

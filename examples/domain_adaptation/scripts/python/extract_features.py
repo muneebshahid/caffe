@@ -23,7 +23,7 @@ class FeatureExtractor:
         # create net instance.
         self.__net = caffe.Net(deploy_path, model_path, caffe.TEST)
         # create data transformer.
-        self.__transformer = caffe.io.Transformer({self.__transformer_key: self.__net.blobs[self.__input_layer[0]].data
+        self.__transformer = caffe.io.Transformer({self.__transformer_key: self.__net.blobs[self.__input_layer].data
                                                   .shape})
         # swap channels with width and height
         self.__transformer.set_transpose(self.__transformer_key, (2, 0, 1))

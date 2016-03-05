@@ -52,7 +52,8 @@ def filter_data(key, sub_key, dataset):
 def main():
     fe = FeatureExtractor(model_path=caffe_model_path, deploy_path=deploy_path, mean_binary_path=mean_binary_path,
                           input_layer=input_layers)
-    data_set_keys = {'nordland': ['summer', 'winter', 'spring', 'fall']}#'michigan'i, 'freiburg' ]
+    #data_set_keys = {'nordland': ['summer', 'winter', 'spring', 'fall']}#'michigan'i, 'freiburg' ]
+    data_set_keys = {'freiburg': ['summer', 'winter'] }
     data = load_file(txt_path, data_set_keys.keys())
     model_id = osh.extract_name_from_path(caffe_model_path)
     for key in data:
@@ -63,6 +64,7 @@ def main():
             features = [[[], []] for feature_layer in feature_layers]
             key_data = filter_data(key, sub_key, data[key])
             key_data_len = len(key_data)
+	    print key_data[0]
             processed = 0
             fe.set_batch_dim(batch_size, 3, 227, 227)
             print 'total data {0}'.format(key_data_len)
@@ -104,10 +106,10 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
-    model_folder = 'untrained'
+    model_folder = 'freiburg_only'
     model_folder_path = root_model_path + model_folder + '/'
     deploy_path = model_folder_path + 'deploy.prototxt'
-    caffe_model_path = model_folder_path + 'places205CNN_iter_300000_upgraded.caffemodel'
+    caffe_model_path = model_folder_path + 'snapshots_iter_5000.caffemodel'
     batch_size = 1024
     input_layers = 'data_1'
     feature_layers = ['conv3', 'fc8_n']

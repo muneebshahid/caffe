@@ -44,6 +44,12 @@ def filter_data(key, sub_key, dataset):
                 else:
                     image = pair[1].replace('summer', sub_key)
                 filtered_images.append(image)
+    elif key == 'freiburg':
+        for pair in dataset:
+            if sub_key == 'summer':
+                filtered_images.append(pair[0])
+            else:
+                filtered_images.append(pair[1])
     else:
         filtered_images = dataset
     return filtered_images
@@ -64,7 +70,6 @@ def main():
             features = [[[], []] for feature_layer in feature_layers]
             key_data = filter_data(key, sub_key, data[key])
             key_data_len = len(key_data)
-	    print key_data[0]
             processed = 0
             fe.set_batch_dim(batch_size, 3, 227, 227)
             print 'total data {0}'.format(key_data_len)

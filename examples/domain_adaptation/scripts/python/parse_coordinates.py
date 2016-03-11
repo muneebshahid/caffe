@@ -31,9 +31,11 @@ def pr_recall(score_mat, sim=True, im_range=3, threshold=.045):
                 true_pos += 1
             else:
                 false_pos += 1
+        else:
+            false_neg += 1
 
     pr_denom = float(true_pos + false_pos)
-    recall_denom = float(len(score_mat))
+    recall_denom = float(true_pos + false_neg)
     pr = (true_pos / pr_denom) if pr_denom > 0 else 0
     recall = (true_pos / recall_denom) if recall_denom > 0 else 0
     return pr, recall

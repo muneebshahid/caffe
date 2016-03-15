@@ -66,21 +66,21 @@ def write(path, orig_name, augmented_ims):
             cv2.imwrite(path + name + '-' + key + str(i) + '.' + ext, ims)
 
 
-def create_augmented_data(keys, folders, root_folder_path):
+def create_augmented_data(folders, root_folder_path):
     root_orig_path = root_folder_path + 'orig/'
     root_augmented_path = root_folder_path + 'augmented/'
     if not osh.path_exists(root_augmented_path):
         osh.make_dir(root_augmented_path)
 
     total_file_num = 0
-    for key in keys:
+    for key in folders:
         for folder in folders[key]:
             orig_path = root_orig_path + key + '/' + folder + '/'
             total_file_num += len(osh.list_dir(orig_path))
     print 'total files found: ', total_file_num
 
     over_all_done = 0
-    for key in keys:
+    for key in folders:
         if key == 'freiburg':
             print 'processing freiburg....'
         elif key == 'michigan':
@@ -133,7 +133,7 @@ def main():
                #'fukui': fukui_folders,
                'nordland': ['summer', 'winter', 'spring', 'fall']}
     print "Augmented Data Saftey Lock"
-    #create_augmented_data(keys, folders, root_folder_path)
+    create_augmented_data(folders, root_folder_path)
 
 
 if __name__ == "__main__":

@@ -87,6 +87,8 @@ def create_augmented_data(keys, folders, root_folder_path):
             print 'processing michigan....'
         elif key == 'fukui':
             print 'processing fukui....'
+        elif key == 'nordland':
+            print 'processing nordland....'
 
         for folder in folders[key]:
             print 'processing ' + key + ' ' + folder
@@ -126,9 +128,10 @@ def main():
                      for p_folder in fukui_parent_folders
                      for dq in fukui_d_q_folders
                      for c_folder in fukui_child_folders]
-    folders = {'freiburg': ['summer', 'winter'],
-               'michigan': ['aug', 'jan'],
-               'fukui': fukui_folders}
+    folders = {#'freiburg': ['summer', 'winter'],
+               #'michigan': ['aug', 'jan'],
+               #'fukui': fukui_folders,
+               'nordland': ['summer', 'winter', 'spring', 'fall']}
     print "Augmented Data Saftey Lock"
     #create_augmented_data(keys, folders, root_folder_path)
 

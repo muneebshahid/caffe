@@ -9,7 +9,6 @@
 #include "caffe/data_transformer.hpp"
 #include "caffe/internal_thread.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/layers/similarity_layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
@@ -18,7 +17,7 @@ namespace caffe {
  * @brief Computes the Dot-Product Similarity @f$ S = q^\top  p  @f$.
  */
 template <typename Dtype>
-class DotProductSimilarityLayer : public SimilarityLayer<Dtype> {
+class DotProductSimilarityLayer : public Layer<Dtype> {
  public:
   explicit DotProductSimilarityLayer(const LayerParameter& param)
      : SimilarityLayer<Dtype>(param) {}

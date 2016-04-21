@@ -20,7 +20,19 @@ template <typename Dtype>
 class DotProductSimilarityLayer : public Layer<Dtype> {
  public:
   explicit DotProductSimilarityLayer(const LayerParameter& param)
-     : SimilarityLayer<Dtype>(param) {}
+     : Layer<Dtype>(param) {}
+
+   virtual void Reshape(
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+
+  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+  /**
+   * We usually can backpropagate to both inputs.
+   */
+  virtual inline bool AllowForceBackward(const int bottom_index) const {
+    return true;
+  }
   virtual inline const char* type() const { return "DotProductSimilarity"; }
  protected:
   /// @copydoc EuclideanLossLayer

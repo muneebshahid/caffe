@@ -20,8 +20,8 @@ class DotProductSimilarityLayer : public Layer<Dtype> {
   explicit DotProductSimilarityLayer(const LayerParameter& param)
      : Layer<Dtype>(param) {}
 
-   // virtual void Reshape(
-   //  const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+   virtual void Reshape(
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
 
   virtual inline int ExactNumBottomBlobs() const { return 2; }
   virtual inline int ExactNumTopBlobs() const { return 1; }

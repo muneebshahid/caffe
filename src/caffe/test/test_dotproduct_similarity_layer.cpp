@@ -49,7 +49,7 @@ class DotProductSimilarityLayerTest : public MultiDeviceTest<TypeParam> {
   	DotProductSimilarityLayer<Dtype> layer(layer_param);
   	layer.SetUp(this->blob_bottom_vec, this->blob_top_vec_);
   	layer.Forward(this->blob_bottom_vec, this->blob_top_vec_);
-  	const Dtype min_precision = 1e-5;
+  	const Dtype precision = 1e-5;
   	  int dim = this->blob_bottom_vec[0]->count() / this->blob_bottom_vec[0]->num();
 	  for (int n = 0; n < this->blob_bottom_vec[0]->num(); ++n) {
 	  	float vec_1[dim] = {};

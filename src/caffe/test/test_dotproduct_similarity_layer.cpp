@@ -35,7 +35,7 @@ class DotProductSimilarityLayerTest : public MultiDeviceTest<TypeParam> {
   virtual ~DotProductSimilarityLayerTest() {
     delete blob_bottom_data_i_;
     delete blob_bottom_data_j_;
-    delete blob_top;
+    delete blob_top_;
   }
 
   void TestForward()

@@ -24,7 +24,7 @@ class DotProductSimilarityLayerTest : public MultiDeviceTest<TypeParam> {
   DotProductSimilarityLayerTest()
       : blob_bottom_data_i_(new Blob<Dtype>(32, 512, 1, 1)),
         blob_bottom_data_j_(new Blob<Dtype>(32, 512, 1, 1)),
-        blob_top(new Blob<Dtype>()) {
+        blob_top_(new Blob<Dtype>()) {
     // fill the values
     Caffe::set_random_seed(1701);
     FillerParameter filler_param;
@@ -95,7 +95,7 @@ class DotProductSimilarityLayerTest : public MultiDeviceTest<TypeParam> {
 
   Blob<Dtype>* const blob_bottom_data_i_;
   Blob<Dtype>* const blob_bottom_data_j_;
-  Blob<Dtype>* const blob_top;
+  Blob<Dtype>* const blob_top_;
   vector<Blob<Dtype>*> blob_bottom_vec_;
   vector<Blob<Dtype>*> blob_top_vec_;
  };

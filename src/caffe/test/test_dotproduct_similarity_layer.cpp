@@ -29,7 +29,7 @@ class DotProductSimilarityLayerTest : public MultiDeviceTest<TypeParam> {
     Caffe::set_random_seed(1701);
     FillerParameter filler_param;
     blob_bottom_vec_.push_back(blob_bottom_data_i_);
-    blob_bottom_vec_.push_back(blob_bottom_data_j_)
+    blob_bottom_vec_.push_back(blob_bottom_data_j_);
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~DotProductSimilarityLayerTest() {
@@ -81,6 +81,17 @@ class DotProductSimilarityLayerTest : public MultiDeviceTest<TypeParam> {
         this->blob_top_vec_);
   }
 
+  TYPED_TEST_CASE(DotProductSimilarityLayerTest, TestDtypesAndDevices);
+  
+  TYPED_TEST(DotProductSimilarityLayerTest, TestForward) 
+  {
+  	this->TestForward();
+  }
+
+  TYPED_TEST(DotProductSimilarityLayerTest, TestBackward) 
+  {
+  	this->TestBackward();
+  }
 
   Blob<Dtype>* const blob_bottom_data_i_;
   Blob<Dtype>* const blob_bottom_data_j_;

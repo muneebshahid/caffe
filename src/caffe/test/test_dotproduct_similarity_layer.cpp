@@ -82,15 +82,15 @@ class DotProductSimilarityLayerTest : public MultiDeviceTest<TypeParam> {
 
   TYPED_TEST_CASE(DotProductSimilarityLayerTest, TestDtypesAndDevices);
   
-  TYPED_TEST(DotProductSimilarityLayerTest, TestDotForward) 
-  {
-  	this->TestForward();
-  }
+  // TYPED_TEST(DotProductSimilarityLayerTest, TestDotForward) 
+  // {
+  // 	this->TestForward();
+  // }
 
-  TYPED_TEST(DotProductSimilarityLayerTest, TestDotBackward) 
-  {
-  	this->TestBackward();
-  }
+  // TYPED_TEST(DotProductSimilarityLayerTest, TestDotBackward) 
+  // {
+  // 	this->TestBackward();
+  // }
 
   Blob<Dtype>* const blob_bottom_data_i_;
   Blob<Dtype>* const blob_bottom_data_j_;

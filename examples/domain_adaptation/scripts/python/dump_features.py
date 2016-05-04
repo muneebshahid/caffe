@@ -7,7 +7,7 @@ def load_file(path, keys):
     data = {}
     for key in keys:
         data[key] = []
-        with open(path + '/test1.txt') as test_1, open(path + '/test2.txt') as test_2:
+        with open(path + '/nordland_part_1.txt') as test_1, open(path + '/nordland_part_2.txt') as test_2:
             for line_1, line_2 in zip(test_1.readlines(), test_2.readlines()):
                 line_1 = line_1.replace('\n', '').split(' ')
                 line_2 = line_2.replace('\n', '').split(' ')
@@ -50,6 +50,18 @@ def filter_data(key, sub_key, dataset):
                 filtered_images.append(pair[0])
             else:
                 filtered_images.append(pair[1])
+    elif key == 'michigan':
+        for pair in dataset:
+            if sub_key == 'aug':
+                filtered_images.append(pair[0])
+            else:
+                filtered_images.append(pair[1])
+    elif key == 'alderly':
+        for pair in dataset:
+            if sub_key == 'FRAMESA':
+                filtered_images.append(pair[0])
+            else:
+                filtered_images.append(pair[1])
     else:
         filtered_images = dataset
     return filtered_images
@@ -58,8 +70,10 @@ def filter_data(key, sub_key, dataset):
 def main():
     fe = FeatureExtractor(model_path=caffe_model_path, deploy_path=deploy_path, mean_binary_path=mean_binary_path,
                           input_layer=input_layers)
-    #data_set_keys = {'nordland': ['summer', 'winter', 'spring', 'fall']}#'michigan'i, 'freiburg' ]
-    data_set_keys = {'freiburg': ['summer', 'winter'] }
+    data_set_keys = {'nordland': ['summer', 'winter', 'spring', 'fall']}
+    #data_set_keys = {'freiburg': ['summer', 'winter'] }
+    #data_set_keys = {'michigan': ['aug', 'jan'] }
+    #data_set_keys = {'alderly': ['FRAMESA', 'FRAMESB']}
     data = load_file(txt_path, data_set_keys.keys())
     model_id = osh.extract_name_from_path(caffe_model_path)
     for key in data:
@@ -111,11 +125,11 @@ if __name__ == '__main__':
     save_path = caffe_root + '/data/domain_adaptation_data/results/'
     root_model_path = caffe_root + '/data/domain_adaptation_data/models/'
     mean_binary_path = caffe_root + '../data/models/alexnet/pretrained/places205CNN_mean.binaryproto'
-    model_folder = 'freiburg_only'
+    model_folder = 'nordland_cos_dist'
     model_folder_path = root_model_path + model_folder + '/'
     deploy_path = model_folder_path + 'deploy.prototxt'
-    caffe_model_path = model_folder_path + 'snapshots_iter_5000.caffemodel'
-    batch_size = 1024
+    caffe_model_path = model_folder_path + 'snapshots_iter_160000.caffemodel'
+    batch_size = 256 
     input_layers = 'data_1'
     feature_layers = ['conv3', 'fc8_n']
     main()

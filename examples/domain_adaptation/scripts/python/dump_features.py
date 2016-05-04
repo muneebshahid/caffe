@@ -25,7 +25,7 @@ def normalize(feature):
     return feature / np.linalg.norm(feature)
 
 
-def filter_data(key, sub_key, dataset):
+def filter_data(key, sub_key, dataset, load_augmented=False):
     filtered_images = []
     if key == 'nordland':
         ignore = range(26417, 26538)
@@ -64,6 +64,9 @@ def filter_data(key, sub_key, dataset):
                 filtered_images.append(pair[1])
     else:
         filtered_images = dataset
+    _, ext = osh.split_file_extension(filtered_images[0])
+    if load_augmented:
+        filtered_images = [image.replace(ext, '-crp0' + ext) for image in filtered_images]
     return filtered_images
 
 
@@ -82,7 +85,7 @@ def main():
             print 'processing: {0}'.format(sub_key)
             # for each feature we dump two features normalized and un normalized
             features = [[[], []] for feature_layer in feature_layers]
-            key_data = filter_data(key, sub_key, data[key])
+            key_data = filter_data(key, sub_key, data[key], use_augmented_data)
             key_data_len = len(key_data)
             processed = 0
             fe.set_batch_dim(batch_size, 3, 227, 227)
@@ -132,4 +135,5 @@ if __name__ == '__main__':
     batch_size = 256 
     input_layers = 'data_1'
     feature_layers = ['conv3', 'fc8_n']
+    use_augmented_data = True
     main()
